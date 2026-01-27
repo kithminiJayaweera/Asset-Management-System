@@ -6,7 +6,7 @@ export interface IUser {
   name: string;
   email: string;
   password?: string; // Optional since we exclude it from responses
-  role: 'admin' | 'employee' | 'organization_admin' | 'super_admin';
+  role: 'admin' | 'employee' | 'organization_admin';
   organizationId: Types.ObjectId | string;
   employeeId?: string;
   department?: string;
@@ -14,14 +14,6 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
 }
-
-// User document methods
-export interface IUserMethods {
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-// User model type
-export type UserModel = IUser & IUserMethods;
 
 // Organization Types
 export interface IOrganization {

@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:setup": "tsx scripts/setup-database.ts",
-    "db:seed-orgs": "tsx scripts/seed-organizations.ts"
+    "db:setup": "tsx scripts/setup-database.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
