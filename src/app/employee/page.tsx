@@ -8,7 +8,6 @@ import { MyRequests } from '@/components/employee/MyRequests';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { NavButton } from '@/components/shared/NavButton';
 import { MainLayout } from '@/components/shared/MainLayout';
-import { AuthHeader } from '@/components/shared/AuthHeader';
 import { Package, FileText, User, Home } from 'lucide-react';
 
 const currentEmployee = {
@@ -32,7 +31,6 @@ export default function EmployeePage() {
 
   return (
     <MainLayout>
-      <AuthHeader />
       <Sidebar 
         title="Employee Portal" 
         subtitle={currentEmployee.name}
