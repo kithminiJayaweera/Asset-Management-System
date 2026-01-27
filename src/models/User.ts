@@ -1,8 +1,8 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from '@/types';
+import { IUser, IUserMethods, UserModel } from '@/types';
 
-const UserSchema = new Schema<IUser>(
+const UserSchema = new Schema<IUser, Model<UserModel>, IUserMethods>(
   {
     name: {
       type: String,
@@ -25,7 +25,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['admin', 'employee', 'organization_admin'],
+      enum: ['admin', 'employee', 'organization_admin', 'super_admin'],
       default: 'employee',
     },
     organizationId: {
@@ -80,7 +80,6 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
   }
 };
 
-const User: Model<IUser> =
-  mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+const User = (mongoose.models.User || mongoose.model<IUser, Model<UserModel>>('User', UserSchema)) as Model<UserModel>;
 
 export default User;
