@@ -122,400 +122,26 @@ export default function App() {
   const [showOrganizationModal, setShowOrganizationModal] = useState(false);
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   
-  const [assets, setAssets] = useState<Asset[]>([
-    {
-      id: '1',
-      name: 'Dell Laptop XPS 15',
-      category: 'Electronics',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-01-15',
-      value: 150000,
-      depreciationRate: 20,
-      assignedTo: 'Saman Perera',
-      description: 'High-performance laptop for development',
-      organizationId: '1',
-      logs: [
-        {
-          id: '1',
-          assetId: '1',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2024-01-15',
-          notes: 'Asset purchased and added to inventory'
-        },
-        {
-          id: '2',
-          assetId: '1',
-          action: 'assigned',
-          assignedTo: 'Kamal Fernando',
-          performedBy: 'Admin',
-          performedDate: '2024-02-01',
-          notes: 'Initial assignment to IT department'
-        },
-        {
-          id: '3',
-          assetId: '1',
-          action: 'unassigned',
-          assignedFrom: 'Kamal Fernando',
-          performedBy: 'Admin',
-          performedDate: '2024-06-15',
-          notes: 'Employee transferred to different department'
-        },
-        {
-          id: '4',
-          assetId: '1',
-          action: 'assigned',
-          assignedTo: 'Saman Perera',
-          performedBy: 'Admin',
-          performedDate: '2024-06-20',
-          notes: 'Reassigned to new software engineer'
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Office Desk',
-      category: 'Furniture',
-      status: 'active',
-      location: 'Office - Floor 1',
-      purchaseDate: '2023-06-20',
-      value: 35000,
-      depreciationRate: 10,
-      assignedTo: 'Saman Perera',
-      organizationId: '1',
-      logs: [
-        {
-          id: '5',
-          assetId: '2',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2023-06-20',
-          notes: 'Furniture purchased for new office space'
-        },
-        {
-          id: '6',
-          assetId: '2',
-          action: 'assigned',
-          assignedTo: 'Saman Perera',
-          performedBy: 'Admin',
-          performedDate: '2024-01-01',
-          notes: 'Assigned to employee workstation'
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'HP Printer LaserJet',
-      category: 'Electronics',
-      status: 'maintenance',
-      location: 'Office - Floor 3',
-      purchaseDate: '2023-03-10',
-      value: 55000,
-      depreciationRate: 10,
-      description: 'Color laser printer',
-      organizationId: '1',
-      logs: [
-        {
-          id: '7',
-          assetId: '3',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2023-03-10',
-          notes: 'Printer purchased for shared use'
-        },
-        {
-          id: '8',
-          assetId: '3',
-          action: 'status_change',
-          oldStatus: 'active',
-          newStatus: 'maintenance',
-          performedBy: 'IT Support',
-          performedDate: '2024-12-01',
-          notes: 'Paper jam issue - sent for repair'
-        }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Conference Table',
-      category: 'Furniture',
-      status: 'active',
-      location: 'Meeting Room A',
-      purchaseDate: '2023-05-15',
-      value: 60000,
-      depreciationRate: 8,
-      organizationId: '2',
-      logs: [
-        {
-          id: '9',
-          assetId: '4',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2023-05-15',
-          notes: 'Conference table for meeting room'
-        }
-      ]
-    },
-    {
-      id: '5',
-      name: 'MacBook Pro 16"',
-      category: 'Electronics',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-02-01',
-      value: 250000,
-      depreciationRate: 20,
-      assignedTo: 'Amal Silva',
-      organizationId: '2',
-      logs: [
-        {
-          id: '10',
-          assetId: '5',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2024-02-01',
-          notes: 'High-end laptop for project manager'
-        },
-        {
-          id: '11',
-          assetId: '5',
-          action: 'assigned',
-          assignedTo: 'Amal Silva',
-          performedBy: 'Admin',
-          performedDate: '2024-02-20',
-          notes: 'Assigned to new project manager'
-        }
-      ]
-    },
-    {
-      id: '6',
-      name: 'Old Server Rack',
-      category: 'Electronics',
-      status: 'retired',
-      location: 'Storage',
-      purchaseDate: '2020-01-10',
-      value: 30000,
-      depreciationRate: 20,
-      description: 'Replaced with cloud infrastructure',
-      organizationId: '1',
-      logs: [
-        {
-          id: '12',
-          assetId: '6',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2020-01-10',
-          notes: 'Server rack for on-premise infrastructure'
-        },
-        {
-          id: '13',
-          assetId: '6',
-          action: 'status_change',
-          oldStatus: 'active',
-          newStatus: 'retired',
-          performedBy: 'IT Manager',
-          performedDate: '2024-11-01',
-          notes: 'Migrated to cloud services - hardware no longer needed'
-        },
-        {
-          id: '14',
-          assetId: '6',
-          action: 'location_change',
-          oldLocation: 'Server Room',
-          newLocation: 'Storage',
-          performedBy: 'IT Support',
-          performedDate: '2024-11-05',
-          notes: 'Moved to storage for disposal'
-        }
-      ]
-    },
-    {
-      id: '7',
-      name: 'Logitech Wireless Mouse',
-      category: 'Electronics',
-      status: 'lost',
-      location: 'Unknown',
-      purchaseDate: '2023-08-15',
-      value: 5500,
-      depreciationRate: 20,
-      assignedTo: 'Saman Perera',
-      description: 'Wireless mouse - reported missing',
-      logs: [
-        {
-          id: '15',
-          assetId: '7',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2023-08-15',
-          notes: 'Computer peripherals purchase'
-        },
-        {
-          id: '16',
-          assetId: '7',
-          action: 'assigned',
-          assignedTo: 'Saman Perera',
-          performedBy: 'IT Support',
-          performedDate: '2023-08-20',
-          notes: 'Assigned to employee workstation'
-        },
-        {
-          id: '17',
-          assetId: '7',
-          action: 'status_change',
-          oldStatus: 'active',
-          newStatus: 'lost',
-          performedBy: 'Admin',
-          performedDate: '2024-11-15',
-          notes: 'Employee reported item missing - unable to locate'
-        }
-      ]
-    },
-    {
-      id: '8',
-      name: 'Samsung Monitor 27"',
-      category: 'Electronics',
-      status: 'lost',
-      location: 'Unknown',
-      purchaseDate: '2023-05-10',
-      value: 65000,
-      depreciationRate: 20,
-      description: 'Monitor lost during office relocation',
-      logs: [
-        {
-          id: '18',
-          assetId: '8',
-          action: 'created',
-          performedBy: 'Admin',
-          performedDate: '2023-05-10',
-          notes: 'Monitor for new workstation'
-        },
-        {
-          id: '19',
-          assetId: '8',
-          action: 'status_change',
-          oldStatus: 'active',
-          newStatus: 'lost',
-          performedBy: 'Facility Manager',
-          performedDate: '2024-10-20',
-          notes: 'Lost during office relocation - not found in inventory check'
-        }
-      ]
-    }
-  ]);
+  const [assets, setAssets] = useState<Asset[]>([]);
 
-  const [organizations, setOrganizations] = useState<Organization[]>([
-    {
-      id: '1',
-      name: 'Head Office',
-      code: 'HO-001',
-      address: '123 Main Street, Colombo 01',
-      contactEmail: 'headoffice@company.lk',
-      contactPhone: '+94 11 234 5678',
-      createdDate: '2024-01-01'
-    },
-    {
-      id: '2',
-      name: 'Kandy Branch',
-      code: 'KB-002',
-      address: '456 Peradeniya Road, Kandy',
-      contactEmail: 'kandy@company.lk',
-      contactPhone: '+94 81 234 5678',
-      createdDate: '2024-02-15'
-    }
-  ]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
 
-  const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([
-    {
-      id: '1',
-      name: 'Kamal Perera',
-      email: 'kamal@company.lk',
-      role: 'admin',
-      organizationId: '1',
-      permissions: ['all'],
-      createdDate: '2024-01-01'
-    },
-    {
-      id: '2',
-      name: 'Nimal Silva',
-      email: 'nimal@company.lk',
-      role: 'sub-admin',
-      organizationId: '2',
-      permissions: ['view_assets', 'add_assets', 'edit_assets'],
-      createdDate: '2024-02-20'
-    }
-  ]);
+  const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
 
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: '1',
-      employeeId: 'E001',
-      name: 'Saman Perera',
-      email: 'saman@company.lk',
-      phone: '+94 77 123 4567',
-      position: 'Software Engineer',
-      department: 'IT',
-      organizationId: '1',
-      joinDate: '2024-01-01',
-      salary: 50000,
-      status: 'active',
-      address: '123 Main Street, Colombo 01',
-      emergencyContact: 'John Doe',
-      emergencyContactPhone: '+94 77 765 4321'
-    },
-    {
-      id: '2',
-      employeeId: 'E002',
-      name: 'Amal Silva',
-      email: 'amal@company.lk',
-      phone: '+94 77 234 5678',
-      position: 'Project Manager',
-      department: 'IT',
-      organizationId: '2',
-      joinDate: '2024-02-20',
-      salary: 60000,
-      status: 'active',
-      address: '456 Peradeniya Road, Kandy',
-      emergencyContact: 'Jane Smith',
-      emergencyContactPhone: '+94 77 876 5432'
-    }
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
-  const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([
-    {
-      id: '1',
-      employeeId: '1',
-      assetName: 'iPad Pro 12.9"',
-      category: 'Electronics',
-      quantity: 1,
-      reason: 'Need for presentations and client meetings',
-      priority: 'high',
-      status: 'pending',
-      requestDate: '2024-12-10'
-    },
-    {
-      id: '2',
-      employeeId: '2',
-      assetName: 'Standing Desk',
-      category: 'Furniture',
-      quantity: 1,
-      reason: 'Health and ergonomic improvements',
-      priority: 'medium',
-      status: 'approved',
-      requestDate: '2024-12-08'
-    }
-  ]);
+  const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
 
-  // Fetch assets from database on component mount
+  // Fetch all data from database on component mount
   useEffect(() => {
-    const fetchAssets = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/assets');
-        const result = await response.json();
+        // Fetch assets
+        const assetsResponse = await fetch('/api/assets');
+        const assetsResult = await assetsResponse.json();
         
-        if (result.success && result.data.data) {
-          // Map database assets to component state format
-          const dbAssets = result.data.data.map((asset: any) => ({
+        if (assetsResult.success && assetsResult.data.data) {
+          const dbAssets = assetsResult.data.data.map((asset: any) => ({
             id: asset._id,
             name: asset.name,
             category: asset.category,
@@ -535,16 +161,61 @@ export default function App() {
             logs: []
           }));
           
-          // Merge with mock data (keep mock data for now)
-          setAssets([...assets, ...dbAssets]);
+          setAssets(dbAssets);
         }
+
+        // Fetch organizations
+        const orgsResponse = await fetch('/api/organizations');
+        const orgsResult = await orgsResponse.json();
+        
+        if (orgsResult.success && orgsResult.data.data) {
+          const dbOrgs = orgsResult.data.data.map((org: any) => ({
+            id: org._id,
+            name: org.name,
+            code: org.code || '',
+            address: org.address,
+            contactEmail: org.email,
+            contactPhone: org.phone,
+            createdDate: org.createdAt
+          }));
+          
+          setOrganizations(dbOrgs);
+        }
+
+        // Fetch users/employees
+        const usersResponse = await fetch('/api/users');
+        const usersResult = await usersResponse.json();
+        
+        if (usersResult.success && usersResult.data.data) {
+          const dbEmployees = usersResult.data.data
+            .filter((user: any) => user.role === 'employee')
+            .map((user: any) => ({
+              id: user._id,
+              employeeId: user.employeeId || '',
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '',
+              position: user.position || '',
+              department: user.department || '',
+              organizationId: user.organizationId?._id || user.organizationId,
+              joinDate: user.createdAt,
+              salary: 0, // Not stored in User model
+              status: 'active' as const,
+              address: '',
+              emergencyContact: '',
+              emergencyContactPhone: ''
+            }));
+          
+          setEmployees(dbEmployees);
+        }
+
       } catch (error) {
-        console.error('Error fetching assets:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchAssets();
-  }, []); // Empty dependency array means this runs once on mount
+    fetchData();
+  }, []);
 
   const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
     try {
@@ -563,7 +234,7 @@ export default function App() {
         depreciationMethod: 'straight-line' as const,
         usefulLife: asset.depreciationRate ? Math.floor(100 / asset.depreciationRate) : 5,
         status: asset.status === 'active' ? 'available' : asset.status,
-        condition: asset.condition || 'good',
+        condition: (asset.condition || 'good').toLowerCase(),
         location: asset.location,
         organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
         warrantyExpiry: asset.warrantyEndDate || null,
