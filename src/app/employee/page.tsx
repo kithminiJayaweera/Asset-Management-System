@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from 'react';
-import { EmployeeDashboard } from '../components/employee/EmployeeDashboard';
-import { MyAssets } from '../components/employee/MyAssets';
-import { AssetRequestForm } from '../components/employee/AssetRequestForm';
-import { MyRequests } from '../components/employee/MyRequests';
-import { Sidebar } from '../components/shared/Sidebar';
-import { NavButton } from '../components/shared/NavButton';
-import { MainLayout } from '../components/shared/MainLayout';
+import { EmployeeDashboard } from '@/components/employee/EmployeeDashboard';
+import { MyAssets } from '@/components/employee/MyAssets';
+import { AssetRequestForm } from '@/components/employee/AssetRequestForm';
+import { MyRequests } from '@/components/employee/MyRequests';
+import { Sidebar } from '@/components/shared/Sidebar';
+import { NavButton } from '@/components/shared/NavButton';
+import { MainLayout } from '@/components/shared/MainLayout';
 import { Package, FileText, User, Home } from 'lucide-react';
 
 const currentEmployee = {

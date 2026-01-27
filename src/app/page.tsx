@@ -1,23 +1,23 @@
 "use client";
 
-import { useState } from 'react';
-import { Dashboard } from './components/admin/Dashboard';
-import { AssetList } from './components/admin/AssetList';
-import { AssetForm } from './components/admin/AssetForm';
-import { AssetDetail } from './components/AssetDetail';
-import { OrganizationList } from './components/OrganizationList';
-import { OrganizationForm } from './components/OrganizationForm';
-import { OrganizationDetail } from './components/OrganizationDetail';
-import { EmployeeList } from './components/EmployeeList';
-import { EmployeeForm } from './components/EmployeeForm';
-import { EmployeeDetail } from './components/EmployeeDetail';
-import { AssetRequests, AssetRequest } from './components/AssetRequests';
-import { Reports } from './components/admin/Reports';
-import { Settings } from './components/admin/Settings';
-import { OrganizationAdminList } from './components/OrganizationAdminList';
-import { Sidebar } from './components/shared/Sidebar';
-import { NavButton } from './components/shared/NavButton';
-import { MainLayout } from './components/shared/MainLayout';
+import { useState, useEffect } from 'react';
+import { Dashboard } from '@/components/admin/Dashboard';
+import { AssetList } from '@/components/admin/AssetList';
+import { AssetForm } from '@/components/admin/AssetForm';
+import { AssetDetail } from '@/components/AssetDetail';
+import { OrganizationList } from '@/components/OrganizationList';
+import { OrganizationForm } from '@/components/OrganizationForm';
+import { OrganizationDetail } from '@/components/OrganizationDetail';
+import { EmployeeList } from '@/components/EmployeeList';
+import { EmployeeForm } from '@/components/EmployeeForm';
+import { EmployeeDetail } from '@/components/EmployeeDetail';
+import { AssetRequests, AssetRequest } from '@/components/AssetRequests';
+import { Reports } from '@/components/admin/Reports';
+import { Settings } from '@/components/admin/Settings';
+import { OrganizationAdminList } from '@/components/OrganizationAdminList';
+import { Sidebar } from '@/components/shared/Sidebar';
+import { NavButton } from '@/components/shared/NavButton';
+import { MainLayout } from '@/components/shared/MainLayout';
 import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
 
 export interface AssetLog {
@@ -506,14 +506,101 @@ export default function App() {
     }
   ]);
 
-  const handleAddAsset = (asset: Omit<Asset, 'id'>) => {
-    const newAsset = {
-      ...asset,
-      id: Date.now().toString()
+  // Fetch assets from database on component mount
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        const response = await fetch('/api/assets');
+        const result = await response.json();
+        
+        if (result.success && result.data.data) {
+          // Map database assets to component state format
+          const dbAssets = result.data.data.map((asset: any) => ({
+            id: asset._id,
+            name: asset.name,
+            category: asset.category,
+            status: asset.status === 'available' ? 'active' : asset.status,
+            location: asset.location || '',
+            purchaseDate: asset.purchaseDate,
+            value: asset.currentValue || asset.purchasePrice,
+            depreciationRate: asset.usefulLife ? Math.floor(100 / asset.usefulLife) : 10,
+            assignedTo: asset.assignedTo?.name || '',
+            description: asset.description || asset.notes || '',
+            organizationId: asset.organizationId?._id || asset.organizationId,
+            serialNumber: asset.serialNumber || '',
+            model: asset.model || '',
+            brand: asset.manufacturer || '',
+            condition: asset.condition || 'good',
+            warrantyEndDate: asset.warrantyExpiry || '',
+            logs: []
+          }));
+          
+          // Merge with mock data (keep mock data for now)
+          setAssets([...assets, ...dbAssets]);
+        }
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      }
     };
-    setAssets([...assets, newAsset]);
-    setShowAssetModal(false);
-    setEditingAsset(null);
+
+    fetchAssets();
+  }, []); // Empty dependency array means this runs once on mount
+
+  const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
+    try {
+      // Map the form data to match the API schema
+      const assetData = {
+        assetTag: `AST-${Date.now()}`, // Generate unique asset tag
+        name: asset.name,
+        category: asset.category,
+        description: asset.description || '',
+        serialNumber: asset.serialNumber || '',
+        model: asset.model || '',
+        manufacturer: asset.brand || '',
+        purchaseDate: asset.purchaseDate,
+        purchasePrice: asset.value,
+        currentValue: asset.value,
+        depreciationMethod: 'straight-line' as const,
+        usefulLife: asset.depreciationRate ? Math.floor(100 / asset.depreciationRate) : 5,
+        status: asset.status === 'active' ? 'available' : asset.status,
+        condition: asset.condition || 'good',
+        location: asset.location,
+        organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
+        warrantyExpiry: asset.warrantyEndDate || null,
+        notes: asset.description || ''
+      };
+
+      console.log('Sending asset data:', assetData);
+
+      const response = await fetch('/api/assets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(assetData),
+      });
+
+      const result = await response.json();
+      console.log('API Response:', result);
+
+      if (result.success) {
+        // Add to local state with the returned data
+        const newAsset = {
+          ...asset,
+          id: result.data._id || Date.now().toString()
+        };
+        setAssets([...assets, newAsset]);
+        setShowAssetModal(false);
+        setEditingAsset(null);
+        alert('Asset created successfully and saved to database!');
+      } else {
+        console.error('Failed to create asset:', result.error);
+        alert(`Failed to create asset: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating asset:', error);
+      alert('Error creating asset. Check console for details.');
+    }
   };
 
   const handleUpdateAsset = (asset: Asset) => {
