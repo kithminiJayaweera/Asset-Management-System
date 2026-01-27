@@ -18,6 +18,7 @@ import { OrganizationAdminList } from '@/components/OrganizationAdminList';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { NavButton } from '@/components/shared/NavButton';
 import { MainLayout } from '@/components/shared/MainLayout';
+import { AuthHeader } from '@/components/shared/AuthHeader';
 import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
 
 export interface AssetLog {
@@ -329,34 +330,55 @@ export default function App() {
     }));
   };
 
-  const handleAddOrganization = (org: Omit<Organization, 'id'>, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
-    const newOrg = {
-      ...org,
-      id: Date.now().toString()
-    };
-    setOrganizations([...organizations, newOrg]);
-    
-    // Create admin if provided
-    if (admin) {
-      const newAdmin = {
-        ...admin,
-        id: (Date.now() + 1).toString(),
-        organizationId: newOrg.id,
-        createdDate: new Date().toISOString().split('T')[0]
-      };
-      setSubAdmins([...subAdmins, newAdmin]);
+  const handleAddOrganization = async (org: Omit<Organization, 'id'>, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
+    try {
+      // Save organization to database
+      const response = await fetch('/api/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(org)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Refresh organizations from database
+        const orgResponse = await fetch('/api/organizations');
+        const orgResult = await orgResponse.json();
+        if (orgResult.success && orgResult.data.data) {
+          setOrganizations(orgResult.data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding organization:', error);
     }
     
     setShowOrganizationModal(false);
     setEditingOrganization(null);
   };
 
-  const handleUpdateOrganization = (org: Organization, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
-    setOrganizations(organizations.map(o => o.id === org.id ? org : o));
-    setEditingOrganization(null);
-    if (selectedOrganization && selectedOrganization.id === org.id) {
-      setSelectedOrganization(org);
+  const handleUpdateOrganization = async (org: Organization, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
+    try {
+      // Update organization in database
+      const response = await fetch(`/api/organizations/${org.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(org)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Refresh organizations from database
+        const orgResponse = await fetch('/api/organizations');
+        const orgResult = await orgResponse.json();
+        if (orgResult.success && orgResult.data.data) {
+          setOrganizations(orgResult.data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating organization:', error);
     }
+    
+    setEditingOrganization(null);
     setShowOrganizationModal(false);
   };
 
@@ -434,6 +456,7 @@ export default function App() {
 
   return (
     <MainLayout>
+      <AuthHeader />
       <Sidebar 
         title="Asset Manager"
       >
