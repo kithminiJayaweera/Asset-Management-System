@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { EmployeeDashboard } from '@/components/employee/EmployeeDashboard';
 import { MyAssets } from '@/components/employee/MyAssets';
 import { AssetRequestForm } from '@/components/employee/AssetRequestForm';
@@ -11,24 +12,76 @@ import { MainLayout } from '@/components/shared/MainLayout';
 import { AuthHeader } from '@/components/shared/AuthHeader';
 import { Package, FileText, User, Home } from 'lucide-react';
 
-const currentEmployee = {
-  id: '1',
-  employeeId: 'E001',
-  name: 'Saman Perera',
-  email: 'saman@company.lk',
-  phone: '+94 77 123 4567',
-  position: 'Software Engineer',
-  department: 'IT',
-  organizationId: '1',
-  joinDate: '2024-01-01',
-  salary: 50000,
-  status: 'active' as const
-};
+interface Employee {
+  id: string;
+  employeeId?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  position?: string;
+  department?: string;
+  organizationId: string;
+  joinDate?: string;
+  salary?: number;
+  status: 'active' | 'inactive';
+}
 
 type View = 'dashboard' | 'my-assets' | 'request-asset' | 'my-requests';
 
 export default function EmployeePage() {
+  const router = useRouter();
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCurrentEmployee();
+  }, []);
+
+  const fetchCurrentEmployee = async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const user = result.data;
+        const employee: Employee = {
+          id: user._id || user.id || '1',
+          employeeId: user.employeeId || '',
+          name: user.name || 'Employee',
+          email: user.email || '',
+          phone: user.phone || '',
+          position: user.position || '',
+          department: user.department || '',
+          organizationId: user.organizationId?._id || user.organizationId || '',
+          joinDate: user.createdAt || new Date().toISOString(),
+          salary: user.salary || 0,
+          status: 'active' as const
+        };
+        setCurrentEmployee(employee);
+      } else {
+        // Not authenticated, redirect to login
+        if (response.status === 401) {
+          router.push('/login');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current employee:', error);
+      router.push('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !currentEmployee) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
