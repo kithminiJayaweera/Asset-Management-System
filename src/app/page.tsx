@@ -136,12 +136,13 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch assets
+        // Fetch assets (returns paginated response with data.data structure)
         const assetsResponse = await fetch('/api/assets');
         const assetsResult = await assetsResponse.json();
         
-        if (assetsResult.success && assetsResult.data.data) {
-          const dbAssets = assetsResult.data.data.map((asset: any) => ({
+        if (assetsResult.success && assetsResult.data) {
+          const assetsData = assetsResult.data.data || assetsResult.data;
+          const dbAssets = (Array.isArray(assetsData) ? assetsData : []).map((asset: any) => ({
             id: asset._id,
             name: asset.name,
             category: asset.category,
@@ -162,14 +163,17 @@ export default function App() {
           }));
           
           setAssets(dbAssets);
+          console.log('Assets loaded:', dbAssets.length);
+        } else {
+          console.warn('Assets fetch failed or returned empty');
         }
 
-        // Fetch organizations
+        // Fetch organizations (returns direct array)
         const orgsResponse = await fetch('/api/organizations');
         const orgsResult = await orgsResponse.json();
         
-        if (orgsResult.success && orgsResult.data.data) {
-          const dbOrgs = orgsResult.data.data.map((org: any) => ({
+        if (orgsResult.success && Array.isArray(orgsResult.data)) {
+          const dbOrgs = orgsResult.data.map((org: any) => ({
             id: org._id,
             name: org.name,
             code: org.code || '',
@@ -180,14 +184,17 @@ export default function App() {
           }));
           
           setOrganizations(dbOrgs);
+          console.log('Organizations loaded:', dbOrgs.length);
+        } else {
+          console.warn('Organizations fetch failed or returned empty');
         }
 
-        // Fetch users/employees
+        // Fetch users/employees (returns direct array)
         const usersResponse = await fetch('/api/users');
         const usersResult = await usersResponse.json();
         
-        if (usersResult.success && usersResult.data.data) {
-          const dbEmployees = usersResult.data.data
+        if (usersResult.success && Array.isArray(usersResult.data)) {
+          const dbEmployees = usersResult.data
             .filter((user: any) => user.role === 'employee')
             .map((user: any) => ({
               id: user._id,
@@ -207,6 +214,9 @@ export default function App() {
             }));
           
           setEmployees(dbEmployees);
+          console.log('Employees loaded:', dbEmployees.length);
+        } else {
+          console.warn('Users fetch failed or returned empty');
         }
 
       } catch (error) {
