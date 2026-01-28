@@ -1,5 +1,5 @@
-import { Organization } from '../page';
 import { Building2, Edit2, Trash2, Mail, Phone, MapPin, Calendar, Plus } from 'lucide-react';
+import { Organization } from '@/types/shared';
 
 interface OrganizationListProps {
   organizations: Organization[];

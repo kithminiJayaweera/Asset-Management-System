@@ -1,6 +1,20 @@
 import { useState } from 'react';
-import { Employee, Organization } from '../page';
 import { Package, CheckCircle, XCircle, Clock, User, Calendar } from 'lucide-react';
+import { Organization } from '@/types/shared';
+
+interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  department: string;
+  organizationId: string;
+  joinDate: string;
+  salary: number;
+  status: 'active' | 'on-leave' | 'inactive';
+}
 
 export interface AssetRequest {
   id: string;

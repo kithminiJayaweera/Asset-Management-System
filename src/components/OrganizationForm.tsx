@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import { Organization, SubAdmin } from '../page';
 import { Save, X, UserPlus } from 'lucide-react';
+import { Organization, SubAdmin } from '@/types/shared';
 
 interface OrganizationFormProps {
   onSubmit: (org: any, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => void;

@@ -1,9 +1,23 @@
-import { Asset, Organization, Employee } from '../page';
 import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye } from 'lucide-react';
 import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
 import { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { Asset, Organization } from '@/types/shared';
+
+interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  department: string;
+  organizationId: string;
+  joinDate: string;
+  salary: number;
+  status: 'active' | 'on-leave' | 'inactive';
+}
 
 interface AssetDetailProps {
   asset: Asset;
