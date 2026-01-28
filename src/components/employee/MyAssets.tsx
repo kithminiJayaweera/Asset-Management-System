@@ -1,8 +1,21 @@
-import { Package, MapPin, Calendar, DollarSign } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Package, MapPin, Calendar, DollarSign, Edit2, Trash2 } from 'lucide-react';
 
 interface Employee {
   id: string;
   name: string;
+}
+
+interface Asset {
+  _id: string;
+  name: string;
+  category: string;
+  status: string;
+  location: string;
+  purchaseDate: string;
+  value: number;
+  description?: string;
+  specifications?: Record<string, any>;
 }
 
 interface MyAssetsProps {
@@ -10,37 +23,65 @@ interface MyAssetsProps {
 }
 
 export function MyAssets({ employee }: MyAssetsProps) {
-  const myAssets = [
-    {
-      id: '1',
-      name: 'Dell Latitude 5540',
-      category: 'PC/Laptop',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-01-15',
-      value: 150000,
-      description: 'High-performance laptop for development'
-    },
-    {
-      id: '2',
-      name: 'Ergonomic Office Chair',
-      category: 'Office Furniture',
-      status: 'active',
-      location: 'Office - Floor 1',
-      purchaseDate: '2023-06-20',
-      value: 25000
-    },
-    {
-      id: '3',
-      name: 'Dell U2723DE Monitor',
-      category: 'Office Equipment',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-03-20',
-      value: 85000,
-      description: 'Dual monitor for productivity'
+  const [myAssets, setMyAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyAssets();
+  }, [employee.id]);
+
+  const fetchMyAssets = async () => {
+    try {
+      const response = await fetch(`/api/assets?assignedTo=${employee.id}`);
+      const result = await response.json();
+      if (result.success) {
+        setMyAssets(result.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching assets:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleEdit = (asset: Asset) => {
+    // For employee view, this could open a request form or show asset details
+    alert(`Edit functionality for ${asset.name} - Contact admin for changes`);
+  };
+
+  const handleDelete = async (assetId: string) => {
+    if (!confirm('Are you sure you want to request removal of this asset?')) return;
+    
+    try {
+      // Create a return request instead of direct deletion
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestType: 'return',
+          assetId,
+          requestedBy: employee.id,
+          reason: 'Asset return request',
+          priority: 'medium'
+        })
+      });
+      
+      if (response.ok) {
+        alert('Return request submitted successfully');
+      }
+    } catch (error) {
+      console.error('Error creating return request:', error);
+      alert('Failed to submit return request');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-600">Loading assets...</p>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -102,13 +143,29 @@ export function MyAssets({ employee }: MyAssetsProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {myAssets.map(asset => (
-          <div key={asset.id} className="bg-white rounded-lg border border-gray-200 p-6">
+          <div key={asset._id} className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <h3 className="text-lg text-gray-900 mb-2">{asset.name}</h3>
                 <span className={`inline-block px-3 py-1 rounded-full text-sm ${getStatusColor(asset.status)}`}>
                   {asset.status}
                 </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(asset)}
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Request Edit"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(asset._id)}
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Request Return"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -132,6 +189,23 @@ export function MyAssets({ employee }: MyAssetsProps) {
                 <DollarSign className="w-4 h-4" />
                 <span className="text-sm">Rs. {asset.value.toLocaleString()}</span>
               </div>
+
+              {/* Display category-specific specifications */}
+              {asset.specifications && Object.keys(asset.specifications).length > 0 && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-2">Specifications:</p>
+                  <div className="space-y-1">
+                    {Object.entries(asset.specifications).map(([key, value]) => (
+                      value && (
+                        <div key={key} className="flex justify-between text-xs">
+                          <span className="text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                          <span className="text-gray-700">{String(value)}</span>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {asset.description && (
                 <p className="text-sm text-gray-600 pt-2">{asset.description}</p>

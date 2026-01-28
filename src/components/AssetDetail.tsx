@@ -1,4 +1,4 @@
-import { Asset, Organization, Employee } from '../page';
+import { IAsset, IOrganization, IUser } from '../types';
 import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye } from 'lucide-react';
 import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
@@ -6,10 +6,10 @@ import { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 interface AssetDetailProps {
-  asset: Asset;
-  organization: Organization | undefined;
-  assignedEmployee: Employee | undefined;
-  employees: Employee[];
+  asset: IAsset;
+  organization: IOrganization | undefined;
+  assignedEmployee: IUser | undefined;
+  employees: IUser[];
   onBack: () => void;
   onEdit: () => void;
   onReassign: (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => void;
@@ -18,7 +18,7 @@ interface AssetDetailProps {
 export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign }: AssetDetailProps) {
   const depreciation = calculateDepreciation(asset);
   const [showReassignModal, setShowReassignModal] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(assignedEmployee);
+  const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
   const [showQRModal, setShowQRModal] = useState(false);
   const qrCodeData = generateAssetQRData(asset.id, asset.name, asset.category, asset.location, asset.status);
   
@@ -188,138 +188,25 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               Scan this QR code to quickly identify and track this asset
             </p>
           </div>
+          {/* DEBUG: Show raw asset data */}
+          <div className="bg-red-50 border-2 border-red-500 p-4 rounded-lg mb-6">
+            <h3 className="text-red-800 font-bold mb-2">DEBUG: Asset Data</h3>
+            <pre className="text-xs text-red-700 whitespace-pre-wrap">
+              {JSON.stringify(asset, null, 2)}
+            </pre>
+          </div>
+
           {/* Category Specifications */}
-          {asset.category && (
+          {asset.category && asset.details && Object.keys(asset.details).length > 0 && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg text-gray-900 mb-4">Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* PC/Laptop Specifications */}
-                {(asset.category === 'PC/Laptop' || asset.category === 'Electronics' || asset.category === 'Computer') && (
-                  <>
-                    {(asset as any).brand && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Brand</p>
-                        <p className="text-sm text-gray-900">{(asset as any).brand}</p>
-                      </div>
-                    )}
-                    {(asset as any).model && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Model</p>
-                        <p className="text-sm text-gray-900">{(asset as any).model}</p>
-                      </div>
-                    )}
-                    {(asset as any).serialNumber && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Serial Number</p>
-                        <p className="text-sm text-gray-900">{(asset as any).serialNumber}</p>
-                      </div>
-                    )}
-                    {(asset as any).processor && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Processor</p>
-                        <p className="text-sm text-gray-900">{(asset as any).processor}</p>
-                      </div>
-                    )}
-                    {(asset as any).ram && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">RAM</p>
-                        <p className="text-sm text-gray-900">{(asset as any).ram}</p>
-                      </div>
-                    )}
-                    {(asset as any).storage && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Storage</p>
-                        <p className="text-sm text-gray-900">{(asset as any).storage}</p>
-                      </div>
-                    )}
-                    {(asset as any).operatingSystem && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Operating System</p>
-                        <p className="text-sm text-gray-900">{(asset as any).operatingSystem}</p>
-                      </div>
-                    )}
-                    {(asset as any).macAddress && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">MAC Address</p>
-                        <p className="text-sm text-gray-900 font-mono">{(asset as any).macAddress}</p>
-                      </div>
-                    )}
-                    {(asset as any).warrantyEndDate && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Warranty End Date</p>
-                        <p className="text-sm text-gray-900">{new Date((asset as any).warrantyEndDate).toLocaleDateString()}</p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Furniture Specifications */}
-                {(asset.category === 'Furniture' || asset.category === 'Office Furniture') && (
-                  <>
-                    {(asset as any).material && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Material</p>
-                        <p className="text-sm text-gray-900">{(asset as any).material}</p>
-                      </div>
-                    )}
-                    {(asset as any).color && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Color</p>
-                        <p className="text-sm text-gray-900">{(asset as any).color}</p>
-                      </div>
-                    )}
-                    {(asset as any).dimensions && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Dimensions</p>
-                        <p className="text-sm text-gray-900">{(asset as any).dimensions}</p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Vehicle Specifications */}
-                {(asset.category === 'Vehicle' || asset.category === 'Vehicles' || asset.category === 'Car') && (
-                  <>
-                    {(asset as any).vehicleType && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Vehicle Type</p>
-                        <p className="text-sm text-gray-900">{(asset as any).vehicleType}</p>
-                      </div>
-                    )}
-                    {(asset as any).registrationNumber && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Registration Number</p>
-                        <p className="text-sm text-gray-900">{(asset as any).registrationNumber}</p>
-                      </div>
-                    )}
-                    {(asset as any).fuelType && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Fuel Type</p>
-                        <p className="text-sm text-gray-900">{(asset as any).fuelType}</p>
-                      </div>
-                    )}
-                    {(asset as any).mileage && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Mileage (km)</p>
-                        <p className="text-sm text-gray-900">{(asset as any).mileage}</p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Common Specifications */}
-                {(asset as any).condition && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Condition</p>
-                    <p className="text-sm text-gray-900">{(asset as any).condition}</p>
+                {Object.entries(asset.details).map(([key, value]) => (
+                  <div key={key}>
+                    <p className="text-xs text-gray-500 mb-1">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
+                    <p className="text-sm text-gray-900">{value as string}</p>
                   </div>
-                )}
-                {(asset as any).lastMaintenanceDate && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Last Maintenance Date</p>
-                    <p className="text-sm text-gray-900">{new Date((asset as any).lastMaintenanceDate).toLocaleDateString()}</p>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           )}
