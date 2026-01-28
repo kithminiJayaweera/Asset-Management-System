@@ -12,38 +12,38 @@ interface AssetFormProps {
 
 export function AssetForm({ onSubmit, initialData, onCancel, organizations }: AssetFormProps) {
   const [formData, setFormData] = useState({
-    name: initialData?.name || 'Dell Latitude 5000',
-    category: initialData?.category || 'PC/Laptop',
+    name: initialData?.name || '',
+    category: initialData?.category || '',
     status: initialData?.status || 'active',
-    location: initialData?.location || 'Office - Floor 2',
-    purchaseDate: initialData?.purchaseDate || '2024-01-15',
-    value: initialData?.value?.toString() || '150000',
-    depreciationRate: initialData?.depreciationRate?.toString() || '20',
-    assignedTo: initialData?.assignedTo || 'John Doe',
-    description: initialData?.description || 'Business laptop for development',
+    location: initialData?.location || '',
+    purchaseDate: initialData?.purchaseDate || '',
+    value: initialData?.value?.toString() || '',
+    depreciationRate: initialData?.depreciationRate?.toString() || '',
+    assignedTo: initialData?.assignedTo || '',
+    description: initialData?.description || '',
     organizationId: initialData?.organizationId || '',
     // PC/Laptop Specifications
-    brand: initialData?.brand || 'Dell',
-    model: initialData?.model || 'Latitude 5000',
-    serialNumber: initialData?.serialNumber || 'SN-2024-00145',
-    processor: initialData?.processor || 'Intel Core i7-13700H',
-    ram: initialData?.ram || '16GB DDR5',
-    storage: initialData?.storage || 'SSD 512GB NVMe',
-    operatingSystem: initialData?.operatingSystem || 'Windows 11 Pro',
-    macAddress: initialData?.macAddress || '00:1A:2B:3C:4D:5E',
-    warrantyEndDate: initialData?.warrantyEndDate || '2025-01-15',
+    brand: initialData?.brand || '',
+    model: initialData?.model || '',
+    serialNumber: initialData?.serialNumber || '',
+    processor: initialData?.processor || '',
+    ram: initialData?.ram || '',
+    storage: initialData?.storage || '',
+    operatingSystem: initialData?.operatingSystem || '',
+    macAddress: initialData?.macAddress || '',
+    warrantyEndDate: initialData?.warrantyEndDate || '',
     // Furniture Specifications
-    material: initialData?.material || 'Leather',
-    color: initialData?.color || 'Black',
-    dimensions: initialData?.dimensions || '120cm x 60cm x 75cm (L x W x H)',
+    material: initialData?.material || '',
+    color: initialData?.color || '',
+    dimensions: initialData?.dimensions || '',
     // Vehicle Specifications
-    vehicleType: initialData?.vehicleType || 'Car',
-    registrationNumber: initialData?.registrationNumber || 'WP-ABC-1234',
-    fuelType: initialData?.fuelType || 'Diesel',
-    mileage: initialData?.mileage || '45000',
+    vehicleType: initialData?.vehicleType || '',
+    registrationNumber: initialData?.registrationNumber || '',
+    fuelType: initialData?.fuelType || '',
+    mileage: initialData?.mileage || '',
     // Common Specs
     condition: initialData?.condition || 'Good',
-    lastMaintenanceDate: initialData?.lastMaintenanceDate || '2025-12-15'
+    lastMaintenanceDate: initialData?.lastMaintenanceDate || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {

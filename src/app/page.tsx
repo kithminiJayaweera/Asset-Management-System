@@ -3,14 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
-import { AssetForm } from '@/components/admin/AssetForm';
+import { AssetForm } from '@/components/AssetForm';
 import { AssetDetail } from '@/components/AssetDetail';
 import { OrganizationList } from '@/components/OrganizationList';
 import { OrganizationForm } from '@/components/OrganizationForm';
 import { OrganizationDetail } from '@/components/OrganizationDetail';
-import { EmployeeList } from '@/components/EmployeeList';
-import { EmployeeForm } from '@/components/EmployeeForm';
-import { EmployeeDetail } from '@/components/EmployeeDetail';
 import { AssetRequests, AssetRequest } from '@/components/AssetRequests';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
@@ -18,7 +15,7 @@ import { OrganizationAdminList } from '@/components/OrganizationAdminList';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { NavButton } from '@/components/shared/NavButton';
 import { MainLayout } from '@/components/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, FileText } from 'lucide-react';
 
 export interface AssetLog {
   id: string;
@@ -92,43 +89,21 @@ export interface SubAdmin {
   createdDate: string;
 }
 
-export interface Employee {
-  id: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  department: string;
-  organizationId: string;
-  joinDate: string;
-  salary: number;
-  status: 'active' | 'on-leave' | 'inactive';
-  address?: string;
-  emergencyContact?: string;
-  emergencyContactPhone?: string;
-}
-
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins'>('dashboard');
+  const [currentView, setCurrentView] = useState<View>('dashboard');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showOrganizationModal, setShowOrganizationModal] = useState(false);
-  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   
   const [assets, setAssets] = useState<Asset[]>([]);
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
 
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
-
-  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
 
@@ -142,18 +117,40 @@ export default function App() {
         
         if (assetsResult.success && assetsResult.data) {
           const assetsData = assetsResult.data.data || assetsResult.data;
-          const dbAssets = (Array.isArray(assetsData) ? assetsData : []).map((asset: any) => ({
+          const dbAssets = (Array.isArray(assetsData) ? assetsData : []).map((asset: { 
+            _id: string; 
+            name: string; 
+            category: string; 
+            status: string; 
+            location?: string; 
+            purchaseDate: string; 
+            value?: number;
+            currentValue?: number;
+            purchasePrice?: number;
+            depreciationRate?: number;
+            usefulLife?: number;
+            assignedTo?: string | { name: string }; 
+            description?: string;
+            notes?: string;
+            organizationId?: string | { _id: string }; 
+            serialNumber?: string;
+            model?: string;
+            manufacturer?: string;
+            condition?: string;
+            warrantyExpiry?: string;
+            [key: string]: unknown 
+          }) => ({
             id: asset._id,
             name: asset.name,
             category: asset.category,
-            status: asset.status === 'available' ? 'active' : asset.status,
+            status: (asset.status === 'available' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
             location: asset.location || '',
             purchaseDate: asset.purchaseDate,
-            value: asset.currentValue || asset.purchasePrice,
-            depreciationRate: asset.usefulLife ? Math.floor(100 / asset.usefulLife) : 10,
-            assignedTo: asset.assignedTo?.name || '',
+            value: (asset.currentValue || asset.purchasePrice || asset.value || 0) as number,
+            depreciationRate: asset.usefulLife ? Math.floor(100 / (asset.usefulLife as number)) : (asset.depreciationRate || 10),
+            assignedTo: typeof asset.assignedTo === 'object' && asset.assignedTo ? asset.assignedTo.name : (asset.assignedTo || ''),
             description: asset.description || asset.notes || '',
-            organizationId: asset.organizationId?._id || asset.organizationId,
+            organizationId: typeof asset.organizationId === 'object' && asset.organizationId ? asset.organizationId._id : (asset.organizationId || ''),
             serialNumber: asset.serialNumber || '',
             model: asset.model || '',
             brand: asset.manufacturer || '',
@@ -173,7 +170,7 @@ export default function App() {
         const orgsResult = await orgsResponse.json();
         
         if (orgsResult.success && Array.isArray(orgsResult.data)) {
-          const dbOrgs = orgsResult.data.map((org: any) => ({
+          const dbOrgs = orgsResult.data.map((org: { _id: string; name: string; code?: string; address: string; email: string; phone: string; createdAt: string }) => ({
             id: org._id,
             name: org.name,
             code: org.code || '',
@@ -187,36 +184,6 @@ export default function App() {
           console.log('Organizations loaded:', dbOrgs.length);
         } else {
           console.warn('Organizations fetch failed or returned empty');
-        }
-
-        // Fetch users/employees (returns direct array)
-        const usersResponse = await fetch('/api/users');
-        const usersResult = await usersResponse.json();
-        
-        if (usersResult.success && Array.isArray(usersResult.data)) {
-          const dbEmployees = usersResult.data
-            .filter((user: any) => user.role === 'employee')
-            .map((user: any) => ({
-              id: user._id,
-              employeeId: user.employeeId || '',
-              name: user.name,
-              email: user.email,
-              phone: user.phone || '',
-              position: user.position || '',
-              department: user.department || '',
-              organizationId: user.organizationId?._id || user.organizationId,
-              joinDate: user.createdAt,
-              salary: 0, // Not stored in User model
-              status: 'active' as const,
-              address: '',
-              emergencyContact: '',
-              emergencyContactPhone: ''
-            }));
-          
-          setEmployees(dbEmployees);
-          console.log('Employees loaded:', dbEmployees.length);
-        } else {
-          console.warn('Users fetch failed or returned empty');
         }
 
       } catch (error) {
@@ -351,7 +318,7 @@ export default function App() {
     setEditingOrganization(null);
   };
 
-  const handleUpdateOrganization = (org: Organization, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
+  const handleUpdateOrganization = (org: Organization) => {
     setOrganizations(organizations.map(o => o.id === org.id ? org : o));
     setEditingOrganization(null);
     if (selectedOrganization && selectedOrganization.id === org.id) {
@@ -385,36 +352,6 @@ export default function App() {
     setSubAdmins(subAdmins.filter(a => a.id !== id));
   };
 
-  const handleAddEmployee = (employee: Omit<Employee, 'id'>) => {
-    const newEmployee = {
-      ...employee,
-      id: Date.now().toString()
-    };
-    setEmployees([...employees, newEmployee]);
-    setShowEmployeeModal(false);
-    setEditingEmployee(null);
-  };
-
-  const handleUpdateEmployee = (employee: Employee) => {
-    setEmployees(employees.map(e => e.id === employee.id ? employee : e));
-    setEditingEmployee(null);
-    setShowEmployeeModal(false);
-  };
-
-  const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(e => e.id !== id));
-  };
-
-  const handleEditEmployee = (employee: Employee) => {
-    setEditingEmployee(employee);
-    setCurrentView('add-employee');
-  };
-
-  const handleViewEmployeeDetails = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setCurrentView('employee-detail');
-  };
-
   const handleAddAssetRequest = (request: Omit<AssetRequest, 'id'>) => {
     const newRequest = {
       ...request,
@@ -425,11 +362,6 @@ export default function App() {
 
   const handleUpdateAssetRequest = (request: AssetRequest) => {
     setAssetRequests(assetRequests.map(r => r.id === request.id ? request : r));
-  };
-
-  // Get assets assigned to an employee
-  const getEmployeeAssets = (employeeName: string) => {
-    return assets.filter(asset => asset.assignedTo === employeeName);
   };
 
   return (
@@ -468,17 +400,6 @@ export default function App() {
           icon={<Building2 className="w-5 h-5" />}
         >
           Organizations
-        </NavButton>
-        
-        <NavButton
-          onClick={() => {
-            setCurrentView('employees');
-            setEditingAsset(null);
-          }}
-          isActive={currentView === 'employees' || currentView === 'employee-detail'}
-          icon={<UserCircle className="w-5 h-5" />}
-        >
-          Employees
         </NavButton>
         
         <NavButton
@@ -559,8 +480,8 @@ export default function App() {
           <AssetDetail 
             asset={editingAsset}
             organization={organizations.find(o => o.id === editingAsset.organizationId)}
-            assignedEmployee={employees.find(e => e.name === editingAsset.assignedTo)}
-            employees={employees}
+            assignedEmployee={undefined}
+            employees={[]}
             onBack={() => {
               setCurrentView('assets');
               setEditingAsset(null);
@@ -617,28 +538,9 @@ export default function App() {
             }}
           />
         )}
-        {currentView === 'employees' && (
-          <EmployeeList 
-            employees={employees}
-            organizations={organizations}
-            onViewDetails={handleViewEmployeeDetails}
-          />
-        )}
-
-        {currentView === 'employee-detail' && selectedEmployee && (
-          <EmployeeDetail 
-            employee={selectedEmployee}
-            organization={organizations.find(o => o.id === selectedEmployee.organizationId)}
-            assignedAssets={getEmployeeAssets(selectedEmployee.name)}
-            onBack={() => {
-              setCurrentView('employees');
-              setSelectedEmployee(null);
-            }}
-          />
-        )}
         {currentView === 'asset-requests' && (
           <AssetRequests 
-            employees={employees}
+            employees={[]}
             organizations={organizations}
             assetRequests={assetRequests}
             onAddRequest={handleAddAssetRequest}
@@ -661,7 +563,7 @@ export default function App() {
       {/* Asset Modal */}
       {showAssetModal && (
         <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform transition-all animate-slideUp border border-gray-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform transition-all animate-slideUp border border-gray-500">
             <AssetForm 
               onSubmit={editingAsset ? handleUpdateAsset : handleAddAsset}
               initialData={editingAsset}

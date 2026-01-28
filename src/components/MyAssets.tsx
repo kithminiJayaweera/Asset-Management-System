@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react';
 import { Package, MapPin, Calendar, DollarSign } from 'lucide-react';
 
 interface Employee {
@@ -9,61 +11,87 @@ interface MyAssetsProps {
   employee: Employee;
 }
 
+interface Asset {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  location: string;
+  purchaseDate: string;
+  value: number;
+  description?: string;
+  brand?: string;
+  model?: string;
+  processor?: string;
+  ram?: string;
+  storage?: string;
+  operatingSystem?: string;
+  macAddress?: string;
+  material?: string;
+  color?: string;
+  dimensions?: string;
+  vehicleType?: string;
+  registrationNumber?: string;
+  fuelType?: string;
+  mileage?: string;
+  assignedTo?: string;
+}
+
 export function MyAssets({ employee }: MyAssetsProps) {
-  const myAssets = [
-    {
-      id: '1',
-      name: 'Dell Latitude 5540',
-      category: 'PC/Laptop',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-01-15',
-      value: 150000,
-      description: 'High-performance laptop for development',
-      brand: 'Dell',
-      model: 'Latitude 5540',
-      processor: 'Intel Core i7-13700H',
-      ram: '16GB DDR5',
-      storage: 'SSD 512GB NVMe',
-      operatingSystem: 'Windows 11 Pro',
-      macAddress: '00:1A:2B:3C:4D:5E'
-    },
-    {
-      id: '2',
-      name: 'Ergonomic Office Chair',
-      category: 'Office Furniture',
-      status: 'active',
-      location: 'Office - Floor 1',
-      purchaseDate: '2023-06-20',
-      value: 25000,
-      material: 'Leather',
-      color: 'Black',
-      dimensions: '65cm x 65cm x 120cm'
-    },
-    {
-      id: '3',
-      name: 'Company Van',
-      category: 'Vehicle',
-      status: 'active',
-      location: 'Parking - Building A',
-      purchaseDate: '2022-11-10',
-      value: 2500000,
-      vehicleType: 'Van',
-      registrationNumber: 'WP-ABC-1234',
-      fuelType: 'Diesel',
-      mileage: '45000'
-    },
-    {
-      id: '4',
-      name: 'Dell U2723DE Monitor',
-      category: 'Office Equipment',
-      status: 'active',
-      location: 'Office - Floor 2',
-      purchaseDate: '2024-03-20',
-      value: 85000,
-      description: 'Dual monitors for enhanced productivity'
-    }
-  ];
+  const [myAssets, setMyAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMyAssets = async () => {
+      try {
+        const response = await fetch('/api/assets');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          const assetsData = result.data.data || result.data;
+          const allAssets = (Array.isArray(assetsData) ? assetsData : []).map((asset: any) => ({
+            id: asset._id,
+            name: asset.name,
+            category: asset.category,
+            status: asset.status === 'available' ? 'active' : asset.status,
+            location: asset.location || '',
+            purchaseDate: asset.purchaseDate,
+            value: asset.currentValue || asset.purchasePrice || 0,
+            description: asset.description || asset.notes || '',
+            assignedTo: typeof asset.assignedTo === 'object' && asset.assignedTo ? asset.assignedTo.name : (asset.assignedTo || ''),
+            brand: asset.manufacturer || '',
+            model: asset.model || '',
+            serialNumber: asset.serialNumber || '',
+            processor: asset.processor || '',
+            ram: asset.ram || '',
+            storage: asset.storage || '',
+            operatingSystem: asset.operatingSystem || '',
+            macAddress: asset.macAddress || '',
+            material: asset.material || '',
+            color: asset.color || '',
+            dimensions: asset.dimensions || '',
+            vehicleType: asset.vehicleType || '',
+            registrationNumber: asset.registrationNumber || '',
+            fuelType: asset.fuelType || '',
+            mileage: asset.mileage || ''
+          }));
+          
+          // Filter assets assigned to current employee
+          const employeeAssets = allAssets.filter((asset: Asset) => 
+            asset.assignedTo === employee.name
+          );
+          
+          setMyAssets(employeeAssets);
+        }
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyAssets();
+  }, [employee.name]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,6 +105,14 @@ export function MyAssets({ employee }: MyAssetsProps) {
 
   const totalValue = myAssets.reduce((sum, asset) => sum + asset.value, 0);
   const activeAssets = myAssets.filter(a => a.status === 'active').length;
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">Loading your assets...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
