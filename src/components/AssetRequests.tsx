@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Employee, Organization } from '../page';
-import { Package, CheckCircle, XCircle, Clock, User, Calendar } from 'lucide-react';
+import { Organization } from '../app/page';
+import { Package, CheckCircle, XCircle, Clock, User } from 'lucide-react';
 
 export interface AssetRequest {
   id: string;
@@ -16,14 +16,13 @@ export interface AssetRequest {
 }
 
 interface AssetRequestsProps {
-  employees: Employee[];
   organizations: Organization[];
   assetRequests: AssetRequest[];
   onAddRequest: (request: Omit<AssetRequest, 'id'>) => void;
   onUpdateRequest: (request: AssetRequest) => void;
 }
 
-export function AssetRequests({ employees, organizations, assetRequests, onAddRequest, onUpdateRequest }: AssetRequestsProps) {
+export function AssetRequests({ assetRequests, onAddRequest, onUpdateRequest }: AssetRequestsProps) {
   const [showForm, setShowForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -74,10 +73,6 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
     if (request) {
       onUpdateRequest({ ...request, status });
     }
-  };
-
-  const getEmployee = (employeeId: string) => {
-    return employees.find(e => e.id === employeeId);
   };
 
   const getStatusColor = (status: string) => {
@@ -168,19 +163,16 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm text-gray-700 mb-2">
-                  Employee *
+                  Employee Name *
                 </label>
-                <select
+                <input
+                  type="text"
                   value={formData.employeeId}
                   onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.name} ({emp.employeeId})</option>
-                  ))}
-                </select>
+                  placeholder="Enter employee name"
+                />
               </div>
 
               <div>
@@ -205,7 +197,7 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 font-medium text-gray-900"
                 >
                   <option value="">Select Category</option>
                   <option value="Electronics">Electronics</option>
@@ -238,7 +230,7 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value as AssetRequest['priority'] })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 font-medium text-gray-900"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -290,7 +282,7 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 font-medium text-gray-500"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -306,7 +298,7 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 font-medium text-gray-500"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -320,9 +312,6 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
       {/* Requests List */}
       <div className="space-y-4">
         {filteredRequests.map(request => {
-          const employee = getEmployee(request.employeeId);
-          if (!employee) return null;
-
           return (
             <div key={request.id} className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-start justify-between mb-4">
@@ -331,8 +320,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg text-gray-900">{employee.name}</h3>
-                    <p className="text-sm text-gray-600">{employee.position} • {employee.department}</p>
+                    <h3 className="text-lg text-gray-900">{request.employeeId}</h3>
+                    <p className="text-sm text-gray-600">Employee Request</p>
                   </div>
                 </div>
                 <div className="flex gap-2">

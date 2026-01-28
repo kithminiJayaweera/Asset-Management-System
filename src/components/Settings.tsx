@@ -46,23 +46,23 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl text-gray-900 mb-2">Settings</h2>
-        <p className="text-gray-600">Manage your system settings and preferences</p>
+        <h2 className="text-2xl text-white mb-2">Settings</h2>
+        <p className="text-slate-300">Manage your system settings and preferences</p>
       </div>
 
       <div className="space-y-6">
         {/* General Settings */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-slate-900 rounded-lg border border-slate-700 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-blue-100 rounded-lg">
               <SettingsIcon className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg text-gray-900">General Settings</h3>
+            <h3 className="text-lg text-white">General Settings</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm text-gray-700 mb-2">
+              <label className="block text-sm text-slate-200 mb-2">
                 Company Name
               </label>
               <input
@@ -70,19 +70,19 @@ export function Settings() {
                 name="companyName"
                 value={settings.companyName}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-2">
+              <label className="block text-sm text-slate-200 mb-2">
                 Language
               </label>
               <select
                 name="language"
                 value={settings.language}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-400 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-400 font-medium"
               >
                 <option value="en">English</option>
                 <option value="si">සිංහල (Sinhala)</option>
@@ -91,14 +91,14 @@ export function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-2">
+              <label className="block text-sm text-slate-200 mb-2">
                 Timezone
               </label>
               <select
                 name="timezone"
                 value={settings.timezone}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-400 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-400 font-medium"
               >
                 <option value="UTC+5:30">Sri Lanka (UTC+5:30)</option>
                 <option value="UTC+0">UTC</option>
@@ -108,14 +108,14 @@ export function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-2">
+              <label className="block text-sm text-slate-200 mb-2">
                 Currency
               </label>
               <select
                 name="currency"
                 value={settings.currency}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-400 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-400 font-medium"
               >
                 <option value="USD">USD ($)</option>
                 <option value="LKR">LKR (Rs.)</option>
@@ -127,12 +127,12 @@ export function Settings() {
         </div>
 
         {/* Notification Settings */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-slate-900 rounded-lg border border-slate-700 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-green-100 rounded-lg">
               <Bell className="w-5 h-5 text-green-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Notifications</h3>
+            <h3 className="text-lg text-white">Notifications</h3>
           </div>
           
           <div className="space-y-4">
@@ -142,11 +142,11 @@ export function Settings() {
                 name="emailNotifications"
                 checked={settings.emailNotifications}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Email Notifications</p>
-                <p className="text-xs text-gray-500">Receive email updates about system activities</p>
+                <p className="text-sm text-white">Email Notifications</p>
+                <p className="text-xs text-slate-400">Receive email updates about system activities</p>
               </div>
             </label>
 
@@ -156,11 +156,11 @@ export function Settings() {
                 name="assetAlerts"
                 checked={settings.assetAlerts}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Asset Alerts</p>
-                <p className="text-xs text-gray-500">Get notified about asset status changes</p>
+                <p className="text-sm text-white">Asset Alerts</p>
+                <p className="text-xs text-slate-400">Get notified about asset status changes</p>
               </div>
             </label>
 
@@ -170,11 +170,11 @@ export function Settings() {
                 name="maintenanceReminders"
                 checked={settings.maintenanceReminders}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Maintenance Reminders</p>
-                <p className="text-xs text-gray-500">Receive reminders for scheduled maintenance</p>
+                <p className="text-sm text-white">Maintenance Reminders</p>
+                <p className="text-xs text-slate-400">Receive reminders for scheduled maintenance</p>
               </div>
             </label>
 
@@ -184,23 +184,23 @@ export function Settings() {
                 name="systemUpdates"
                 checked={settings.systemUpdates}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">System Updates</p>
-                <p className="text-xs text-gray-500">Get notified about system updates and new features</p>
+                <p className="text-sm text-white">System Updates</p>
+                <p className="text-xs text-slate-400">Get notified about system updates and new features</p>
               </div>
             </label>
           </div>
         </div>
 
         {/* Security Settings */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-slate-900 rounded-lg border border-slate-700 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-purple-100 rounded-lg">
               <Shield className="w-5 h-5 text-purple-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Security</h3>
+            <h3 className="text-lg text-white">Security</h3>
           </div>
           
           <div className="space-y-6">
@@ -210,17 +210,17 @@ export function Settings() {
                 name="twoFactorAuth"
                 checked={settings.twoFactorAuth}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Two-Factor Authentication</p>
-                <p className="text-xs text-gray-500">Add an extra layer of security to your account</p>
+                <p className="text-sm text-white">Two-Factor Authentication</p>
+                <p className="text-xs text-slate-400">Add an extra layer of security to your account</p>
               </div>
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm text-gray-700 mb-2">
+                <label className="block text-sm text-slate-200 mb-2">
                   Session Timeout (minutes)
                 </label>
                 <input
@@ -230,12 +230,12 @@ export function Settings() {
                   onChange={handleChange}
                   min="5"
                   max="120"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-700 mb-2">
+                <label className="block text-sm text-slate-200 mb-2">
                   Password Expiry (days)
                 </label>
                 <input
@@ -245,7 +245,7 @@ export function Settings() {
                   onChange={handleChange}
                   min="30"
                   max="365"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -253,12 +253,12 @@ export function Settings() {
         </div>
 
         {/* Data Management */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-slate-900 rounded-lg border border-slate-700 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Database className="w-5 h-5 text-orange-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Data Management</h3>
+            <h3 className="text-lg text-white">Data Management</h3>
           </div>
           
           <div className="space-y-6">
@@ -268,24 +268,24 @@ export function Settings() {
                 name="autoBackup"
                 checked={settings.autoBackup}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-slate-600 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Automatic Backup</p>
-                <p className="text-xs text-gray-500">Enable automatic data backups</p>
+                <p className="text-sm text-white">Automatic Backup</p>
+                <p className="text-xs text-slate-400">Enable automatic data backups</p>
               </div>
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm text-gray-700 mb-2">
+                <label className="block text-sm text-slate-200 mb-2">
                   Backup Frequency
                 </label>
                 <select
                   name="backupFrequency"
                   value={settings.backupFrequency}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-400 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-400 font-medium"
                 >
                   <option value="hourly">Hourly</option>
                   <option value="daily">Daily</option>
@@ -295,7 +295,7 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-700 mb-2">
+                <label className="block text-sm text-slate-200 mb-2">
                   Data Retention (days)
                 </label>
                 <input
@@ -305,7 +305,7 @@ export function Settings() {
                   onChange={handleChange}
                   min="30"
                   max="3650"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -335,3 +335,4 @@ export function Settings() {
     </div>
   );
 }
+

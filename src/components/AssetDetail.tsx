@@ -1,5 +1,5 @@
-import { Asset, Organization, Employee } from '../page';
-import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye } from 'lucide-react';
+import { Asset, Organization } from '../app/page';
+import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, Download, X, Eye, UserX, UserPlus } from 'lucide-react';
 import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
 import { useState } from 'react';
@@ -8,17 +8,15 @@ import { QRCodeCanvas } from 'qrcode.react';
 interface AssetDetailProps {
   asset: Asset;
   organization: Organization | undefined;
-  assignedEmployee: Employee | undefined;
-  employees: Employee[];
   onBack: () => void;
   onEdit: () => void;
   onReassign: (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => void;
 }
 
-export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign }: AssetDetailProps) {
+export function AssetDetail({ asset, organization, onBack, onEdit, onReassign }: AssetDetailProps) {
   const depreciation = calculateDepreciation(asset);
   const [showReassignModal, setShowReassignModal] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(assignedEmployee);
+  const [employeeName, setEmployeeName] = useState<string>(asset.assignedTo || '');
   const [showQRModal, setShowQRModal] = useState(false);
   const qrCodeData = generateAssetQRData(asset.id, asset.name, asset.category, asset.location, asset.status);
   
@@ -43,11 +41,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   };
 
   const handleReassign = () => {
-    if (selectedEmployee) {
-      onReassign(asset.id, selectedEmployee.name, assignedEmployee?.name);
-    } else {
-      onReassign(asset.id, undefined, assignedEmployee?.name);
-    }
+    onReassign(asset.id, employeeName || undefined, asset.assignedTo);
     setShowReassignModal(false);
   };
 
@@ -332,32 +326,30 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           )}
 
           {/* Assignment Information */}
-          {(asset.assignedTo || assignedEmployee) && (
+          {asset.assignedTo && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-gray-900">Assignment Information</h3>
                 <div className="flex gap-2">
-                  {asset.assignedTo && (
-                    <button
-                      onClick={() => {
-                        setSelectedEmployee(undefined);
-                        setShowReassignModal(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
-                    >
-                      <UserX className="w-4 h-4" />
-                      Unassign
-                    </button>
-                  )}
                   <button
                     onClick={() => {
-                      setSelectedEmployee(assignedEmployee);
+                      setEmployeeName('');
+                      setShowReassignModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <UserX className="w-4 h-4" />
+                    Unassign
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEmployeeName(asset.assignedTo || '');
                       setShowReassignModal(true);
                     }}
                     className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
                   >
                     <UserPlus className="w-4 h-4" />
-                    {asset.assignedTo ? 'Reassign' : 'Assign'}
+                    Reassign
                   </button>
                 </div>
               </div>
@@ -367,30 +359,20 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Assigned To</p>
-                  {assignedEmployee ? (
-                    <>
-                      <p className="text-sm text-gray-900">{assignedEmployee.name}</p>
-                      <p className="text-xs text-gray-600 mt-1">{assignedEmployee.position} • {assignedEmployee.department}</p>
-                      <p className="text-xs text-gray-600">Employee ID: {assignedEmployee.employeeId}</p>
-                      <p className="text-xs text-gray-600">Email: {assignedEmployee.email}</p>
-                      <p className="text-xs text-gray-600">Phone: {assignedEmployee.phone}</p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-gray-900">{asset.assignedTo}</p>
-                  )}
+                  <p className="text-sm text-gray-900">{asset.assignedTo}</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Unassigned State */}
-          {!asset.assignedTo && !assignedEmployee && (
+          {!asset.assignedTo && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-gray-900">Assignment Information</h3>
                 <button
                   onClick={() => {
-                    setSelectedEmployee(undefined);
+                    setEmployeeName('');
                     setShowReassignModal(true);
                   }}
                   className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
@@ -644,60 +626,39 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
             <div className="mb-6">
               <label className="block text-sm text-gray-700 mb-3">
-                Select Employee
+                Employee Name
               </label>
               <div className="relative">
-                <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <select
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white text-gray-900"
-                  value={selectedEmployee?.id || ''}
-                  onChange={(e) => {
-                    const employeeId = e.target.value;
-                    if (employeeId === '') {
-                      setSelectedEmployee(undefined);
-                    } else {
-                      const employee = employees.find(emp => emp.id === employeeId);
-                      setSelectedEmployee(employee);
-                    }
-                  }}
-                >
-                  <option value="">-- Unassign Employee --</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} - {emp.position} ({emp.department})
-                    </option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  value={employeeName}
+                  onChange={(e) => setEmployeeName(e.target.value)}
+                  placeholder="Enter employee name or leave blank to unassign"
+                />
               </div>
 
-              {/* Selected Employee Preview */}
-              {selectedEmployee && (
+              {/* Assignment Preview */}
+              {employeeName && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-start gap-3">
                     <div className="p-2 bg-blue-100 rounded-full">
                       <User className="w-4 h-4 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900">{selectedEmployee.name}</p>
-                      <p className="text-xs text-gray-600 mt-1">
-                        {selectedEmployee.position} • {selectedEmployee.department}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        ID: {selectedEmployee.employeeId} • {selectedEmployee.email}
-                      </p>
+                      <p className="text-sm text-gray-900">{employeeName}</p>
+                      <p className="text-xs text-gray-600 mt-1">Will be assigned to this asset</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Unassign Preview */}
-              {!selectedEmployee && (
+              {!employeeName && (
                 <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <UserX className="w-4 h-4" />
+                    <User className="w-4 h-4" />
                     <p className="text-sm">Asset will be unassigned</p>
                   </div>
                 </div>
@@ -715,8 +676,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 onClick={handleReassign}
                 className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
-                <UserPlus className="w-4 h-4" />
-                {selectedEmployee ? 'Reassign' : 'Unassign'}
+                <User className="w-4 h-4" />
+                {employeeName ? 'Reassign' : 'Unassign'}
               </button>
             </div>
           </div>

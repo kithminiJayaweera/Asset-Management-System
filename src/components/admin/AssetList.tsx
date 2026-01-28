@@ -103,7 +103,7 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
               placeholder="Search assets..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 placeholder-gray-400"
             />
           </div>
 
@@ -123,7 +123,7 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
                 setFilterVehicleType('');
                 setFilterFuelType('');
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+              className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 appearance-none text-gray-900 font-medium"
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -136,7 +136,7 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+            className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 appearance-none text-gray-900 font-medium"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -157,50 +157,50 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
 
         {/* Advanced Category-Specific Filters */}
         {showAdvancedFilters && filterCategory !== 'all' && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="mt-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-300">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">{filterCategory} Specifications</h3>
             
             {/* PC/Laptop Filters */}
             {['PC/Laptop', 'Electronics', 'Computer'].includes(filterCategory) && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Brand</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Brand</label>
                   <input
                     type="text"
                     placeholder="e.g., Dell, HP, Lenovo"
                     value={filterBrand}
                     onChange={(e) => setFilterBrand(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Model</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Model</label>
                   <input
                     type="text"
                     placeholder="e.g., Latitude, Pavilion"
                     value={filterModel}
                     onChange={(e) => setFilterModel(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Processor</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Processor</label>
                   <input
                     type="text"
                     placeholder="e.g., Intel Core i7"
                     value={filterProcessor}
                     onChange={(e) => setFilterProcessor(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">RAM</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">RAM</label>
                   <input
                     type="text"
                     placeholder="e.g., 16GB, 8GB"
                     value={filterRam}
                     onChange={(e) => setFilterRam(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -210,23 +210,23 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
             {['Furniture', 'Office Furniture'].includes(filterCategory) && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Material</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Material</label>
                   <input
                     type="text"
                     placeholder="e.g., Leather, Wood, Metal"
                     value={filterMaterial}
                     onChange={(e) => setFilterMaterial(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Color</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Color</label>
                   <input
                     type="text"
                     placeholder="e.g., Black, White, Brown"
                     value={filterColor}
                     onChange={(e) => setFilterColor(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -236,23 +236,23 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
             {['Vehicle', 'Vehicles', 'Car'].includes(filterCategory) && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Vehicle Type</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Vehicle Type</label>
                   <input
                     type="text"
                     placeholder="e.g., Car, Truck, Van"
                     value={filterVehicleType}
                     onChange={(e) => setFilterVehicleType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Fuel Type</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Fuel Type</label>
                   <input
                     type="text"
                     placeholder="e.g., Diesel, Petrol, Hybrid"
                     value={filterFuelType}
                     onChange={(e) => setFilterFuelType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -262,13 +262,13 @@ export function AssetList({ assets, organizations, onEdit, onDelete, onAddNew, o
             {filterCategory !== 'all' && (
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Condition</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Condition</label>
                   <input
                     type="text"
                     placeholder="e.g., Good, Fair, Poor"
                     value={filterCondition}
                     onChange={(e) => setFilterCondition(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-2 border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400"
                   />
                 </div>
               </div>

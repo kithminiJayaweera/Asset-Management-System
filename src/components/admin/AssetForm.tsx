@@ -109,7 +109,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.category}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium"
             >
               <option value="">-- Select Category --</option>
               <option value="PC/Laptop">PC / Laptop</option>
@@ -132,7 +132,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.status}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium"
             >
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
@@ -329,7 +329,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Vehicle Type</label>
-                  <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900">
+                  <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium">
                     <option value="">Select Type</option>
                     <option value="Car">Car</option>
                     <option value="Van">Van</option>
@@ -343,7 +343,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Fuel Type</label>
-                  <select name="fuelType" value={formData.fuelType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900">
+                  <select name="fuelType" value={formData.fuelType} onChange={handleChange} className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium">
                     <option value="">Select Fuel Type</option>
                     <option value="Petrol">Petrol</option>
                     <option value="Diesel">Diesel</option>
@@ -368,7 +368,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-gray-700 mb-2">Condition</label>
-                <select name="condition" value={formData.condition} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900">
+                <select name="condition" value={formData.condition} onChange={handleChange} className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium">
                   <option value="New">New</option>
                   <option value="Good">Good</option>
                   <option value="Fair">Fair</option>
@@ -390,7 +390,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="organizationId"
               value={formData.organizationId}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2.5 border-2 border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-gray-900 font-medium"
             >
               <option value="">Select an organization</option>
               {organizations.map(org => (

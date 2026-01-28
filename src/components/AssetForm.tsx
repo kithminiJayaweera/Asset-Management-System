@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Asset, Organization } from '../page';
+import { Asset, Organization } from '../app/page';
 import { Save, X } from 'lucide-react';
 
 interface AssetFormProps {
-  onSubmit: (asset: any) => void;
+  onSubmit: (asset: Omit<Asset, 'id'>) => void;
   initialData?: Asset | null;
   onCancel: () => void;
   organizations: Organization[];
@@ -113,7 +113,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.category}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               placeholder="e.g., Electronics, Furniture"
             />
           </div>
@@ -128,7 +128,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.status}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
@@ -148,7 +148,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.location}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               placeholder="e.g., Office - Floor 2"
             />
           </div>
@@ -164,7 +164,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.purchaseDate}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
 
@@ -181,7 +181,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               required
               min="0"
               step="0.01"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               placeholder="e.g., 150000"
             />
           </div>
