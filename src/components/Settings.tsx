@@ -46,8 +46,8 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl text-gray-900 mb-2">Settings</h2>
-        <p className="text-gray-600">Manage your system settings and preferences</p>
+        <h2 className="text-2xl text-black mb-2">Settings</h2>
+        <p className="text-gray-800">Manage your system settings and preferences</p>
       </div>
 
       <div className="space-y-6">
@@ -57,7 +57,7 @@ export function Settings() {
             <div className="p-2 bg-blue-100 rounded-lg">
               <SettingsIcon className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg text-gray-900">General Settings</h3>
+            <h3 className="text-lg text-black">General Settings</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -132,7 +132,7 @@ export function Settings() {
             <div className="p-2 bg-green-100 rounded-lg">
               <Bell className="w-5 h-5 text-green-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Notifications</h3>
+            <h3 className="text-lg text-black">Notifications</h3>
           </div>
           
           <div className="space-y-4">
@@ -145,8 +145,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Email Notifications</p>
-                <p className="text-xs text-gray-500">Receive email updates about system activities</p>
+                <p className="text-sm text-black">Email Notifications</p>
+                <p className="text-xs text-gray-700">Receive email updates about system activities</p>
               </div>
             </label>
 
@@ -159,8 +159,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Asset Alerts</p>
-                <p className="text-xs text-gray-500">Get notified about asset status changes</p>
+                <p className="text-sm text-black">Asset Alerts</p>
+                <p className="text-xs text-gray-700">Get notified about asset status changes</p>
               </div>
             </label>
 
@@ -173,8 +173,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Maintenance Reminders</p>
-                <p className="text-xs text-gray-500">Receive reminders for scheduled maintenance</p>
+                <p className="text-sm text-black">Maintenance Reminders</p>
+                <p className="text-xs text-gray-700">Receive reminders for scheduled maintenance</p>
               </div>
             </label>
 
@@ -187,8 +187,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">System Updates</p>
-                <p className="text-xs text-gray-500">Get notified about system updates and new features</p>
+                <p className="text-sm text-black">System Updates</p>
+                <p className="text-xs text-gray-700">Get notified about system updates and new features</p>
               </div>
             </label>
           </div>
@@ -200,7 +200,7 @@ export function Settings() {
             <div className="p-2 bg-purple-100 rounded-lg">
               <Shield className="w-5 h-5 text-purple-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Security</h3>
+            <h3 className="text-lg text-black">Security</h3>
           </div>
           
           <div className="space-y-6">
@@ -213,8 +213,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Two-Factor Authentication</p>
-                <p className="text-xs text-gray-500">Add an extra layer of security to your account</p>
+                <p className="text-sm text-black">Two-Factor Authentication</p>
+                <p className="text-xs text-gray-700">Add an extra layer of security to your account</p>
               </div>
             </label>
 
@@ -258,7 +258,7 @@ export function Settings() {
             <div className="p-2 bg-orange-100 rounded-lg">
               <Database className="w-5 h-5 text-orange-600" />
             </div>
-            <h3 className="text-lg text-gray-900">Data Management</h3>
+            <h3 className="text-lg text-black">Data Management</h3>
           </div>
           
           <div className="space-y-6">
@@ -271,8 +271,8 @@ export function Settings() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div>
-                <p className="text-sm text-gray-900">Automatic Backup</p>
-                <p className="text-xs text-gray-500">Enable automatic data backups</p>
+                <p className="text-sm text-black">Automatic Backup</p>
+                <p className="text-xs text-gray-700">Enable automatic data backups</p>
               </div>
             </label>
 
@@ -335,3 +335,10 @@ export function Settings() {
     </div>
   );
 }
+
+
+
+
+
+
+

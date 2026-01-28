@@ -60,8 +60,8 @@ export function AssetRequestForm({ employee }: AssetRequestFormProps) {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl text-gray-900 mb-2">Request Asset</h2>
-        <p className="text-gray-600">Submit a request for new assets</p>
+        <h2 className="text-2xl text-black mb-2">Request Asset</h2>
+        <p className="text-gray-800">Submit a request for new assets</p>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-8 max-w-2xl">
@@ -164,3 +164,9 @@ export function AssetRequestForm({ employee }: AssetRequestFormProps) {
     </div>
   );
 }
+
+
+
+
+
+

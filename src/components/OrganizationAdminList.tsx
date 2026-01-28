@@ -124,8 +124,8 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl text-gray-900 mb-2">Organization Admins</h2>
-          <p className="text-gray-600">Manage organization administrators</p>
+          <h2 className="text-2xl text-black mb-2">Organization Admins</h2>
+          <p className="text-gray-800">Manage organization administrators</p>
         </div>
         {!showAddForm && (
           <button
@@ -141,7 +141,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg text-gray-900 mb-4">
+          <h3 className="text-lg text-black mb-4">
             {editingAdmin ? 'Edit Admin' : 'Add New Admin'}
           </h3>
           <form onSubmit={handleSubmit}>
@@ -153,7 +153,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   placeholder="e.g., John Doe"
                 />
               </div>
@@ -165,7 +165,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   placeholder="e.g., admin@company.com"
                 />
               </div>
@@ -186,7 +186,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.organizationId}
                   onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 >
                   <option value="">Select Organization</option>
                   {organizations.map(org => (
@@ -252,22 +252,22 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
       <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700" />
             <input
               type="text"
               placeholder="Search admins..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
             />
           </div>
 
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700" />
             <select
               value={filterOrganization}
               onChange={(e) => setFilterOrganization(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-gray-900"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-black"
             >
               <option value="all">All Organizations</option>
               {organizations.map(org => (
@@ -278,88 +278,128 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
         </div>
       </div>
 
-      {/* Admin Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredAdmins.map(admin => (
-          <div key={admin.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Shield className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg text-gray-900 mb-1">{admin.name}</h3>
-                  <span className="inline-block px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                    Sub Admin
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(admin)}
-                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this admin?')) {
-                      onDelete(admin.id);
-                    }
-                  }}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Mail className="w-4 h-4" />
-                <span className="text-sm">{admin.email}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-gray-600">
-                <Building2 className="w-4 h-4" />
-                <span className="text-sm">{getOrganizationName(admin.organizationId)}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-gray-600">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">Created: {new Date(admin.createdDate).toLocaleDateString()}</span>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-600 mb-2">Permissions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {admin.permissions.includes('all') ? (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                      All Permissions
-                    </span>
-                  ) : (
-                    admin.permissions.map(perm => {
-                      const permission = AVAILABLE_PERMISSIONS.find(p => p.id === perm);
-                      return permission ? (
-                        <span key={perm} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                          {permission.label}
-                        </span>
-                      ) : null;
-                    })
-                  )}
-                </div>
-              </div>
-            </div>
+      {/* Admin Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {filteredAdmins.length === 0 ? (
+          <div className="p-12 text-center">
+            <Shield className="w-12 h-12 text-gray-700 mx-auto mb-4" />
+            <p className="text-gray-800">No organization admins found</p>
           </div>
-        ))}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Admin
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Organization
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Permissions
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Created Date
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredAdmins.map(admin => (
+                  <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-100 rounded-full">
+                          <Shield className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-black">{admin.name}</div>
+                          <div className="text-xs text-gray-700">Sub Admin</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Mail className="w-4 h-4 text-gray-700" />
+                        {admin.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Building2 className="w-4 h-4 text-gray-700" />
+                        {getOrganizationName(admin.organizationId)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {admin.permissions.includes('all') ? (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs whitespace-nowrap">
+                            All Permissions
+                          </span>
+                        ) : (
+                          admin.permissions.slice(0, 3).map(perm => {
+                            const permission = AVAILABLE_PERMISSIONS.find(p => p.id === perm);
+                            return permission ? (
+                              <span key={perm} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs whitespace-nowrap">
+                                {permission.label}
+                              </span>
+                            ) : null;
+                          })
+                        )}
+                        {!admin.permissions.includes('all') && admin.permissions.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            +{admin.permissions.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Calendar className="w-4 h-4 text-gray-700" />
+                        {new Date(admin.createdDate).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEdit(admin)}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit Admin"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this admin?')) {
+                              onDelete(admin.id);
+                            }
+                          }}
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Admin"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {filteredAdmins.length === 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No organization admins found</p>
-        </div>
-      )}
     </div>
   );
 }
+
+
+
+
+
+

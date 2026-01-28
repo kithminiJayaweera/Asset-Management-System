@@ -8,14 +8,18 @@ import { AssetDetail } from '@/components/AssetDetail';
 import { OrganizationList } from '@/components/OrganizationList';
 import { OrganizationForm } from '@/components/OrganizationForm';
 import { OrganizationDetail } from '@/components/OrganizationDetail';
+// import { EmployeeList } from '@/components/EmployeeList';
+// import { EmployeeForm } from '@/components/EmployeeForm';
+// import { EmployeeDetail } from '@/components/EmployeeDetail';
 import { AssetRequests, AssetRequest } from '@/components/AssetRequests';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
-import { Sidebar } from '@/components/shared/Sidebar';
-import { NavButton } from '@/components/shared/NavButton';
-import { MainLayout } from '@/components/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, FileText } from 'lucide-react';
+import { Sidebar } from '@/components/employee/shared/Sidebar';
+import { NavButton } from '@/components/employee/shared/NavButton';
+import { MainLayout } from '@/components/employee/shared/MainLayout';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
+import type { IAsset, IOrganization, IUser } from '@/types';
 
 export interface AssetLog {
   id: string;
@@ -45,7 +49,7 @@ export interface Asset {
   description?: string;
   organizationId?: string;
   logs?: AssetLog[];
-  // PC/Laptop Specifications
+  // Additional fields
   brand?: string;
   model?: string;
   serialNumber?: string;
@@ -67,6 +71,12 @@ export interface Asset {
   // Common Specs
   condition?: string;
   lastMaintenanceDate?: string;
+  // Category-specific specifications
+  details?: Record<string, unknown>;
+  maintenance?: {
+    condition?: string;
+    lastMaintenanceDate?: string;
+  };
 }
 
 export interface Organization {
@@ -89,13 +99,31 @@ export interface SubAdmin {
   createdDate: string;
 }
 
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
+export interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  department: string;
+  organizationId: string;
+  joinDate: string;
+  salary: number;
+  status: 'active' | 'on-leave' | 'inactive';
+  address?: string;
+  emergencyContact?: string;
+  emergencyContactPhone?: string;
+}
+
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showOrganizationModal, setShowOrganizationModal] = useState(false);
   
@@ -104,6 +132,8 @@ export default function App() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
 
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
+
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
 
@@ -156,7 +186,9 @@ export default function App() {
             brand: asset.manufacturer || '',
             condition: asset.condition || 'good',
             warrantyEndDate: asset.warrantyExpiry || '',
-            logs: []
+            logs: [],
+            details: (asset.details || {}) as Record<string, unknown>,
+            maintenance: asset.maintenance || { condition: 'good' }
           }));
           
           setAssets(dbAssets);
@@ -186,6 +218,36 @@ export default function App() {
           console.warn('Organizations fetch failed or returned empty');
         }
 
+        // Fetch users/employees (returns direct array)
+        const usersResponse = await fetch('/api/users');
+        const usersResult = await usersResponse.json();
+        
+        if (usersResult.success && Array.isArray(usersResult.data)) {
+          const dbEmployees = usersResult.data
+            .filter((user: { role: string }) => user.role === 'employee')
+            .map((user: { _id: string; employeeId?: string; name: string; email: string; phone?: string; position?: string; department?: string; organizationId?: { _id: string } | string; createdAt: string }) => ({
+              id: user._id,
+              employeeId: user.employeeId || '',
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '',
+              position: user.position || '',
+              department: user.department || '',
+              organizationId: typeof user.organizationId === 'object' && user.organizationId ? user.organizationId._id : (user.organizationId || ''),
+              joinDate: user.createdAt,
+              salary: 0, // Not stored in User model
+              status: 'active' as const,
+              address: '',
+              emergencyContact: '',
+              emergencyContactPhone: ''
+            }));
+          
+          setEmployees(dbEmployees);
+          console.log('Employees loaded:', dbEmployees.length);
+        } else {
+          console.warn('Users fetch failed or returned empty');
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -196,6 +258,9 @@ export default function App() {
 
   const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
     try {
+      console.log('Form submitted asset:', asset);
+      console.log('Asset details:', asset.details);
+      
       // Map the form data to match the API schema
       const assetData = {
         assetTag: `AST-${Date.now()}`, // Generate unique asset tag
@@ -203,8 +268,8 @@ export default function App() {
         category: asset.category,
         description: asset.description || '',
         serialNumber: asset.serialNumber || '',
-        model: asset.model || '',
-        manufacturer: asset.brand || '',
+        model: asset.details?.model || asset.model || '',
+        manufacturer: asset.details?.brand || asset.brand || '',
         purchaseDate: asset.purchaseDate,
         purchasePrice: asset.value,
         currentValue: asset.value,
@@ -215,10 +280,12 @@ export default function App() {
         location: asset.location,
         organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
         warrantyExpiry: asset.warrantyEndDate || null,
-        notes: asset.description || ''
+        notes: asset.description || '',
+        details: asset.details || {},
+        maintenance: asset.maintenance || { condition: 'good' }
       };
 
-      console.log('Sending asset data:', assetData);
+      console.log('Sending to API:', JSON.stringify(assetData, null, 2));
 
       const response = await fetch('/api/assets', {
         method: 'POST',
@@ -251,14 +318,55 @@ export default function App() {
     }
   };
 
-  const handleUpdateAsset = (asset: Asset) => {
-    setAssets(assets.map(a => a.id === asset.id ? asset : a));
-    setEditingAsset(null);
-    setShowAssetModal(false);
+  const handleUpdateAsset = async (asset: Asset) => {
+    try {
+      const response = await fetch(`/api/assets/${asset.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: asset.name,
+          category: asset.category,
+          status: asset.status === 'active' ? 'available' : asset.status,
+          location: asset.location,
+          description: asset.description,
+          currentValue: asset.value,
+          condition: asset.condition,
+          details: asset.details || {},
+          serialNumber: asset.serialNumber,
+          warrantyExpiry: asset.warrantyEndDate
+        })
+      });
+      
+      if (response.ok) {
+        setAssets(assets.map(a => a.id === asset.id ? asset : a));
+        setEditingAsset(null);
+        setShowAssetModal(false);
+        alert('Asset updated successfully!');
+      } else {
+        alert('Failed to update asset');
+      }
+    } catch (error) {
+      console.error('Error updating asset:', error);
+      alert('Error updating asset');
+    }
   };
 
-  const handleDeleteAsset = (id: string) => {
-    setAssets(assets.filter(a => a.id !== id));
+  const handleDeleteAsset = async (id: string) => {
+    try {
+      const response = await fetch(`/api/assets/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setAssets(assets.filter(a => a.id !== id));
+        alert('Asset deleted successfully!');
+      } else {
+        alert('Failed to delete asset');
+      }
+    } catch (error) {
+      console.error('Error deleting asset:', error);
+      alert('Error deleting asset');
+    }
   };
 
   const handleEdit = (asset: Asset) => {
@@ -327,8 +435,22 @@ export default function App() {
     setShowOrganizationModal(false);
   };
 
-  const handleDeleteOrganization = (id: string) => {
-    setOrganizations(organizations.filter(o => o.id !== id));
+  const handleDeleteOrganization = async (id: string) => {
+    try {
+      const response = await fetch(`/api/organizations/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setOrganizations(organizations.filter(o => o.id !== id));
+        alert('Organization deleted successfully!');
+      } else {
+        alert('Failed to delete organization');
+      }
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      alert('Error deleting organization');
+    }
   };
 
   const handleEditOrganization = (org: Organization) => {
@@ -367,7 +489,7 @@ export default function App() {
   return (
     <MainLayout>
       <Sidebar 
-        title="Asset Manager"
+        title="Asset Management"
       >
         <NavButton
           onClick={() => {
@@ -401,6 +523,17 @@ export default function App() {
         >
           Organizations
         </NavButton>
+        
+        {/* <NavButton
+          onClick={() => {
+            setCurrentView('employees');
+            setEditingAsset(null);
+          }}
+          isActive={currentView === 'employees' || currentView === 'employee-detail'}
+          icon={<UserCircle className="w-5 h-5" />}
+        >
+          Employees
+        </NavButton> */}
         
         <NavButton
           onClick={() => {
@@ -478,10 +611,48 @@ export default function App() {
         )}
         {currentView === 'asset-detail' && editingAsset && (
           <AssetDetail 
-            asset={editingAsset}
-            organization={organizations.find(o => o.id === editingAsset.organizationId)}
-            assignedEmployee={undefined}
-            employees={[]}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            asset={{
+              ...editingAsset,
+              _id: editingAsset.id,
+              assetTag: editingAsset.serialNumber || `AST-${editingAsset.id}`,
+              purchasePrice: editingAsset.value,
+              currentValue: editingAsset.value,
+              purchaseDate: editingAsset.purchaseDate,
+              depreciationMethod: 'straight-line' as const,
+              usefulLife: editingAsset.depreciationRate ? Math.floor(100 / editingAsset.depreciationRate) : 5,
+              notes: editingAsset.description || '',
+              warrantyExpiry: editingAsset.warrantyEndDate,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            } as any as IAsset}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            organization={organizations.find(o => o.id === editingAsset.organizationId) ? {
+              ...organizations.find(o => o.id === editingAsset.organizationId)!,
+              _id: organizations.find(o => o.id === editingAsset.organizationId)!.id,
+              email: organizations.find(o => o.id === editingAsset.organizationId)!.contactEmail,
+              phone: organizations.find(o => o.id === editingAsset.organizationId)!.contactPhone,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            } as any as IOrganization : undefined}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assignedEmployee={employees.find(e => e.name === editingAsset.assignedTo) ? {
+              ...employees.find(e => e.name === editingAsset.assignedTo)!,
+              _id: employees.find(e => e.name === editingAsset.assignedTo)!.id,
+              password: '',
+              role: 'employee' as const,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            } as any as IUser : undefined}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            employees={employees.map(e => ({
+              ...e,
+              _id: e.id,
+              password: '',
+              role: 'employee' as const,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            } as any as IUser))}
             onBack={() => {
               setCurrentView('assets');
               setEditingAsset(null);
@@ -538,9 +709,31 @@ export default function App() {
             }}
           />
         )}
+        {currentView === 'employees' && (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold mb-4">Employees</h2>
+            <p className="text-gray-600">Employee management coming soon. Components need to be created.</p>
+          </div>
+        )}
+
+        {currentView === 'employee-detail' && selectedEmployee && (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold mb-4">Employee Details</h2>
+            <p className="text-gray-600">Employee details view coming soon.</p>
+            <button 
+              onClick={() => {
+                setCurrentView('employees');
+                setSelectedEmployee(null);
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Back to Employees
+            </button>
+          </div>
+        )}
         {currentView === 'asset-requests' && (
           <AssetRequests 
-            employees={[]}
+            employees={employees}
             organizations={organizations}
             assetRequests={assetRequests}
             onAddRequest={handleAddAssetRequest}

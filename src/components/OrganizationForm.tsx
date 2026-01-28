@@ -57,17 +57,17 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
       {/* Header with Close Button */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl text-gray-900">
+          <h2 className="text-2xl text-black">
             {initialData ? 'Edit Organization' : 'Add New Organization'}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-700 mt-1">
             {initialData ? 'Update organization information' : 'Fill in the details to add a new organization'}
           </p>
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+          className="text-gray-600 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
         >
           <X className="w-6 h-6" />
         </button>
@@ -86,7 +86,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="e.g., Head Office"
             />
           </div>
@@ -102,7 +102,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
               value={formData.code}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="e.g., HO-001"
             />
           </div>
@@ -118,7 +118,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
               onChange={handleChange}
               required
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="e.g., 123 Main Street, Colombo 01"
             />
           </div>
@@ -134,7 +134,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
               value={formData.contactEmail}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="e.g., contact@organization.lk"
             />
           </div>
@@ -150,7 +150,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
               value={formData.contactPhone}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="e.g., +94 11 234 5678"
             />
           </div>
@@ -174,7 +174,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
 
               {createAdmin && (
                 <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                  <h4 className="text-sm text-gray-900 mb-3">Admin Details</h4>
+                  <h4 className="text-sm text-black mb-3">Admin Details</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -187,7 +187,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
                         value={adminData.name}
                         onChange={handleAdminChange}
                         required={createAdmin}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         placeholder="e.g., John Doe"
                       />
                     </div>
@@ -202,7 +202,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
                         value={adminData.email}
                         onChange={handleAdminChange}
                         required={createAdmin}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         placeholder="e.g., admin@organization.com"
                       />
                     </div>
@@ -215,7 +215,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
                         name="role"
                         value={adminData.role}
                         onChange={handleAdminChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       >
                         <option value="admin">Admin</option>
                         <option value="sub-admin">Sub Admin</option>
@@ -223,7 +223,7 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
                     </div>
                   </div>
                   
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-700">
                     The admin will be created with full permissions and can manage this organization.
                   </p>
                 </div>
@@ -246,3 +246,9 @@ export function OrganizationForm({ onSubmit, initialData, onCancel }: Organizati
     </div>
   );
 }
+
+
+
+
+
+

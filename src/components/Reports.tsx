@@ -40,8 +40,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl text-gray-900 mb-2">Reports & Analytics</h2>
-          <p className="text-gray-600">View comprehensive reports and statistics</p>
+          <h2 className="text-2xl text-black mb-2">Reports & Analytics</h2>
+          <p className="text-gray-800">View comprehensive reports and statistics</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           <Download className="w-4 h-4" />
@@ -57,8 +57,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
               <Package className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Assets</p>
-              <p className="text-2xl text-gray-900">{totalAssets}</p>
+              <p className="text-sm text-gray-700">Total Assets</p>
+              <p className="text-2xl text-black">{totalAssets}</p>
             </div>
           </div>
         </div>
@@ -69,8 +69,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
               <TrendingUp className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Active Assets</p>
-              <p className="text-2xl text-gray-900">{activeAssets}</p>
+              <p className="text-sm text-gray-700">Active Assets</p>
+              <p className="text-2xl text-black">{activeAssets}</p>
             </div>
           </div>
         </div>
@@ -81,8 +81,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
               <AlertCircle className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Maintenance</p>
-              <p className="text-2xl text-gray-900">{maintenanceAssets}</p>
+              <p className="text-sm text-gray-700">Maintenance</p>
+              <p className="text-2xl text-black">{maintenanceAssets}</p>
             </div>
           </div>
         </div>
@@ -93,8 +93,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
               <DollarSign className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Value</p>
-              <p className="text-2xl text-gray-900">₨{totalValue.toLocaleString()}</p>
+              <p className="text-sm text-gray-700">Total Value</p>
+              <p className="text-2xl text-black">₨{totalValue.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -102,12 +102,12 @@ export function Reports({ assets, organizations }: ReportsProps) {
 
       {/* Status Distribution */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg text-gray-900 mb-6">Asset Status Distribution</h3>
+        <h3 className="text-lg text-black mb-6">Asset Status Distribution</h3>
         <div className="space-y-4">
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-700">Active</span>
-              <span className="text-sm text-gray-900">{activeAssets} ({activePercentage}%)</span>
+              <span className="text-sm text-black">{activeAssets} ({activePercentage}%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
@@ -120,7 +120,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-700">Maintenance</span>
-              <span className="text-sm text-gray-900">{maintenanceAssets} ({maintenancePercentage}%)</span>
+              <span className="text-sm text-black">{maintenanceAssets} ({maintenancePercentage}%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
@@ -133,7 +133,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-700">Retired</span>
-              <span className="text-sm text-gray-900">{retiredAssets} ({retiredPercentage}%)</span>
+              <span className="text-sm text-black">{retiredAssets} ({retiredPercentage}%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
@@ -148,7 +148,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Breakdown */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg text-gray-900 mb-6">Assets by Category</h3>
+          <h3 className="text-lg text-black mb-6">Assets by Category</h3>
           <div className="space-y-4">
             {Object.entries(categoryData).map(([category, count]) => (
               <div key={category} className="flex items-center justify-between">
@@ -160,7 +160,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
                       style={{ width: `${(count / totalAssets) * 100}%` }}
                     />
                   </div>
-                  <span className="text-sm text-gray-900 w-12 text-right">{count}</span>
+                  <span className="text-sm text-black w-12 text-right">{count}</span>
                 </div>
               </div>
             ))}
@@ -169,22 +169,22 @@ export function Reports({ assets, organizations }: ReportsProps) {
 
         {/* Organization Breakdown */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg text-gray-900 mb-6">Assets by Organization</h3>
+          <h3 className="text-lg text-black mb-6">Assets by Organization</h3>
           <div className="space-y-4">
             {orgData.map(org => (
               <div key={org.name} className="border-b border-gray-100 pb-3 last:border-0">
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-900">{org.name}</span>
-                  <span className="text-sm text-gray-600">{org.count} assets</span>
+                  <span className="text-sm text-black">{org.name}</span>
+                  <span className="text-sm text-gray-700">{org.count} assets</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-xs text-gray-500">Total Value</span>
+                  <span className="text-xs text-gray-700">Total Value</span>
                   <span className="text-xs text-gray-700">${org.value.toLocaleString()}</span>
                 </div>
               </div>
             ))}
             {orgData.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">No organizations found</p>
+              <p className="text-sm text-gray-700 text-center py-4">No organizations found</p>
             )}
           </div>
         </div>
@@ -192,3 +192,10 @@ export function Reports({ assets, organizations }: ReportsProps) {
     </div>
   );
 }
+
+
+
+
+
+
+

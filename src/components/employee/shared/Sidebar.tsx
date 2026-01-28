@@ -18,14 +18,14 @@ export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onB
         {showBackButton && onBack && (
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm"
+            className="flex items-center gap-2 text-gray-700 hover:text-black mb-4 text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
         )}
-        <h1 className="text-xl text-gray-900">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
+        <h1 className="text-xl text-black">{title}</h1>
+        {subtitle && <p className="text-sm text-gray-700 mt-1">{subtitle}</p>}
         {linkTo && linkText && (
           <a href={linkTo} className="text-sm text-blue-600 hover:text-blue-700 mt-2 block">
             {linkText}
@@ -39,3 +39,9 @@ export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onB
     </div>
   );
 }
+
+
+
+
+
+

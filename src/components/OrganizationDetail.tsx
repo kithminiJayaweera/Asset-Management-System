@@ -131,7 +131,7 @@ export function OrganizationDetail({
       <div className="mb-8">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-gray-700 hover:text-black mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Organizations
@@ -143,8 +143,8 @@ export function OrganizationDetail({
               <Building2 className="w-8 h-8 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-2xl text-gray-900">{organization.name}</h2>
-              <p className="text-gray-600">Code: {organization.code}</p>
+              <h2 className="text-2xl text-black">{organization.name}</h2>
+              <p className="text-gray-800">Code: {organization.code}</p>
             </div>
           </div>
           <button
@@ -159,37 +159,37 @@ export function OrganizationDetail({
 
       {/* Organization Details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg text-gray-900 mb-4">Organization Details</h3>
+        <h3 className="text-lg text-black mb-4">Organization Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+            <MapPin className="w-5 h-5 text-gray-700 mt-0.5" />
             <div>
-              <p className="text-sm text-gray-600">Address</p>
-              <p className="text-gray-900">{organization.address}</p>
+              <p className="text-sm text-gray-700">Address</p>
+              <p className="text-black">{organization.address}</p>
             </div>
           </div>
           
           <div className="flex items-start gap-3">
-            <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+            <Mail className="w-5 h-5 text-gray-700 mt-0.5" />
             <div>
-              <p className="text-sm text-gray-600">Email</p>
-              <p className="text-gray-900">{organization.contactEmail}</p>
+              <p className="text-sm text-gray-700">Email</p>
+              <p className="text-black">{organization.contactEmail}</p>
             </div>
           </div>
           
           <div className="flex items-start gap-3">
-            <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+            <Phone className="w-5 h-5 text-gray-700 mt-0.5" />
             <div>
-              <p className="text-sm text-gray-600">Phone</p>
-              <p className="text-gray-900">{organization.contactPhone}</p>
+              <p className="text-sm text-gray-700">Phone</p>
+              <p className="text-black">{organization.contactPhone}</p>
             </div>
           </div>
           
           <div className="flex items-start gap-3">
-            <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+            <Calendar className="w-5 h-5 text-gray-700 mt-0.5" />
             <div>
-              <p className="text-sm text-gray-600">Created Date</p>
-              <p className="text-gray-900">{new Date(organization.createdDate).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-700">Created Date</p>
+              <p className="text-black">{new Date(organization.createdDate).toLocaleDateString()}</p>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ export function OrganizationDetail({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Users className="w-6 h-6 text-gray-700" />
-            <h3 className="text-lg text-gray-900">Assigned Admins ({organizationAdmins.length})</h3>
+            <h3 className="text-lg text-black">Assigned Admins ({organizationAdmins.length})</h3>
           </div>
           {!showAddAdminForm && (
             <button
@@ -216,7 +216,7 @@ export function OrganizationDetail({
         {/* Add/Edit Admin Form */}
         {showAddAdminForm && (
           <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h4 className="text-gray-900 mb-4">
+            <h4 className="text-black mb-4">
               {editingAdmin ? 'Edit Admin' : 'Assign New Admin'}
             </h4>
             <form onSubmit={handleSubmit}>
@@ -322,8 +322,8 @@ export function OrganizationDetail({
                       <Shield className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="text-gray-900 mb-1">{admin.name}</h4>
-                      <p className="text-sm text-gray-600 mb-2">{admin.email}</p>
+                      <h4 className="text-black mb-1">{admin.name}</h4>
+                      <p className="text-sm text-gray-700 mb-2">{admin.email}</p>
                       <div className="flex items-center gap-2">
                         <span className={`px-3 py-1 rounded-full text-xs ${
                           admin.role === 'admin' 
@@ -332,12 +332,12 @@ export function OrganizationDetail({
                         }`}>
                           {admin.role === 'admin' ? 'Admin' : 'Sub Admin'}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-700">
                           Added: {new Date(admin.createdDate).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="mt-3">
-                        <p className="text-xs text-gray-600 mb-2">Permissions:</p>
+                        <p className="text-xs text-gray-700 mb-2">Permissions:</p>
                         <div className="flex flex-wrap gap-2">
                           {admin.permissions.includes('all') ? (
                             <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
@@ -381,12 +381,19 @@ export function OrganizationDetail({
           </div>
         ) : (
           <div className="text-center py-8">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">No admins assigned to this organization yet</p>
-            <p className="text-sm text-gray-500">Click "Assign Admin" to add admins</p>
+            <Users className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-800">No admins assigned to this organization yet</p>
+            <p className="text-sm text-gray-700">Click "Assign Admin" to add admins</p>
           </div>
         )}
       </div>
     </div>
   );
 }
+
+
+
+
+
+
+

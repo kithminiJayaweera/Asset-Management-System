@@ -121,8 +121,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl text-gray-900 mb-2">Asset Requests</h2>
-          <p className="text-gray-600">Manage employee asset requests</p>
+          <h2 className="text-2xl text-black mb-2">Asset Requests</h2>
+          <p className="text-gray-800">Manage employee asset requests</p>
         </div>
         {!showForm && (
           <button
@@ -143,8 +143,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl text-gray-900">{pendingCount}</p>
+              <p className="text-sm text-gray-700">Pending</p>
+              <p className="text-2xl text-black">{pendingCount}</p>
             </div>
           </div>
         </div>
@@ -155,8 +155,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Approved</p>
-              <p className="text-2xl text-gray-900">{approvedCount}</p>
+              <p className="text-sm text-gray-700">Approved</p>
+              <p className="text-2xl text-black">{approvedCount}</p>
             </div>
           </div>
         </div>
@@ -167,8 +167,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
               <XCircle className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Rejected</p>
-              <p className="text-2xl text-gray-900">{rejectedCount}</p>
+              <p className="text-sm text-gray-700">Rejected</p>
+              <p className="text-2xl text-black">{rejectedCount}</p>
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
       {/* New Request Form */}
       {showForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg text-gray-900 mb-4">New Asset Request</h3>
+          <h3 className="text-lg text-black mb-4">New Asset Request</h3>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -345,8 +345,8 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg text-gray-900">{employee.name}</h3>
-                    <p className="text-sm text-gray-600">{employee.position} • {employee.department}</p>
+                    <h3 className="text-lg text-black">{employee.name}</h3>
+                    <p className="text-sm text-gray-700">{employee.position} • {employee.department}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -361,29 +361,29 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Asset Name</p>
-                  <p className="text-sm text-gray-900">{request.assetName}</p>
+                  <p className="text-xs text-gray-700 mb-1">Asset Name</p>
+                  <p className="text-sm text-black">{request.assetName}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Category</p>
-                  <p className="text-sm text-gray-900">{request.category}</p>
+                  <p className="text-xs text-gray-700 mb-1">Category</p>
+                  <p className="text-sm text-black">{request.category}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Quantity</p>
-                  <p className="text-sm text-gray-900">{request.quantity}</p>
+                  <p className="text-xs text-gray-700 mb-1">Quantity</p>
+                  <p className="text-sm text-black">{request.quantity}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Request Date</p>
-                  <p className="text-sm text-gray-900">{new Date(request.requestDate).toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-700 mb-1">Request Date</p>
+                  <p className="text-sm text-black">{new Date(request.requestDate).toLocaleDateString()}</p>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="text-xs text-gray-500 mb-1">Reason</p>
-                <p className="text-sm text-gray-900">{request.reason}</p>
+                <p className="text-xs text-gray-700 mb-1">Reason</p>
+                <p className="text-sm text-black">{request.reason}</p>
               </div>
 
               {request.status === 'pending' && (
@@ -411,10 +411,17 @@ export function AssetRequests({ employees, organizations, assetRequests, onAddRe
 
       {filteredRequests.length === 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No asset requests found</p>
+          <Package className="w-12 h-12 text-gray-700 mx-auto mb-4" />
+          <p className="text-gray-800">No asset requests found</p>
         </div>
       )}
     </div>
   );
 }
+
+
+
+
+
+
+

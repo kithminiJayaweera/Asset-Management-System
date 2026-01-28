@@ -54,6 +54,11 @@ export interface IAsset {
   warrantyExpiry?: Date;
   notes?: string;
   imageUrl?: string;
+  details?: Record<string, any>; // Category-specific fields
+  maintenance?: {
+    condition?: AssetCondition;
+    lastMaintenanceDate?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

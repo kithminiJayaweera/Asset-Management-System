@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const organizationId = searchParams.get('organizationId');
+    const assignedTo = searchParams.get('assignedTo');
     const search = searchParams.get('search');
 
     // Build query
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
     if (organizationId) query.organizationId = organizationId;
     if (status) query.status = status;
     if (category) query.category = category;
+    if (assignedTo) query.assignedTo = assignedTo;
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -73,6 +75,23 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    console.log('Received body:', JSON.stringify(body, null, 2));
+    console.log('Details field:', body.details);
+    console.log('Maintenance field:', body.maintenance);
+
+    // Ensure details field exists
+    if (!body.details) {
+      body.details = {};
+    }
+
+    // Handle maintenance object
+    if (body.maintenance) {
+      body.maintenance = {
+        condition: body.maintenance.condition || 'good',
+        lastMaintenanceDate: body.maintenance.lastMaintenanceDate || null
+      };
+    }
+
     // Validate required fields
     const requiredFields = ['assetTag', 'name', 'category', 'purchaseDate', 'purchasePrice', 'organizationId'];
     for (const field of requiredFields) {
@@ -89,7 +108,12 @@ export async function POST(request: NextRequest) {
       body.currentValue = body.purchasePrice;
     }
 
-    const asset = await Asset.create(body);
+    // Handle details and maintenance fields
+    const asset = await Asset.create({
+      ...body,
+      details: body.details || {},
+      maintenance: body.maintenance || { condition: 'good' }
+    });
 
     return NextResponse.json<ApiResponse<IAsset>>(
       { success: true, data: asset as IAsset, message: 'Asset created successfully' },

@@ -67,17 +67,17 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl text-gray-900">
+          <h2 className="text-2xl text-black">
             {initialData ? 'Edit Asset' : 'Add New Asset'}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-700 mt-1">
             {initialData ? 'Update asset information' : 'Fill in the details to add a new asset'}
           </p>
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+          className="text-gray-600 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
         >
           <X className="w-6 h-6" />
         </button>
@@ -95,7 +95,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="e.g., Dell Laptop XPS 15"
             />
           </div>
@@ -109,7 +109,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.category}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
             >
               <option value="">-- Select Category --</option>
               <option value="PC/Laptop">PC / Laptop</option>
@@ -132,7 +132,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.status}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
             >
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
@@ -151,7 +151,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.location}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="e.g., Office - Floor 2"
             />
           </div>
@@ -166,7 +166,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.purchaseDate}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
             />
           </div>
 
@@ -182,7 +182,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               required
               min="0"
               step="0.01"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="e.g., 1500"
             />
           </div>
@@ -200,7 +200,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               min="0"
               max="100"
               step="0.1"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="e.g., 20"
             />
             <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -228,7 +228,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="assignedTo"
               value={formData.assignedTo}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="e.g., John Doe"
             />
           </div>
@@ -242,7 +242,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
               placeholder="Additional notes about the asset..."
             />
           </div>
@@ -250,46 +250,46 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           {/* PC/LAPTOP SPECIFICATIONS */}
           {formData.category === 'PC/Laptop' && (
             <div className="border-2 border-blue-200 rounded-lg p-5 bg-blue-50">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-black mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs">💻</span>
                 PC / LAPTOP SPECIFICATIONS
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Brand</label>
-                  <input type="text" name="brand" value={formData.brand} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., Dell, HP, Lenovo" />
+                  <input type="text" name="brand" value={formData.brand} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., Dell, HP, Lenovo" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Model</label>
-                  <input type="text" name="model" value={formData.model} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., XPS 15, ProBook 450" />
+                  <input type="text" name="model" value={formData.model} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., XPS 15, ProBook 450" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Serial Number</label>
-                  <input type="text" name="serialNumber" value={formData.serialNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., SN-2024-001" />
+                  <input type="text" name="serialNumber" value={formData.serialNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., SN-2024-001" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Processor (CPU)</label>
-                  <input type="text" name="processor" value={formData.processor} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., Intel i7-13700H" />
+                  <input type="text" name="processor" value={formData.processor} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., Intel i7-13700H" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">RAM (GB)</label>
-                  <input type="text" name="ram" value={formData.ram} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., 16GB DDR5" />
+                  <input type="text" name="ram" value={formData.ram} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., 16GB DDR5" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Storage</label>
-                  <input type="text" name="storage" value={formData.storage} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., SSD 512GB NVMe" />
+                  <input type="text" name="storage" value={formData.storage} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., SSD 512GB NVMe" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Operating System</label>
-                  <input type="text" name="operatingSystem" value={formData.operatingSystem} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., Windows 11 Pro, Ubuntu 22.04" />
+                  <input type="text" name="operatingSystem" value={formData.operatingSystem} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., Windows 11 Pro, Ubuntu 22.04" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">MAC Address</label>
-                  <input type="text" name="macAddress" value={formData.macAddress} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" placeholder="e.g., 00:1A:2B:3C:4D:5E" />
+                  <input type="text" name="macAddress" value={formData.macAddress} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` placeholder="e.g., 00:1A:2B:3C:4D:5E" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Warranty End Date</label>
-                  <input type="date" name="warrantyEndDate" value={formData.warrantyEndDate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
+                  <input type="date" name="warrantyEndDate" value={formData.warrantyEndDate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black` />
                 </div>
               </div>
             </div>
@@ -298,22 +298,22 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           {/* OFFICE FURNITURE SPECIFICATIONS */}
           {formData.category === 'Office Furniture' && (
             <div className="border-2 border-green-200 rounded-lg p-5 bg-green-50">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-black mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs">🪑</span>
                 FURNITURE DETAILS
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Material</label>
-                  <input type="text" name="material" value={formData.material} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" placeholder="e.g., Leather, Fabric, Wood" />
+                  <input type="text" name="material" value={formData.material} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black` placeholder="e.g., Leather, Fabric, Wood" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Color</label>
-                  <input type="text" name="color" value={formData.color} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" placeholder="e.g., Black, Grey" />
+                  <input type="text" name="color" value={formData.color} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black` placeholder="e.g., Black, Grey" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-700 mb-2">Dimensions</label>
-                  <input type="text" name="dimensions" value={formData.dimensions} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900" placeholder="e.g., 120cm x 60cm x 75cm (L x W x H)" />
+                  <input type="text" name="dimensions" value={formData.dimensions} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black` placeholder="e.g., 120cm x 60cm x 75cm (L x W x H)" />
                 </div>
               </div>
             </div>
@@ -322,14 +322,14 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           {/* VEHICLE SPECIFICATIONS */}
           {formData.category === 'Vehicle' && (
             <div className="border-2 border-amber-200 rounded-lg p-5 bg-amber-50">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-black mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs">🚗</span>
                 VEHICLE DETAILS
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Vehicle Type</label>
-                  <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900">
+                  <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-black`>
                     <option value="">Select Type</option>
                     <option value="Car">Car</option>
                     <option value="Van">Van</option>
@@ -339,11 +339,11 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Registration Number</label>
-                  <input type="text" name="registrationNumber" value={formData.registrationNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900" placeholder="e.g., ABC-1234" />
+                  <input type="text" name="registrationNumber" value={formData.registrationNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-black` placeholder="e.g., ABC-1234" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Fuel Type</label>
-                  <select name="fuelType" value={formData.fuelType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900">
+                  <select name="fuelType" value={formData.fuelType} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-black`>
                     <option value="">Select Fuel Type</option>
                     <option value="Petrol">Petrol</option>
                     <option value="Diesel">Diesel</option>
@@ -353,7 +353,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">Mileage (km)</label>
-                  <input type="number" name="mileage" value={formData.mileage} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900" placeholder="e.g., 45000" />
+                  <input type="number" name="mileage" value={formData.mileage} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-black` placeholder="e.g., 45000" />
                 </div>
               </div>
             </div>
@@ -361,14 +361,14 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
 
           {/* COMMON MAINTENANCE SECTION */}
           <div className="border-2 border-purple-200 rounded-lg p-5 bg-purple-50">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-black mb-4 flex items-center gap-2">
               <span className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs">🔧</span>
               MAINTENANCE & CONDITION
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-gray-700 mb-2">Condition</label>
-                <select name="condition" value={formData.condition} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900">
+                <select name="condition" value={formData.condition} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black`>
                   <option value="New">New</option>
                   <option value="Good">Good</option>
                   <option value="Fair">Fair</option>
@@ -377,7 +377,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               </div>
               <div>
                 <label className="block text-sm text-gray-700 mb-2">Last Maintenance Date</label>
-                <input type="date" name="lastMaintenanceDate" value={formData.lastMaintenanceDate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900" />
+                <input type="date" name="lastMaintenanceDate" value={formData.lastMaintenanceDate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black` />
               </div>
             </div>
           </div>
@@ -390,7 +390,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="organizationId"
               value={formData.organizationId}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black`
             >
               <option value="">Select an organization</option>
               {organizations.map(org => (
@@ -413,3 +413,10 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
     </div>
   );
 }
+
+
+
+
+
+
+
