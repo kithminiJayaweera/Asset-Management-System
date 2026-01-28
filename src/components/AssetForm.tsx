@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import { IAsset, IOrganization } from '../types';
+import { Asset, Organization } from '../page';
 import { Save, X } from 'lucide-react';
+import { Asset, Organization } from '@/types/shared';
 
 interface AssetFormProps {
   onSubmit: (asset: any) => void;

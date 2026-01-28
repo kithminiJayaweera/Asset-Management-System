@@ -1,5 +1,5 @@
-import { Asset, Organization } from '../../page';
 import { BarChart3, TrendingUp, Package, DollarSign, AlertCircle, Download } from 'lucide-react';
+import { Asset, Organization } from '@/types/shared';
 
 interface ReportsProps {
   assets: Asset[];

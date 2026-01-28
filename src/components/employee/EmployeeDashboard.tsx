@@ -59,6 +59,7 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
       if (assetsResult.success) {
         const assetsData = assetsResult.data.data || assetsResult.data;
         const assignedAssets = (Array.isArray(assetsData) ? assetsData : []).filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (asset: any) => asset.assignedTo?._id === employee.id || asset.assignedTo === employee.id
         );
         setMyAssets(assignedAssets);

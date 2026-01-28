@@ -5,6 +5,20 @@ import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
 import { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 
+interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  department: string;
+  organizationId: string;
+  joinDate: string;
+  salary: number;
+  status: 'active' | 'on-leave' | 'inactive';
+}
+
 interface AssetDetailProps {
   asset: IAsset;
   organization: IOrganization | undefined;
@@ -20,7 +34,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
   const [showQRModal, setShowQRModal] = useState(false);
-  const qrCodeData = generateAssetQRData(asset.id, asset.name, asset.category, asset.location, asset.status);
+  const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -44,9 +58,9 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
   const handleReassign = () => {
     if (selectedEmployee) {
-      onReassign(asset.id, selectedEmployee.name, assignedEmployee?.name);
+      onReassign(String(asset._id), selectedEmployee.name, assignedEmployee?.name);
     } else {
-      onReassign(asset.id, undefined, assignedEmployee?.name);
+      onReassign(String(asset._id), undefined, assignedEmployee?.name);
     }
     setShowReassignModal(false);
   };
@@ -95,7 +109,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Asset ID</p>
-                  <p className="text-sm text-gray-900">#{asset.id}</p>
+                  <p className="text-sm text-gray-900">#{String(asset._id)}</p>
                 </div>
               </div>
 
@@ -135,7 +149,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Asset Value</p>
-                  <p className="text-sm text-gray-900">Rs. {asset.value.toLocaleString()}</p>
+                  <p className="text-sm text-gray-900">Rs. {asset.purchasePrice.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -260,10 +274,9 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                       <p className="text-xs text-gray-600 mt-1">{assignedEmployee.position} • {assignedEmployee.department}</p>
                       <p className="text-xs text-gray-600">Employee ID: {assignedEmployee.employeeId}</p>
                       <p className="text-xs text-gray-600">Email: {assignedEmployee.email}</p>
-                      <p className="text-xs text-gray-600">Phone: {assignedEmployee.phone}</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-900">{asset.assignedTo}</p>
+                    <p className="text-sm text-gray-900">{String(asset.assignedTo)}</p>
                   )}
                 </div>
               </div>
@@ -303,11 +316,10 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 </div>
                 <div>
                   <p className="text-sm text-gray-900 mb-1">{organization.name}</p>
-                  <p className="text-xs text-gray-600">Code: {organization.code}</p>
                   <p className="text-xs text-gray-600 mt-2">{organization.address}</p>
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-gray-600">Email: {organization.contactEmail}</p>
-                    <p className="text-xs text-gray-600">Phone: {organization.contactPhone}</p>
+                    <p className="text-xs text-gray-600">Email: {organization.email}</p>
+                    <p className="text-xs text-gray-600">Phone: {organization.phone}</p>
                   </div>
                 </div>
               </div>
@@ -315,85 +327,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           )}
 
           {/* Asset History Log */}
-          {asset.logs && asset.logs.length > 0 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-gray-700" />
-                <h3 className="text-lg text-gray-900">Asset History</h3>
-              </div>
-              
-              <div className="space-y-4">
-                {asset.logs.slice().reverse().map((log, index) => {
-                  const getLogIcon = (action: string) => {
-                    switch (action) {
-                      case 'created': return '🎉';
-                      case 'assigned': return '👤';
-                      case 'unassigned': return '🔄';
-                      case 'status_change': return '⚙️';
-                      case 'location_change': return '📍';
-                      default: return '📝';
-                    }
-                  };
-
-                  const getLogColor = (action: string) => {
-                    switch (action) {
-                      case 'created': return 'bg-blue-50 border-blue-200';
-                      case 'assigned': return 'bg-green-50 border-green-200';
-                      case 'unassigned': return 'bg-yellow-50 border-yellow-200';
-                      case 'status_change': return 'bg-purple-50 border-purple-200';
-                      case 'location_change': return 'bg-orange-50 border-orange-200';
-                      default: return 'bg-gray-50 border-gray-200';
-                    }
-                  };
-
-                  const getLogTitle = (log: any) => {
-                    switch (log.action) {
-                      case 'created':
-                        return 'Asset Created';
-                      case 'assigned':
-                        return `Assigned to ${log.assignedTo}`;
-                      case 'unassigned':
-                        return `Unassigned from ${log.assignedFrom}`;
-                      case 'status_change':
-                        return `Status changed: ${log.oldStatus} → ${log.newStatus}`;
-                      case 'location_change':
-                        return `Location changed: ${log.oldLocation} → ${log.newLocation}`;
-                      default:
-                        return 'Asset Updated';
-                    }
-                  };
-
-                  return (
-                    <div 
-                      key={log.id} 
-                      className={`relative pl-8 pb-4 ${index !== asset.logs!.length - 1 ? 'border-l-2 border-gray-200' : ''}`}
-                    >
-                      <div className={`absolute left-0 top-0 w-6 h-6 -ml-3 rounded-full border-2 flex items-center justify-center text-xs ${getLogColor(log.action)}`}>
-                        {getLogIcon(log.action)}
-                      </div>
-                      
-                      <div className={`p-4 rounded-lg border ${getLogColor(log.action)}`}>
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm text-gray-900">{getLogTitle(log)}</h4>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            {new Date(log.performedDate).toLocaleDateString()}
-                          </div>
-                        </div>
-                        
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <p>Performed by: <span className="font-medium">{log.performedBy}</span></p>
-                          {log.notes && (
-                            <p className="italic mt-2">{log.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Asset logs not available in current schema - can be added with AuditLog integration */}
         </div>
 
         {/* Sidebar - Quick Stats */}
@@ -428,7 +362,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               {/* Depreciation Rate */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500 mb-1">Annual Depreciation Rate</p>
-                <p className="text-xl text-gray-900">{asset.depreciationRate || 10}%</p>
+                <p className="text-xl text-gray-900">{depreciation.depreciationPercentage.toFixed(1)}%</p>
               </div>
 
               {/* Asset Age */}
@@ -468,7 +402,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   <div className="flex gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-1"></div>
                     <div>
-                      <p className="text-xs text-gray-900">Assigned to {asset.assignedTo}</p>
+                      <p className="text-xs text-gray-900">Assigned to {String(asset.assignedTo)}</p>
                       <p className="text-xs text-gray-500">Current</p>
                     </div>
                   </div>
@@ -487,15 +421,6 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                     <div className="w-2 h-2 bg-red-500 rounded-full mt-1"></div>
                     <div>
                       <p className="text-xs text-gray-900">Retired</p>
-                      <p className="text-xs text-gray-500">Current</p>
-                    </div>
-                  </div>
-                )}
-                {asset.status === 'lost' && (
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 bg-red-600 rounded-full mt-1"></div>
-                    <div>
-                      <p className="text-xs text-gray-900">Lost</p>
                       <p className="text-xs text-gray-500">Current</p>
                     </div>
                   </div>
@@ -537,20 +462,20 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white text-gray-900"
-                  value={selectedEmployee?.id || ''}
+                  value={selectedEmployee ? String(selectedEmployee._id) : ''}
                   onChange={(e) => {
                     const employeeId = e.target.value;
                     if (employeeId === '') {
-                      setSelectedEmployee(undefined);
-                    } else {
-                      const employee = employees.find(emp => emp.id === employeeId);
-                      setSelectedEmployee(employee);
-                    }
+                        setSelectedEmployee(undefined);
+                      } else {
+                        const employee = employees.find(emp => String(emp._id) === employeeId);
+                        setSelectedEmployee(employee);
+                      }
                   }}
                 >
                   <option value="">-- Unassign Employee --</option>
                   {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
+                    <option key={String(emp._id)} value={String(emp._id)}>
                       {emp.name} - {emp.position} ({emp.department})
                     </option>
                   ))}
@@ -638,7 +563,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <strong>Asset:</strong> {asset.name}
               </p>
               <p className="text-gray-600">
-                <strong>Asset ID:</strong> #{asset.id}
+                <strong>Asset ID:</strong> #{String(asset._id)}
               </p>
               <p className="text-gray-600">
                 <strong>Category:</strong> {asset.category}

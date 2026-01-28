@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Organization, SubAdmin } from '../page';
 import { Building2, ArrowLeft, Mail, Phone, MapPin, Calendar, Users, UserPlus, Edit2, Trash2, Shield } from 'lucide-react';
+import { Organization, SubAdmin } from '@/types/shared';
 
 interface OrganizationDetailProps {
   organization: Organization;

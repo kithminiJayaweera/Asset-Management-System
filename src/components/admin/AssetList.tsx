@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Asset, Organization } from '../../page';
 import { Search, Filter, Edit2, Trash2, Plus, Package, Eye, ChevronDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Asset, Organization } from '@/types/shared';
 
 interface AssetListProps {
   assets: Asset[];

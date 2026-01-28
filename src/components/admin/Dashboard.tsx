@@ -1,5 +1,5 @@
-import { Asset } from '../../page';
 import { Package, DollarSign, AlertCircle, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Asset } from '@/types/shared';
 
 interface DashboardProps {
   assets: Asset[];
