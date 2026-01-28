@@ -70,7 +70,7 @@ export function Dashboard({ assets }: DashboardProps) {
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-black mb-2">Dashboard</h2>
-        <p className="text-gray-800">Welcome back! Here's what's happening with your assets today.</p>
+        <p className="text-gray-800">Welcome Back! Here's what had been happening with your assets.</p>
       </div>
 
       {/* Stats Grid with Gradient Cards */}

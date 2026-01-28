@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ import { OrganizationDetail } from '@/components/OrganizationDetail';
 // import { EmployeeList } from '@/components/EmployeeList';
 // import { EmployeeForm } from '@/components/EmployeeForm';
 // import { EmployeeDetail } from '@/components/EmployeeDetail';
-import { AssetRequests, AssetRequest } from '@/components/AssetRequests';
+import { AssetRequestsList } from '@/components/AssetRequestsList';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
@@ -732,13 +733,7 @@ export default function App() {
           </div>
         )}
         {currentView === 'asset-requests' && (
-          <AssetRequests 
-            employees={employees}
-            organizations={organizations}
-            assetRequests={assetRequests}
-            onAddRequest={handleAddAssetRequest}
-            onUpdateRequest={handleUpdateAssetRequest}
-          />
+          <AssetRequestsList />
         )}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
