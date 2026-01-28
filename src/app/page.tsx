@@ -48,7 +48,7 @@ export interface Asset {
   description?: string;
   organizationId?: string;
   logs?: AssetLog[];
-  // PC/Laptop Specifications
+  // Additional fields
   brand?: string;
   model?: string;
   serialNumber?: string;
@@ -70,6 +70,12 @@ export interface Asset {
   // Common Specs
   condition?: string;
   lastMaintenanceDate?: string;
+  // Category-specific specifications
+  details?: Record<string, any>;
+  maintenance?: {
+    condition?: string;
+    lastMaintenanceDate?: string;
+  };
 }
 
 export interface Organization {
@@ -159,7 +165,9 @@ export default function App() {
             brand: asset.manufacturer || '',
             condition: asset.condition || 'good',
             warrantyEndDate: asset.warrantyExpiry || '',
-            logs: []
+            logs: [],
+            details: asset.details || {},
+            maintenance: asset.maintenance || { condition: 'good' }
           }));
           
           setAssets(dbAssets);
@@ -229,6 +237,9 @@ export default function App() {
 
   const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
     try {
+      console.log('Form submitted asset:', asset);
+      console.log('Asset details:', asset.details);
+      
       // Map the form data to match the API schema
       const assetData = {
         assetTag: `AST-${Date.now()}`, // Generate unique asset tag
@@ -236,8 +247,8 @@ export default function App() {
         category: asset.category,
         description: asset.description || '',
         serialNumber: asset.serialNumber || '',
-        model: asset.model || '',
-        manufacturer: asset.brand || '',
+        model: asset.details?.model || asset.model || '',
+        manufacturer: asset.details?.brand || asset.brand || '',
         purchaseDate: asset.purchaseDate,
         purchasePrice: asset.value,
         currentValue: asset.value,
@@ -248,10 +259,12 @@ export default function App() {
         location: asset.location,
         organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
         warrantyExpiry: asset.warrantyEndDate || null,
-        notes: asset.description || ''
+        notes: asset.description || '',
+        details: asset.details || {},
+        maintenance: asset.maintenance || { condition: 'good' }
       };
 
-      console.log('Sending asset data:', assetData);
+      console.log('Sending to API:', JSON.stringify(assetData, null, 2));
 
       const response = await fetch('/api/assets', {
         method: 'POST',
@@ -284,14 +297,55 @@ export default function App() {
     }
   };
 
-  const handleUpdateAsset = (asset: Asset) => {
-    setAssets(assets.map(a => a.id === asset.id ? asset : a));
-    setEditingAsset(null);
-    setShowAssetModal(false);
+  const handleUpdateAsset = async (asset: Asset) => {
+    try {
+      const response = await fetch(`/api/assets/${asset.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: asset.name,
+          category: asset.category,
+          status: asset.status === 'active' ? 'available' : asset.status,
+          location: asset.location,
+          description: asset.description,
+          currentValue: asset.value,
+          condition: asset.condition,
+          specifications: asset.specifications || {},
+          serialNumber: asset.serialNumber,
+          warrantyExpiry: asset.warrantyEndDate
+        })
+      });
+      
+      if (response.ok) {
+        setAssets(assets.map(a => a.id === asset.id ? asset : a));
+        setEditingAsset(null);
+        setShowAssetModal(false);
+        alert('Asset updated successfully!');
+      } else {
+        alert('Failed to update asset');
+      }
+    } catch (error) {
+      console.error('Error updating asset:', error);
+      alert('Error updating asset');
+    }
   };
 
-  const handleDeleteAsset = (id: string) => {
-    setAssets(assets.filter(a => a.id !== id));
+  const handleDeleteAsset = async (id: string) => {
+    try {
+      const response = await fetch(`/api/assets/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setAssets(assets.filter(a => a.id !== id));
+        alert('Asset deleted successfully!');
+      } else {
+        alert('Failed to delete asset');
+      }
+    } catch (error) {
+      console.error('Error deleting asset:', error);
+      alert('Error deleting asset');
+    }
   };
 
   const handleEdit = (asset: Asset) => {
@@ -360,8 +414,22 @@ export default function App() {
     setShowOrganizationModal(false);
   };
 
-  const handleDeleteOrganization = (id: string) => {
-    setOrganizations(organizations.filter(o => o.id !== id));
+  const handleDeleteOrganization = async (id: string) => {
+    try {
+      const response = await fetch(`/api/organizations/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setOrganizations(organizations.filter(o => o.id !== id));
+        alert('Organization deleted successfully!');
+      } else {
+        alert('Failed to delete organization');
+      }
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      alert('Error deleting organization');
+    }
   };
 
   const handleEditOrganization = (org: Organization) => {
@@ -401,8 +469,22 @@ export default function App() {
     setShowEmployeeModal(false);
   };
 
-  const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(e => e.id !== id));
+  const handleDeleteEmployee = async (id: string) => {
+    try {
+      const response = await fetch(`/api/users/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setEmployees(employees.filter(e => e.id !== id));
+        alert('Employee deleted successfully!');
+      } else {
+        alert('Failed to delete employee');
+      }
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      alert('Error deleting employee');
+    }
   };
 
   const handleEditEmployee = (employee: Employee) => {

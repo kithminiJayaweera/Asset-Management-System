@@ -93,9 +93,24 @@ const AssetSchema = new Schema<IAsset>(
       type: String,
       trim: true,
     },
+    // Category-specific fields stored as flexible object
+    details: {
+      type: Map,
+      of: String,
+      default: {},
+    },
+    maintenance: {
+      condition: {
+        type: String,
+        enum: ['excellent', 'good', 'fair', 'poor'],
+        default: 'good',
+      },
+      lastMaintenanceDate: Date,
+    },
   },
   {
     timestamps: true,
+    minimize: false, // Don't remove empty objects
   }
 );
 

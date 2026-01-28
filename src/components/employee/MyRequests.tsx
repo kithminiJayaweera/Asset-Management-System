@@ -1,8 +1,23 @@
-import { Clock, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Clock, CheckCircle, XCircle, Calendar, Edit2, Trash2 } from 'lucide-react';
 
 interface Employee {
   id: string;
   name: string;
+}
+
+interface AssetRequest {
+  _id: string;
+  assetId?: {
+    name: string;
+    category: string;
+  };
+  requestType: string;
+  reason: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+  quantity?: number;
 }
 
 interface MyRequestsProps {
@@ -10,58 +25,83 @@ interface MyRequestsProps {
 }
 
 export function MyRequests({ employee }: MyRequestsProps) {
-  const myRequests = [
-    {
-      id: '1',
-      assetName: 'Dell Latitude 5540',
-      category: 'PC/Laptop',
-      quantity: 1,
-      reason: 'Replacement for aging laptop - specs needed: i7 processor, 16GB RAM, 512GB SSD',
-      priority: 'high',
-      status: 'pending',
-      requestDate: '2025-01-18'
-    },
-    {
-      id: '2',
-      assetName: 'Ergonomic Office Chair',
-      category: 'Office Furniture',
-      quantity: 1,
-      reason: 'Back support improvement - need black leather material, height adjustable',
-      priority: 'medium',
-      status: 'approved',
-      requestDate: '2025-01-15'
-    },
-    {
-      id: '3',
-      assetName: 'Company Vehicle - Van',
-      category: 'Vehicle',
-      quantity: 1,
-      reason: 'Field service team transport - diesel van with cargo space',
-      priority: 'high',
-      status: 'pending',
-      requestDate: '2025-01-12'
-    },
-    {
-      id: '4',
-      assetName: 'Dell U2723DE Monitor',
-      category: 'Office Equipment',
-      quantity: 2,
-      reason: 'Dual monitor setup for development workflow optimization',
-      priority: 'medium',
-      status: 'approved',
-      requestDate: '2025-01-10'
-    },
-    {
-      id: '5',
-      assetName: 'Cisco Networking Switch',
-      category: 'Networking Equipment',
-      quantity: 1,
-      reason: 'Network infrastructure upgrade for better connectivity',
-      priority: 'medium',
-      status: 'rejected',
-      requestDate: '2025-01-08'
+  const [myRequests, setMyRequests] = useState<AssetRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyRequests();
+  }, [employee.id]);
+
+  const fetchMyRequests = async () => {
+    try {
+      const response = await fetch(`/api/requests?requestedBy=${employee.id}`);
+      const result = await response.json();
+      if (result.success) {
+        setMyRequests(result.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleEdit = async (request: AssetRequest) => {
+    if (request.status !== 'pending') {
+      alert('Only pending requests can be edited');
+      return;
+    }
+    
+    const newReason = prompt('Update reason:', request.reason);
+    if (!newReason) return;
+    
+    try {
+      const response = await fetch(`/api/requests/${request._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: newReason })
+      });
+      
+      if (response.ok) {
+        fetchMyRequests();
+        alert('Request updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating request:', error);
+      alert('Failed to update request');
+    }
+  };
+
+  const handleDelete = async (requestId: string, status: string) => {
+    if (status !== 'pending') {
+      alert('Only pending requests can be deleted');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this request?')) return;
+    
+    try {
+      const response = await fetch(`/api/requests/${requestId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setMyRequests(prev => prev.filter(r => r._id !== requestId));
+        alert('Request deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      alert('Failed to delete request');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-600">Loading requests...</p>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -141,15 +181,15 @@ export function MyRequests({ employee }: MyRequestsProps) {
 
       <div className="space-y-4">
         {myRequests.map(request => (
-          <div key={request.id} className="bg-white rounded-lg border border-gray-200 p-6">
+          <div key={request._id} className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-100 rounded-full">
                   {getStatusIcon(request.status)}
                 </div>
                 <div>
-                  <h3 className="text-lg text-gray-900">{request.assetName}</h3>
-                  <p className="text-sm text-gray-600">{request.category}</p>
+                  <h3 className="text-lg text-gray-900">{request.assetId?.name || 'Asset Request'}</h3>
+                  <p className="text-sm text-gray-600">{request.assetId?.category || request.requestType}</p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -159,20 +199,38 @@ export function MyRequests({ employee }: MyRequestsProps) {
                 <span className={`px-3 py-1 rounded-full text-xs border ${getPriorityColor(request.priority)}`}>
                   {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
                 </span>
+                {request.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => handleEdit(request)}
+                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit Request"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(request._id, request.status)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Request"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <p className="text-xs text-gray-500 mb-1">Quantity</p>
-                <p className="text-sm text-gray-900">{request.quantity}</p>
+                <p className="text-sm text-gray-900">{request.quantity || 1}</p>
               </div>
 
               <div>
                 <p className="text-xs text-gray-500 mb-1">Request Date</p>
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  <p className="text-sm text-gray-900">{new Date(request.requestDate).toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-900">{new Date(request.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
 

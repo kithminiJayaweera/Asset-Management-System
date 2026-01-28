@@ -1,67 +1,130 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
+import { Asset, Organization } from '../page';
 import { Save, X } from 'lucide-react';
 import { Asset, Organization } from '@/types/shared';
 
 interface AssetFormProps {
   onSubmit: (asset: any) => void;
-  initialData?: Asset | null;
+  initialData?: IAsset | null;
   onCancel: () => void;
-  organizations: Organization[];
+  organizations: IOrganization[];
 }
+
+const categoryFields = {
+  'PC/Laptop': [
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., Dell, HP, Lenovo' },
+    { name: 'model', label: 'Model', type: 'text', placeholder: 'e.g., Latitude 5540' },
+    { name: 'processor', label: 'Processor', type: 'text', placeholder: 'e.g., Intel Core i7' },
+    { name: 'ram', label: 'RAM', type: 'text', placeholder: 'e.g., 16GB DDR4' },
+    { name: 'storage', label: 'Storage', type: 'text', placeholder: 'e.g., 512GB SSD' },
+    { name: 'operatingSystem', label: 'Operating System', type: 'text', placeholder: 'e.g., Windows 11' },
+  ],
+  'Office Furniture': [
+    { name: 'material', label: 'Material', type: 'text', placeholder: 'e.g., Wood, Metal, Plastic' },
+    { name: 'color', label: 'Color', type: 'text', placeholder: 'e.g., Black, White, Brown' },
+    { name: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'e.g., 120x60x75 cm' },
+    { name: 'weight', label: 'Weight', type: 'text', placeholder: 'e.g., 25 kg' },
+    { name: 'lastMaintenanceDate', label: 'Last Maintenance Date', type: 'date', placeholder: '' },
+  ],
+  'Vehicle': [
+    { name: 'vehicleType', label: 'Vehicle Type', type: 'text', placeholder: 'e.g., Car, Van, Truck' },
+    { name: 'registrationNumber', label: 'Registration Number', type: 'text', placeholder: 'e.g., WP-ABC-1234' },
+    { name: 'fuelType', label: 'Fuel Type', type: 'text', placeholder: 'e.g., Petrol, Diesel, Electric' },
+    { name: 'engineCapacity', label: 'Engine Capacity', type: 'text', placeholder: 'e.g., 1500cc' },
+    { name: 'mileage', label: 'Mileage', type: 'text', placeholder: 'e.g., 45000 km' },
+  ],
+  'Electronics': [
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., Samsung, Sony, LG' },
+    { name: 'model', label: 'Model', type: 'text', placeholder: 'e.g., Galaxy S21' },
+    { name: 'powerRating', label: 'Power Rating', type: 'text', placeholder: 'e.g., 100W' },
+    { name: 'voltage', label: 'Voltage', type: 'text', placeholder: 'e.g., 220V' },
+  ],
+};
 
 export function AssetForm({ onSubmit, initialData, onCancel, organizations }: AssetFormProps) {
   const [formData, setFormData] = useState({
-    name: initialData?.name || 'Dell Latitude 5000',
+    name: initialData?.name || '',
     category: initialData?.category || 'PC/Laptop',
     status: initialData?.status || 'active',
-    location: initialData?.location || 'Office - Floor 2',
-    purchaseDate: initialData?.purchaseDate || '2024-01-15',
-    value: initialData?.value?.toString() || '150000',
+    location: initialData?.location || '',
+    purchaseDate: initialData?.purchaseDate || '',
+    value: initialData?.value?.toString() || '',
     depreciationRate: initialData?.depreciationRate?.toString() || '20',
-    assignedTo: initialData?.assignedTo || 'John Doe',
-    description: initialData?.description || 'Business laptop for development',
+    assignedTo: initialData?.assignedTo || '',
+    description: initialData?.description || '',
     organizationId: initialData?.organizationId || '',
-    // PC/Laptop Specifications
-    brand: initialData?.brand || 'Dell',
-    model: initialData?.model || 'Latitude 5000',
-    serialNumber: initialData?.serialNumber || 'SN-2024-00145',
-    processor: initialData?.processor || 'Intel Core i7-13700H',
-    ram: initialData?.ram || '16GB DDR5',
-    storage: initialData?.storage || 'SSD 512GB NVMe',
-    operatingSystem: initialData?.operatingSystem || 'Windows 11 Pro',
-    macAddress: initialData?.macAddress || '00:1A:2B:3C:4D:5E',
-    warrantyEndDate: initialData?.warrantyEndDate || '2025-01-15',
-    // Furniture Specifications
-    material: initialData?.material || 'Leather',
-    color: initialData?.color || 'Black',
-    dimensions: initialData?.dimensions || '120cm x 60cm x 75cm (L x W x H)',
-    // Vehicle Specifications
-    vehicleType: initialData?.vehicleType || 'Car',
-    registrationNumber: initialData?.registrationNumber || 'WP-ABC-1234',
-    fuelType: initialData?.fuelType || 'Diesel',
-    mileage: initialData?.mileage || '45000',
-    // Common Specs
-    condition: initialData?.condition || 'Good',
-    lastMaintenanceDate: initialData?.lastMaintenanceDate || '2025-12-15'
+    serialNumber: initialData?.serialNumber || '',
+    condition: initialData?.condition || 'good',
+    warrantyEndDate: initialData?.warrantyEndDate || '',
+    // Category-specific fields
+    details: initialData?.details || {},
+    // Maintenance fields
+    maintenanceCondition: initialData?.maintenance?.condition || 'good',
+    lastMaintenanceDate: initialData?.maintenance?.lastMaintenanceDate || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     const asset = {
       ...formData,
       value: parseFloat(formData.value),
       depreciationRate: formData.depreciationRate ? parseFloat(formData.depreciationRate) : 10,
+      details: formData.details,
+      maintenance: {
+        condition: formData.maintenanceCondition,
+        lastMaintenanceDate: formData.lastMaintenanceDate || null
+      },
       ...(initialData ? { id: initialData.id, logs: initialData.logs } : {})
     };
+    
+    console.log('FINAL PAYLOAD:', JSON.stringify(asset, null, 2));
+    console.log('Details being sent:', asset.details);
     onSubmit(asset);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Clear details when category changes
+    if (name === 'category') {
+      const defaultRates = {
+        'PC/Laptop': '20',
+        'Office Furniture': '10',
+        'Vehicle': '15',
+        'Electronics': '15'
+      };
+      
+      setFormData(prev => ({
+        ...prev,
+        category: value,
+        depreciationRate: defaultRates[value as keyof typeof defaultRates] || '10',
+        details: {} // ✅ Clear details, not specifications
+      }));
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+
+  const handleDetailChange = (fieldName: string, value: string) => {
+    console.log(`Detail change: ${fieldName} = ${value}`);
+    const newDetails = {
+      ...formData.details,
+      [fieldName]: value
+    };
+    console.log('Updated details:', newDetails);
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      details: newDetails
     });
+  };
+
+  const getCurrentCategoryFields = () => {
+    return categoryFields[formData.category as keyof typeof categoryFields] || [];
   };
 
   return (
@@ -108,15 +171,18 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
             <label className="block text-sm text-gray-700 mb-2">
               Category *
             </label>
-            <input
-              type="text"
+            <select
               name="category"
               value={formData.category}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Electronics, Furniture"
-            />
+            >
+              <option value="PC/Laptop">PC/Laptop</option>
+              <option value="Office Furniture">Office Furniture</option>
+              <option value="Vehicle">Vehicle</option>
+              <option value="Electronics">Electronics</option>
+            </select>
           </div>
 
           {/* Status */}
@@ -268,8 +334,161 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
             </select>
           </div>
 
+          {/* Serial Number */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              Serial Number
+            </label>
+            <input
+              type="text"
+              name="serialNumber"
+              value={formData.serialNumber}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., SN-2024-001"
+            />
+          </div>
+
+          {/* Condition */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              Condition
+            </label>
+            <select
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+
+          {/* Warranty End Date */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              Warranty End Date
+            </label>
+            <input
+              type="date"
+              name="warrantyEndDate"
+              value={formData.warrantyEndDate}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Maintenance Condition */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              Maintenance Condition
+            </label>
+            <select
+              name="maintenanceCondition"
+              value={formData.maintenanceCondition}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+
+          {/* Last Maintenance Date */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              Last Maintenance Date
+            </label>
+            <input
+              type="date"
+              name="lastMaintenanceDate"
+              value={formData.lastMaintenanceDate}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Category-Specific Details */}
+          {getCurrentCategoryFields().length > 0 && (
+            <div className="border-t pt-6 bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {formData.category} Details
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Fill in the category-specific information below:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {getCurrentCategoryFields().map((field) => (
+                  <div key={field.name}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {field.label} *
+                    </label>
+                    <input
+                      type={field.type}
+                      value={formData.details?.[field.name] || ''}
+                      onChange={(e) => {
+                        console.log(`Field ${field.name} changed to: ${e.target.value}`);
+                        handleDetailChange(field.name, e.target.value);
+                      }}
+                      className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={field.placeholder}
+                      required
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Current Details:</strong> {JSON.stringify(formData.details)}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Buttons */}
           <div className="flex gap-4 pt-4">
+            {/* TEST: Force show category fields */}
+            <div className="border-2 border-red-500 p-4 bg-red-50 w-full mb-4">
+              <h3 className="text-red-800 font-bold mb-2">DEBUG: Category Fields Test</h3>
+              <p>Current category: {formData.category}</p>
+              <p>Available fields: {getCurrentCategoryFields().length}</p>
+              <p>Current details: {JSON.stringify(formData.details)}</p>
+              
+              {/* Manual test fields for Office Furniture */}
+              {formData.category === 'Office Furniture' && (
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-bold text-red-800">Material (TEST)</label>
+                    <input
+                      type="text"
+                      value={formData.details?.material || ''}
+                      onChange={(e) => {
+                        console.log('TEST: Material changed to:', e.target.value);
+                        handleDetailChange('material', e.target.value);
+                      }}
+                      className="w-full px-3 py-2 border-2 border-red-400 rounded"
+                      placeholder="Enter material (Wood, Metal, etc.)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-red-800">Color (TEST)</label>
+                    <input
+                      type="text"
+                      value={formData.details?.color || ''}
+                      onChange={(e) => handleDetailChange('color', e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-red-400 rounded"
+                      placeholder="Enter color"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <button
               type="submit"
               className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
