@@ -46,15 +46,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return '✓';
-      case 'maintenance': return '⚠';
-      case 'retired': return '✕';
-      case 'lost': return '❌';
-      default: return '•';
-    }
-  };
+
 
   const handleReassign = () => {
     if (selectedEmployee) {
@@ -83,7 +75,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           </div>
           <div className="flex gap-3">
             <span className={`px-4 py-2 rounded-full text-sm ${getStatusColor(asset.status)}`}>
-              {getStatusIcon(asset.status)} {asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}
+              {asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}
             </span>
             <button
               onClick={onEdit}

@@ -18,7 +18,7 @@ export interface QRCodeData {
  * @param category - Asset category
  * @param location - Asset location
  * @param status - Asset status
- * @returns JSON string to encode in QR code
+ * @returns Human-readable text to encode in QR code
  */
 export function generateAssetQRData(
   assetId: string,
@@ -27,15 +27,17 @@ export function generateAssetQRData(
   location: string,
   status: string
 ): string {
-  const qrData: QRCodeData = {
-    assetId,
-    assetName,
-    category,
-    location,
-    status,
-    timestamp: new Date().toISOString()
-  };
-  return JSON.stringify(qrData);
+  // Generate simple, readable text format
+  const lines = [
+    `ASSET: ${assetName}`,
+    `ID: ${assetId}`,
+    `CATEGORY: ${category}`,
+    `LOCATION: ${location}`,
+    `STATUS: ${status.toUpperCase()}`,
+    `SCANNED: ${new Date().toLocaleDateString()}`
+  ];
+  
+  return lines.join('\n');
 }
 
 /**
