@@ -48,6 +48,17 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
       ref: 'Organization',
       required: [true, 'Organization ID is required'],
     },
+    archived: {
+      type: Boolean,
+      default: false,
+    },
+    archivedDate: {
+      type: Date,
+    },
+    starred: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -57,6 +68,8 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
 // Indexes for faster queries
 AssetRequestSchema.index({ requestedBy: 1, status: 1 });
 AssetRequestSchema.index({ organizationId: 1, status: 1 });
+AssetRequestSchema.index({ archived: 1, createdAt: -1 });
+AssetRequestSchema.index({ starred: 1 });
 AssetRequestSchema.index({ createdAt: -1 });
 
 const AssetRequest: Model<IAssetRequest> =

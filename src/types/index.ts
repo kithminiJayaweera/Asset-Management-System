@@ -79,6 +79,9 @@ export interface IAssetRequest {
   completionDate?: Date;
   notes?: string;
   organizationId: Types.ObjectId | string;
+  archived: boolean;
+  archivedDate?: Date;
+  starred: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
