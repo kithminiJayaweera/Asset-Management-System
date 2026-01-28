@@ -19,6 +19,7 @@ export async function GET(request: NextRequest, context: Params) {
 
     const assetRequest = await AssetRequest.findById(id)
       .populate('requestedBy', 'name email department position employeeId')
+      .populate('assetId', 'name assetTag category status')
       .populate('approvedBy', 'name email')
       .lean();
 
@@ -70,6 +71,7 @@ export async function PUT(request: NextRequest, context: Params) {
       { new: true, runValidators: true }
     )
       .populate('requestedBy', 'name email department position employeeId')
+      .populate('assetId', 'name assetTag category status')
       .populate('approvedBy', 'name email')
       .lean();
 

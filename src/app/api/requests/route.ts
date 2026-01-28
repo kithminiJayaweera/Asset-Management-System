@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
 
     const requests = await AssetRequest.find(query)
       .populate('requestedBy', 'name email department position employeeId')
+      .populate('assetId', 'name assetTag category status')
       .populate('approvedBy', 'name email')
       .sort({ createdAt: -1 })
       .lean();
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
 
     const populatedRequest = await AssetRequest.findById(assetRequest._id)
       .populate('requestedBy', 'name email department position employeeId')
+      .populate('assetId', 'name assetTag category status')
       .populate('approvedBy', 'name email')
       .lean();
 
