@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
   title: string;
@@ -12,8 +13,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onBack, children }: SidebarProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200">
+    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6">
         {showBackButton && onBack && (
           <button
@@ -33,9 +44,19 @@ export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onB
         )}
       </div>
       
-      <nav className="px-4 space-y-2">
+      <nav className="px-4 space-y-2 flex-1">
         {children}
       </nav>
+      
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          Logout
+        </button>
+      </div>
     </div>
   );
 }

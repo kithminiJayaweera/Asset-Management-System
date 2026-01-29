@@ -1,5 +1,6 @@
 "use client";
 
+import AuthWrapper from '@/components/AuthWrapper';
 import { useState, useEffect } from 'react';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
@@ -487,7 +488,8 @@ export default function App() {
   };
 
   return (
-    <MainLayout>
+    <AuthWrapper>
+      <MainLayout>
       <Sidebar 
         title="Asset Management"
       >
@@ -788,5 +790,6 @@ export default function App() {
 
 
     </MainLayout>
+    </AuthWrapper>
   );
 }
