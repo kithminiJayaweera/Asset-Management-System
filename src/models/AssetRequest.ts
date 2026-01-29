@@ -15,6 +15,10 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
     assetCategory: {
       type: String,
     },
+    assetName: {
+      type: String,
+      trim: true,
+    },
     requestType: {
       type: String,
       required: [true, 'Request type is required'],

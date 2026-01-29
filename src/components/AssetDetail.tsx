@@ -1,8 +1,8 @@
 import { IAsset, IOrganization, IUser } from '../types';
-import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye, Search } from 'lucide-react';
 import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 interface Employee {
@@ -17,6 +17,16 @@ interface Employee {
   joinDate: string;
   salary: number;
   status: 'active' | 'on-leave' | 'inactive';
+}
+
+interface AssetRequest {
+  _id: string;
+  requestedBy?: { _id: string; name: string; email: string; position?: string; department?: string } | null;
+  assetCategory: string;
+  requestType: string;
+  reason: string;
+  status: string;
+  createdAt: string;
 }
 
 interface AssetDetailProps {
@@ -34,7 +44,141 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState<AssetRequest[]>([]);
+  const [showAssignFromRequestModal, setShowAssignFromRequestModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedAssignEmployee, setSelectedAssignEmployee] = useState<IUser | null>(null);
+  const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
+  
+  useEffect(() => {
+    fetchPendingRequests();
+  }, [asset.category]);
+
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await fetch('/api/requests');
+      const result = await response.json();
+      if (result.success) {
+        const filtered = result.data.filter((req: AssetRequest) => 
+          req.assetCategory === asset.category && 
+          req.status === 'pending' &&
+          req.requestType === 'assignment'
+        );
+        setPendingRequests(filtered);
+      }
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
+
+  const assignToRequester = async (request: AssetRequest) => {
+    if (!request.requestedBy || asset.assignedTo) return;
+    
+    try {
+      const assetResponse = await fetch(`/api/assets/${asset._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          assignedTo: request.requestedBy._id,
+          status: 'assigned'
+        }),
+      });
+
+      if (!assetResponse.ok) {
+        alert('Failed to assign asset');
+        return;
+      }
+
+      const requestResponse = await fetch(`/api/requests/${request._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId: asset._id }),
+      });
+
+      if (requestResponse.ok) {
+        alert('Asset assigned successfully!');
+        setShowAssignFromRequestModal(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error assigning asset:', error);
+      alert('Error assigning asset');
+    }
+  };
+
+  const unassignAsset = async () => {
+    if (!confirm('Are you sure you want to unassign this asset?')) return;
+    
+    try {
+      const assetResponse = await fetch(`/api/assets/${asset._id}`);
+      const assetResult = await assetResponse.json();
+      
+      if (!assetResult.success) {
+        alert('Failed to fetch asset details.');
+        return;
+      }
+
+      const currentAsset = assetResult.data;
+      let updatedDescription = currentAsset.description || '';
+      
+      if (assignedEmployee?.name && updatedDescription.includes(assignedEmployee.name)) {
+        updatedDescription = updatedDescription.replace(new RegExp(`Assigned to: ${assignedEmployee.name}\.?\\s*`, 'gi'), '').trim();
+      }
+
+      const updateResponse = await fetch(`/api/assets/${asset._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          assignedTo: null,
+          status: 'available',
+          description: updatedDescription
+        }),
+      });
+
+      if (updateResponse.ok) {
+        alert('Asset unassigned successfully!');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error unassigning asset:', error);
+      alert('Error unassigning asset');
+    }
+  };
+
+  const assignEmployeeToAsset = async (employeeId: string) => {
+    try {
+      const response = await fetch(`/api/assets/${asset._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          assignedTo: employeeId,
+          status: 'assigned'
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Employee assigned successfully!');
+        setShowAssignModal(false);
+        setSelectedAssignEmployee(null);
+        window.location.reload();
+      } else {
+        alert('Failed to assign employee');
+      }
+    } catch (error) {
+      console.error('Error assigning employee:', error);
+      alert('Error assigning employee');
+    }
+  };
+
+  const filteredEmployees = employees.filter(emp => 
+    emp.name.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
+    emp.email.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
+    emp.department?.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
+    emp.position?.toLowerCase().includes(employeeSearchQuery.toLowerCase())
+  );
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -225,10 +369,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <div className="flex gap-2">
                   {asset.assignedTo && (
                     <button
-                      onClick={() => {
-                        setSelectedEmployee(undefined);
-                        setShowReassignModal(true);
-                      }}
+                      onClick={unassignAsset}
                       className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
                     >
                       <UserX className="w-4 h-4" />
@@ -237,8 +378,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   )}
                   <button
                     onClick={() => {
-                      setSelectedEmployee(assignedEmployee);
-                      setShowReassignModal(true);
+                      setSelectedAssignEmployee(assignedEmployee || null);
+                      setShowAssignModal(true);
                     }}
                     className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
                   >
@@ -273,16 +414,27 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-black">Assignment Information</h3>
-                <button
-                  onClick={() => {
-                    setSelectedEmployee(undefined);
-                    setShowReassignModal(true);
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Assign Employee
-                </button>
+                <div className="flex gap-2">
+                  {pendingRequests.length > 0 && (
+                    <button
+                      onClick={() => setShowAssignFromRequestModal(true)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Assign from Request ({pendingRequests.length})
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedAssignEmployee(null);
+                      setShowAssignModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Assign Employee
+                  </button>
+                </div>
               </div>
               <div className="flex items-center gap-3 text-gray-700 bg-gray-50 rounded-lg p-4">
                 <User className="w-5 h-5" />
@@ -514,6 +666,181 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               >
                 <UserPlus className="w-4 h-4" />
                 {selectedEmployee ? 'Reassign' : 'Unassign'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Employee Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-[80vh] overflow-hidden transform transition-all animate-slideUp border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl text-black">{asset.assignedTo ? 'Reassign Employee' : 'Assign Employee'}</h3>
+                <p className="text-sm text-gray-700 mt-1">{asset.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedAssignEmployee(null);
+                  setEmployeeSearchQuery('');
+                }}
+                className="text-gray-600 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search employees by name, email, department..."
+                  value={employeeSearchQuery}
+                  onChange={(e) => setEmployeeSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[400px] space-y-2">
+              {filteredEmployees.length === 0 ? (
+                <div className="text-center py-8 text-gray-700">
+                  <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                  <p>No employees found</p>
+                </div>
+              ) : (
+                filteredEmployees.map((employee) => (
+                  <div
+                    key={employee._id}
+                    onClick={() => setSelectedAssignEmployee(employee)}
+                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                      selectedAssignEmployee?._id === employee._id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-full">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-black">{employee.name}</p>
+                          <p className="text-xs text-gray-700">
+                            {employee.position} • {employee.department}
+                          </p>
+                          <p className="text-xs text-gray-600">{employee.email}</p>
+                        </div>
+                      </div>
+                      {selectedAssignEmployee?._id === employee._id && (
+                        <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedAssignEmployee(null);
+                  setEmployeeSearchQuery('');
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => selectedAssignEmployee && assignEmployeeToAsset(String(selectedAssignEmployee._id))}
+                disabled={!selectedAssignEmployee}
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                {asset.assignedTo ? 'Reassign' : 'Assign'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign from Request Modal */}
+      {showAssignFromRequestModal && (
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-[80vh] overflow-y-auto transform transition-all animate-slideUp border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl text-black">Assign to Requester</h3>
+                <p className="text-sm text-gray-700 mt-1">
+                  {asset.name} - {asset.category}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAssignFromRequestModal(false)}
+                className="text-gray-600 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {pendingRequests.length === 0 ? (
+                <div className="text-center py-8 text-gray-700">
+                  <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                  <p>No pending requests for this category</p>
+                </div>
+              ) : (
+                pendingRequests.map((request) => (
+                  <div key={request._id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 bg-blue-100 rounded-full">
+                            <User className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-black">{request.requestedBy?.name}</p>
+                            <p className="text-xs text-gray-700">
+                              {request.requestedBy?.position} • {request.requestedBy?.department}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="ml-11">
+                          <p className="text-xs text-gray-700 mb-1">Reason:</p>
+                          <p className="text-sm text-gray-800">{request.reason}</p>
+                          <p className="text-xs text-gray-700 mt-2">
+                            Requested: {new Date(request.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => assignToRequester(request)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Assign
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowAssignFromRequestModal(false)}
+                className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

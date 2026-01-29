@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam) : 0; // 0 means no limit (fetch all)
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const organizationId = searchParams.get('organizationId');
@@ -32,19 +33,32 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const skip = (page - 1) * limit;
+    // Build the query with populated fields
+    let assetQuery = Asset.find(query)
+      .populate('assignedTo', 'name email department position employeeId')
+      .populate('organizationId', 'name')
+      .sort({ createdAt: -1 });
+
+    // Apply pagination only if limit is specified and greater than 0
+    if (limit > 0) {
+      const skip = (page - 1) * limit;
+      assetQuery = assetQuery.skip(skip).limit(limit);
+    }
 
     const [assets, totalCount] = await Promise.all([
-      Asset.find(query)
-        .populate('assignedTo', 'name email')
-        .populate('organizationId', 'name')
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 })
-        .lean(),
+      assetQuery.lean(),
       Asset.countDocuments(query),
     ]);
 
+    // If no limit specified, return all assets without pagination
+    if (limit === 0) {
+      return NextResponse.json<ApiResponse<IAsset[]>>({
+        success: true,
+        data: assets as IAsset[],
+      });
+    }
+
+    // Otherwise return paginated response
     const response: PaginatedResponse<IAsset> = {
       data: assets as IAsset[],
       pagination: {
