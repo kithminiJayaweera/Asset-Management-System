@@ -6,7 +6,7 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
     requestedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'Requester ID is required'],
+      required: [true, 'Requested by is required'],
     },
     assetId: {
       type: Schema.Types.ObjectId,
@@ -14,12 +14,11 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
     },
     assetCategory: {
       type: String,
-      trim: true,
     },
     requestType: {
       type: String,
-      enum: ['assignment', 'return', 'maintenance', 'new'],
       required: [true, 'Request type is required'],
+      enum: ['assignment', 'return', 'maintenance', 'new'],
     },
     reason: {
       type: String,
@@ -43,7 +42,6 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
     },
     notes: {
       type: String,
-      trim: true,
     },
     organizationId: {
       type: Schema.Types.ObjectId,
@@ -56,10 +54,9 @@ const AssetRequestSchema = new Schema<IAssetRequest>(
   }
 );
 
-// Indexes
-AssetRequestSchema.index({ requestedBy: 1 });
-AssetRequestSchema.index({ status: 1 });
-AssetRequestSchema.index({ organizationId: 1 });
+// Indexes for faster queries
+AssetRequestSchema.index({ requestedBy: 1, status: 1 });
+AssetRequestSchema.index({ organizationId: 1, status: 1 });
 AssetRequestSchema.index({ createdAt: -1 });
 
 const AssetRequest: Model<IAssetRequest> =

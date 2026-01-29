@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ import { OrganizationDetail } from '@/components/OrganizationDetail';
 // import { EmployeeList } from '@/components/EmployeeList';
 // import { EmployeeForm } from '@/components/EmployeeForm';
 // import { EmployeeDetail } from '@/components/EmployeeDetail';
-import { AssetRequests, AssetRequest } from '@/components/AssetRequests';
+import { AssetRequestsList } from '@/components/AssetRequestsList';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
@@ -374,34 +375,58 @@ export default function App() {
     setCurrentView('add-asset');
   };
 
-  const handleReassignAsset = (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => {
-    setAssets(assets.map(asset => {
-      if (asset.id === assetId) {
-        const updatedAsset = {
-          ...asset,
-          assignedTo: newEmployeeName,
-          logs: [
-            ...(asset.logs || []),
-            {
-              id: Date.now().toString(),
-              assetId: asset.id,
-              action: newEmployeeName ? 'assigned' : 'unassigned',
-              assignedTo: newEmployeeName,
-              assignedFrom: oldEmployeeName,
-              performedBy: 'Admin',
-              performedDate: new Date().toISOString(),
-              notes: newEmployeeName 
-                ? `Asset reassigned from ${oldEmployeeName || 'unassigned'} to ${newEmployeeName}`
-                : `Asset unassigned from ${oldEmployeeName}`
-            } as AssetLog
-          ]
-        };
-        // Update the editing asset if it's the one being reassigned
-        setEditingAsset(updatedAsset);
-        return updatedAsset;
+  const handleReassignAsset = async (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => {
+    try {
+      // Find the employee ID if assigning
+      const employee = newEmployeeName ? employees.find(e => e.name === newEmployeeName) : null;
+      
+      // Update via API
+      const response = await fetch(`/api/assets/${assetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newEmployeeName ? 'assigned' : 'available',
+          assignedTo: employee?.id || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update asset assignment');
       }
-      return asset;
-    }));
+
+      // Update local state
+      setAssets(assets.map(asset => {
+        if (asset.id === assetId) {
+          const updatedAsset = {
+            ...asset,
+            assignedTo: newEmployeeName,
+            status: newEmployeeName ? 'assigned' : 'available',
+            logs: [
+              ...(asset.logs || []),
+              {
+                id: Date.now().toString(),
+                assetId: asset.id,
+                action: newEmployeeName ? 'assigned' : 'unassigned',
+                assignedTo: newEmployeeName,
+                assignedFrom: oldEmployeeName,
+                performedBy: 'Admin',
+                performedDate: new Date().toISOString(),
+                notes: newEmployeeName 
+                  ? `Asset reassigned from ${oldEmployeeName || 'unassigned'} to ${newEmployeeName}`
+                  : `Asset unassigned from ${oldEmployeeName}`
+              } as AssetLog
+            ]
+          };
+          // Update the editing asset if it's the one being reassigned
+          setEditingAsset(updatedAsset);
+          return updatedAsset;
+        }
+        return asset;
+      }));
+    } catch (error) {
+      console.error('Error reassigning asset:', error);
+      alert('Failed to update asset assignment. Please try again.');
+    }
   };
 
   const handleAddOrganization = (org: Omit<Organization, 'id'>, admin?: Omit<SubAdmin, 'id' | 'organizationId' | 'createdDate'>) => {
@@ -732,13 +757,7 @@ export default function App() {
           </div>
         )}
         {currentView === 'asset-requests' && (
-          <AssetRequests 
-            employees={employees}
-            organizations={organizations}
-            assetRequests={assetRequests}
-            onAddRequest={handleAddAssetRequest}
-            onUpdateRequest={handleUpdateAssetRequest}
-          />
+          <AssetRequestsList />
         )}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
