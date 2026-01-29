@@ -41,6 +41,21 @@ interface AssetRequest {
   updatedAt: string;
 }
 
+interface Asset {
+  _id: string;
+  name: string;
+  assetTag: string;
+  category: string;
+  status: string;
+  location: string;
+  condition: string;
+  assignedTo?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export function AssetRequestsList() {
   const [requests, setRequests] = useState<AssetRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -355,6 +370,9 @@ export function AssetRequestsList() {
     return matchesStatus && matchesType && matchesArchived && matchesStarred;
   });
 
+  // Get unique categories from requests
+  const categories = ['all', ...Array.from(new Set(requests.map(r => r.assetCategory)))];
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return 'bg-green-100 text-green-800';
@@ -596,18 +614,18 @@ export function AssetRequestsList() {
 
           <div>
             <label className="block text-sm text-gray-700 mb-2">
-              Filter by Type
+              Filter by Asset Category
             </label>
             <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             >
-              <option value="all">All Types</option>
-              <option value="new">New Asset</option>
-              <option value="assignment">Assignment</option>
-              <option value="return">Return</option>
-              <option value="maintenance">Maintenance</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat === 'all' ? 'All Categories' : cat}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -847,6 +865,15 @@ export function AssetRequestsList() {
                 <p className="text-xs text-green-700">
                   Approved on {new Date(request.approvalDate).toLocaleDateString()}
                 </p>
+                {request.requestType === 'new' && (
+                  <button
+                    onClick={() => openAssetSelection(request)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    Assign Asset
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -858,7 +885,7 @@ export function AssetRequestsList() {
           <Package className="w-12 h-12 text-gray-700 mx-auto mb-4" />
           <p className="text-gray-800">No asset requests found</p>
           <p className="text-sm text-gray-600 mt-2">
-            {filterStatus !== 'all' || filterType !== 'all' 
+            {filterStatus !== 'all' || filterCategory !== 'all' 
               ? 'Try adjusting your filters' 
               : 'Create requests via API or add test data using the seed endpoint'}
           </p>
