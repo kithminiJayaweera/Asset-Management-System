@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Asset from '@/models/Asset';
+import AssetRequest from '@/models/AssetRequest';
 import { ApiResponse, IAsset } from '@/types';
 
 interface Params {
@@ -49,6 +50,8 @@ export async function PUT(request: NextRequest, context: Params) {
     const body = await request.json();
     const { id } = await context.params;
 
+    console.log('Updating asset:', id, 'with data:', body);
+
     const asset = await Asset.findByIdAndUpdate(
       id,
       { $set: body },
@@ -63,6 +66,40 @@ export async function PUT(request: NextRequest, context: Params) {
         { success: false, error: 'Asset not found' },
         { status: 404 }
       );
+    }
+
+    console.log('Asset updated in database:', {
+      _id: asset._id,
+      status: asset.status,
+      assignedTo: asset.assignedTo
+    });
+
+    // If assignedTo is being updated, sync with asset requests
+    if (body.assignedTo !== undefined) {
+      if (body.assignedTo) {
+        // Asset is being assigned - find approved requests from this user for this asset category
+        const approvedRequest = await AssetRequest.findOne({
+          requestedBy: body.assignedTo,
+          status: 'approved',
+          $or: [
+            { assetId: id }, // Already linked to this asset
+            { assetId: null, assetCategory: asset.category } // Not yet linked but matching category
+          ]
+        }).sort({ createdAt: -1 });
+
+        if (approvedRequest && !approvedRequest.assetId) {
+          // Link the request to this asset
+          await AssetRequest.findByIdAndUpdate(approvedRequest._id, {
+            assetId: id
+          });
+        }
+      } else {
+        // Asset is being unassigned - remove from any requests
+        await AssetRequest.updateMany(
+          { assetId: id },
+          { $set: { assetId: null } }
+        );
+      }
     }
 
     return NextResponse.json<ApiResponse<IAsset>>({

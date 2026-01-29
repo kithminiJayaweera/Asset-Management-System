@@ -514,7 +514,7 @@ export default function App() {
   return (
     <MainLayout>
       <Sidebar 
-        title="Asset Management"
+        title=""
       >
         <NavButton
           onClick={() => {
@@ -605,7 +605,7 @@ export default function App() {
         </NavButton>
       </Sidebar>
 
-      <div className="ml-64 p-8">
+      <div className="ml-64 pt-16 p-8">
         {currentView === 'dashboard' && <Dashboard assets={assets} />}
         {currentView === 'assets' && (
           <AssetList 

@@ -71,6 +71,7 @@ export interface IAssetRequest {
   requestedBy: Types.ObjectId | string; // User ID
   assetId?: Types.ObjectId | string; // For specific asset requests
   assetCategory?: string; // For general requests
+  assetName?: string; // Optional: specific asset name user is looking for
   requestType: 'assignment' | 'return' | 'maintenance' | 'new';
   reason: string;
   status: RequestStatus;
@@ -79,6 +80,9 @@ export interface IAssetRequest {
   completionDate?: Date;
   notes?: string;
   organizationId: Types.ObjectId | string;
+  archived: boolean;
+  archivedDate?: Date;
+  starred: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
