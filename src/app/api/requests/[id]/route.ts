@@ -51,11 +51,17 @@ export async function PUT(request: NextRequest, context: Params) {
     const body = await request.json();
     const { id } = await context.params;
 
+    const assetRequest = await AssetRequest.findById(id);
+    if (!assetRequest) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Request not found' },
+        { status: 404 }
+      );
+    }
+
     // If approving an assignment request, update asset status
     if (body.status === 'approved') {
-      const assetRequest = await AssetRequest.findById(id);
-      
-      if (assetRequest && assetRequest.requestType === 'assignment' && assetRequest.assetId) {
+      if (assetRequest.requestType === 'assignment' && assetRequest.assetId) {
         await Asset.findByIdAndUpdate(assetRequest.assetId, {
           status: 'assigned',
           assignedTo: assetRequest.requestedBy,
@@ -63,9 +69,8 @@ export async function PUT(request: NextRequest, context: Params) {
       }
 
       body.approvalDate = new Date();
-    }
 
-    const updatedRequest = await AssetRequest.findByIdAndUpdate(
+      const updatedRequest = await AssetRequest.findByIdAndUpdate(
       id,
       { $set: body },
       { new: true, runValidators: true }
