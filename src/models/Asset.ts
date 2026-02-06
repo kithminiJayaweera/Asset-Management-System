@@ -120,6 +120,38 @@ AssetSchema.index({ organizationId: 1 });
 AssetSchema.index({ status: 1 });
 AssetSchema.index({ assignedTo: 1 });
 AssetSchema.index({ category: 1 });
+AssetSchema.index({ serialNumber: 1 });
+AssetSchema.index({ model: 1, manufacturer: 1 });
+
+// Pre-save hook to automatically calculate currentValue based on depreciation
+AssetSchema.pre('save', function(next) {
+  // Only calculate if purchasePrice and purchaseDate are present
+  if (this.purchasePrice && this.purchaseDate && this.depreciationMethod !== 'none') {
+    // Dynamically import to avoid circular dependencies
+    import('@/utils/depreciation').then(({ calculateCurrentValue, getDefaultUsefulLife }) => {
+      // Set default usefulLife if not provided
+      if (!this.usefulLife) {
+        this.usefulLife = getDefaultUsefulLife(this.category);
+      }
+      
+      // Calculate and set currentValue
+      this.currentValue = calculateCurrentValue(
+        this.purchasePrice,
+        this.purchaseDate,
+        this.category,
+        this.usefulLife
+      );
+      
+      next();
+    }).catch(next);
+  } else {
+    // If depreciation is 'none' or no purchase data, set currentValue to purchasePrice
+    if (!this.currentValue && this.purchasePrice) {
+      this.currentValue = this.purchasePrice;
+    }
+    next();
+  }
+});
 
 const Asset: Model<IAsset> =
   mongoose.models.Asset || mongoose.model<IAsset>('Asset', AssetSchema);
