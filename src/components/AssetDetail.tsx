@@ -40,8 +40,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const purchaseDate = new Date(asset.purchaseDate);
   const now = new Date();
   const timeElapsedMs = now.getTime() - purchaseDate.getTime();
-  const yearsElapsed = timeElapsedMs / (1000 * 60 * 60 * 24 * 365.25);
   const monthsElapsed = Math.floor(timeElapsedMs / (1000 * 60 * 60 * 24 * 30.44));
+  const yearsElapsed = monthsElapsed / 12;
   const effectiveAnnualRate = yearsElapsed > 0 && currentValue > 0
   ? 1 - Math.pow(currentValue / purchasePrice, 1 / yearsElapsed)
   : 0;
