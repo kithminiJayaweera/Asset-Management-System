@@ -103,11 +103,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Set currentValue to purchasePrice if not provided
-    if (!body.currentValue) {
-      body.currentValue = body.purchasePrice;
-    }
-
     // Handle details and maintenance fields
     const asset = await Asset.create({
       ...body,

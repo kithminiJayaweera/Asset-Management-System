@@ -327,8 +327,8 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             >
               <option value="">Select an organization</option>
-              {organizations.map(org => (
-                <option key={org.id} value={org.id}>{org.name}</option>
+              {organizations.map((org, idx) => (
+                <option key={org.id || `org-${idx}`} value={org.id}>{org.name}</option>
               ))}
             </select>
           </div>
@@ -422,8 +422,8 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                 Fill in the category-specific information below:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getCurrentCategoryFields().map((field) => (
-                  <div key={field.name}>
+                {getCurrentCategoryFields().map((field, idx) => (
+                  <div key={field.name || `field-${idx}`}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {field.label} *
                     </label>

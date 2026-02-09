@@ -43,9 +43,12 @@ export interface IAsset {
   manufacturer?: string;
   purchaseDate: Date;
   purchasePrice: number;
-  currentValue: number;
+  currentValue: number; // Auto-calculated via default function
   depreciationMethod?: 'straight-line' | 'declining-balance' | 'none';
+  depreciationRate?: number; // Annual depreciation rate as percentage
   usefulLife?: number; // in years
+  salvageValue?: number; // minimum value the asset retains
+  lastValuationDate?: Date; // Last time the asset was valued
   status: AssetStatus;
   condition: AssetCondition;
   location?: string;
@@ -58,6 +61,8 @@ export interface IAsset {
   maintenance?: {
     condition?: AssetCondition;
     lastMaintenanceDate?: Date;
+    currentValue?: number;
+    lastDepreciationCalculatedDate?: Date;
   };
   createdAt: Date;
   updatedAt: Date;

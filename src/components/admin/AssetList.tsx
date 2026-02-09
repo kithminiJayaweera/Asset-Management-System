@@ -16,15 +16,15 @@ import {
   TableHeader,
   TableRow
 } from '../ui/table';
-import { Asset, Organization } from '@/types/shared';
+import { IAsset, IOrganization } from '@/types';
 
 interface AssetListProps {
-  assets: Asset[];
-  organizations: Organization[];
-  onEdit: (asset: Asset) => void;
+  assets: IAsset[];
+  organizations: IOrganization[];
+  onEdit: (asset: IAsset) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
-  onViewDetails: (asset: Asset) => void;
+  onViewDetails: (asset: IAsset) => void;
 }
 
 export function AssetList({
@@ -39,14 +39,14 @@ export function AssetList({
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const categories = ['all', ...Array.from(new Set(assets.map(a => a.category)))];
+  const categories = ['all', ...Array.from(new Set(assets.map(a => a.category).filter(Boolean)))];
 
   const filteredAssets = assets.filter(asset => {
     const matchesSearch =
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (asset.assignedTo &&
-        asset.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()));
+        String(asset.assignedTo).toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesCategory =
       filterCategory === 'all' || asset.category === filterCategory;
@@ -122,8 +122,8 @@ export function AssetList({
                 focus:outline-none focus:ring-2 focus:ring-blue-500
               "
             >
-              {categories.map(category => (
-                <option key={category} value={category}>
+              {categories.map((category, idx) => (
+                <option key={category || `cat-${idx}`} value={category}>
                   {category === 'all' ? 'All Categories' : category}
                 </option>
               ))}
@@ -169,9 +169,11 @@ export function AssetList({
           </TableHeader>
 
           <TableBody>
-            {filteredAssets.map(asset => (
+            {filteredAssets.map((asset, index) => {
+              const assetId = String((asset as any)._id || (asset as any).id || index);
+              return (
               <TableRow
-                key={asset.id}
+                key={assetId}
                 className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => onViewDetails(asset)}
               >
@@ -193,7 +195,7 @@ export function AssetList({
                   {new Date(asset.purchaseDate).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-black">
-                  ₨{asset.value.toLocaleString()}
+                  ₨{(asset.currentValue || asset.purchasePrice || 0).toLocaleString()}
                 </TableCell>
                 <TableCell className="text-black">
                   {asset.assignedTo || '-'}
@@ -217,8 +219,9 @@ export function AssetList({
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`Delete ${asset.name}?`)) {
-                          onDelete(asset.id);
+                        const assetId = String((asset as any)._id || (asset as any).id);
+                        if (assetId && assetId !== 'undefined' && confirm(`Delete ${asset.name}?`)) {
+                          onDelete(assetId);
                         }
                       }}
                       className="p-2 text-gray-700 hover:text-red-600 hover:bg-red-100 rounded-lg"
@@ -228,7 +231,8 @@ export function AssetList({
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            );
+            })}
           </TableBody>
         </Table>
       </div>

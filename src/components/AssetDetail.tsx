@@ -1,6 +1,6 @@
 import { IAsset, IOrganization, IUser } from '../types';
 import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertCircle, User, Building2, Edit2, FileText, Clock, History, TrendingDown, UserX, UserPlus, Download, X, Eye } from 'lucide-react';
-import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
+import { formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
 import { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -30,12 +30,31 @@ interface AssetDetailProps {
 }
 
 export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign }: AssetDetailProps) {
-  const depreciation = calculateDepreciation(asset);
+  // Use backend-calculated values directly
+  const currentValue = asset.currentValue || asset.purchasePrice || 0;
+  const purchasePrice = asset.purchasePrice || 0;
+  const depreciatedAmount = purchasePrice - currentValue;
+  const depreciationPercentage = purchasePrice > 0 ? (depreciatedAmount / purchasePrice) * 100 : 0;
+
+  // Calculate time elapsed
+  const purchaseDate = new Date(asset.purchaseDate);
+  const now = new Date();
+  const timeElapsedMs = now.getTime() - purchaseDate.getTime();
+  const yearsElapsed = timeElapsedMs / (1000 * 60 * 60 * 24 * 365.25);
+  const monthsElapsed = Math.floor(timeElapsedMs / (1000 * 60 * 60 * 24 * 30.44));
+  const effectiveAnnualRate = yearsElapsed > 0 && currentValue > 0
+  ? 1 - Math.pow(currentValue / purchasePrice, 1 / yearsElapsed)
+  : 0;
+
+
+  const effectiveAnnualRatePercent = (effectiveAnnualRate * 100).toFixed(1);
+
+
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
   const [showQRModal, setShowQRModal] = useState(false);
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -148,8 +167,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   <DollarSign className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-700 mb-1">Asset Value</p>
-                  <p className="text-sm text-black">Rs. {asset.purchasePrice.toLocaleString()}</p>
+                  <p className="text-xs text-gray-700 mb-1">Purchase Price</p>
+                  <p className="text-sm text-black">Rs. {(asset.purchasePrice || 0).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -208,8 +227,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg text-black mb-4">Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(asset.details).map(([key, value]) => (
-                  <div key={key}>
+                {Object.entries(asset.details).map(([key, value], idx) => (
+                  <div key={key || `detail-${idx}`}>
                     <p className="text-xs text-gray-700 mb-1">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
                     <p className="text-sm text-black">{value as string}</p>
                   </div>
@@ -327,19 +346,19 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
             <h3 className="text-lg text-black mb-4">Quick Stats</h3>
-            
+
             <div className="space-y-4">
               {/* Purchase Value */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-gray-700 mb-1">Purchase Value</p>
-                <p className="text-lg text-black">{formatCurrency(depreciation.purchaseValue)}</p>
+                <p className="text-lg text-black">{formatCurrency(purchasePrice)}</p>
               </div>
 
               {/* Current Value */}
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <p className="text-xs text-gray-700 mb-1">Current Value</p>
-                <p className="text-lg text-black">{formatCurrency(depreciation.currentValue)}</p>
-                <p className="text-xs text-gray-700 mt-1">After {depreciation.yearsElapsed.toFixed(1)} years</p>
+                <p className="text-lg text-black">{formatCurrency(currentValue)}</p>
+                <p className="text-xs text-gray-700 mt-1">After {yearsElapsed.toFixed(1)} years</p>
               </div>
 
               {/* Depreciation Amount */}
@@ -348,21 +367,21 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   <TrendingDown className="w-4 h-4 text-red-600" />
                   <p className="text-xs text-gray-700">Depreciated Amount</p>
                 </div>
-                <p className="text-lg text-black">{formatCurrency(depreciation.depreciatedAmount)}</p>
-                <p className="text-xs text-red-600 mt-1">{depreciation.depreciationPercentage.toFixed(1)}% loss</p>
+                <p className="text-lg text-black">{formatCurrency(depreciatedAmount)}</p>
+                <p className="text-xs text-red-600 mt-1">{depreciationPercentage.toFixed(1)}% loss</p>
               </div>
 
-              {/* Depreciation Rate */}
+              {/* Annualized Value Loss */}
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-700 mb-1">Annual Depreciation Rate</p>
-                <p className="text-xl text-black">{depreciation.depreciationPercentage.toFixed(1)}%</p>
+                <p className="text-xs text-gray-700 mb-1">Annualized Value Loss</p>
+                <p className="text-xl text-black">{effectiveAnnualRatePercent}%</p>
               </div>
 
               {/* Asset Age */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-700 mb-1">Asset Age</p>
-                <p className="text-xl text-black">{depreciation.monthsElapsed} months</p>
-                <p className="text-xs text-gray-700 mt-1">{depreciation.yearsElapsed.toFixed(2)} years</p>
+                <p className="text-xl text-black">{monthsElapsed} months</p>
+                <p className="text-xs text-gray-700 mt-1">{yearsElapsed.toFixed(2)} years</p>
               </div>
 
               {/* Current Status */}
@@ -459,21 +478,21 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   onChange={(e) => {
                     const employeeId = e.target.value;
                     if (employeeId === '') {
-                        setSelectedEmployee(undefined);
-                      } else {
-                        const employee = employees.find(emp => String(emp._id) === employeeId);
-                        setSelectedEmployee(employee);
-                      }
+                      setSelectedEmployee(undefined);
+                    } else {
+                      const employee = employees.find(emp => String(emp._id) === employeeId);
+                      setSelectedEmployee(employee);
+                    }
                   }}
                 >
                   <option value="">-- Unassign Employee --</option>
-                  {employees.map(emp => (
-                    <option key={String(emp._id)} value={String(emp._id)}>
+                  {employees.map((emp, idx) => (
+                    <option key={String(emp._id) || `emp-${idx}`} value={String(emp._id)}>
                       {emp.name} - {emp.position} ({emp.department})
                     </option>
                   ))}
                 </select>
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -541,7 +560,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <X className="w-5 h-5 text-gray-700" />
               </button>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 flex justify-center mb-4" id="modal-qr-code">
               <QRCodeCanvas
                 value={qrCodeData}
@@ -590,9 +609,3 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
     </div>
   );
 }
-
-
-
-
-
-

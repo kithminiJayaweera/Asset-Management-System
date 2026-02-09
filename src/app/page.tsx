@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
-import { AssetForm } from '@/components/AssetForm';
+import { AssetForm } from '@/components/admin/AssetForm';
 import { AssetDetail } from '@/components/AssetDetail';
 import { OrganizationList } from '@/components/OrganizationList';
 import { OrganizationForm } from '@/components/OrganizationForm';
@@ -20,6 +20,7 @@ import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
 import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
 import type { IAsset, IOrganization, IUser } from '@/types';
+import { calculateCurrentValue } from '@/utils/depreciation';
 
 export interface AssetLog {
   id: string;
@@ -43,8 +44,13 @@ export interface Asset {
   status: 'active' | 'maintenance' | 'retired' | 'lost';
   location: string;
   purchaseDate: string;
-  value: number;
+  purchasePrice: number;
+  currentValue: number;
+  value: number; // Legacy field for compatibility - required
+  depreciationMethod?: 'straight-line' | 'declining-balance' | 'none';
+  usefulLife?: number;
   depreciationRate: number; // Annual depreciation rate as percentage (e.g., 20 for 20%)
+  salvageValue?: number;
   assignedTo?: string;
   description?: string;
   organizationId?: string;
@@ -158,7 +164,9 @@ export default function App() {
             currentValue?: number;
             purchasePrice?: number;
             depreciationRate?: number;
+            depreciationMethod?: 'straight-line' | 'declining-balance' | 'none';
             usefulLife?: number;
+            salvageValue?: number;
             assignedTo?: string | { name: string }; 
             description?: string;
             notes?: string;
@@ -169,14 +177,27 @@ export default function App() {
             condition?: string;
             warrantyExpiry?: string;
             [key: string]: unknown 
-          }) => ({
+          }) => {
+            const purchasePrice = asset.purchasePrice ?? asset.value ?? 0;
+            const realTimeCurrentValue = calculateCurrentValue({
+              purchasePrice,
+              purchaseDate: asset.purchaseDate,
+              depreciationMethod: asset.depreciationMethod || 'declining-balance',
+              depreciationRate: asset.depreciationRate || 10,
+              usefulLife: asset.usefulLife || 5,
+              salvageValue: asset.salvageValue || 0
+            });
+            
+            return {
             id: asset._id,
             name: asset.name,
             category: asset.category,
             status: (asset.status === 'available' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
             location: asset.location || '',
             purchaseDate: asset.purchaseDate,
-            value: (asset.currentValue || asset.purchasePrice || asset.value || 0) as number,
+            purchasePrice,
+            currentValue: realTimeCurrentValue,
+            value: purchasePrice,
             depreciationRate: asset.usefulLife ? Math.floor(100 / (asset.usefulLife as number)) : (asset.depreciationRate || 10),
             assignedTo: typeof asset.assignedTo === 'object' && asset.assignedTo ? asset.assignedTo.name : (asset.assignedTo || ''),
             description: asset.description || asset.notes || '',
@@ -189,7 +210,8 @@ export default function App() {
             logs: [],
             details: (asset.details || {}) as Record<string, unknown>,
             maintenance: asset.maintenance || { condition: 'good' }
-          }));
+          };
+          });
           
           setAssets(dbAssets);
           console.log('Assets loaded:', dbAssets.length);
@@ -267,18 +289,16 @@ export default function App() {
         name: asset.name,
         category: asset.category,
         description: asset.description || '',
-        serialNumber: asset.serialNumber || '',
-        model: asset.details?.model || asset.model || '',
-        manufacturer: asset.details?.brand || asset.brand || '',
         purchaseDate: asset.purchaseDate,
-        purchasePrice: asset.value,
-        currentValue: asset.value,
-        depreciationMethod: 'straight-line' as const,
-        usefulLife: asset.depreciationRate ? Math.floor(100 / asset.depreciationRate) : 5,
+        purchasePrice: asset.purchasePrice !== undefined ? asset.purchasePrice : 0,
+        depreciationMethod: asset.depreciationMethod || 'declining-balance',
+        usefulLife: asset.usefulLife || 5,
+        depreciationRate: asset.depreciationRate || 10,
+        salvageValue: asset.salvageValue || 0,
         status: asset.status === 'active' ? 'available' : asset.status,
         condition: (asset.condition || 'good').toLowerCase(),
         location: asset.location,
-        organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
+        organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1',
         warrantyExpiry: asset.warrantyEndDate || null,
         notes: asset.description || '',
         details: asset.details || {},
@@ -300,10 +320,14 @@ export default function App() {
 
       if (result.success) {
         // Add to local state with the returned data
-        const newAsset = {
-          ...asset,
-          id: result.data._id || Date.now().toString()
-        };
+        const newAsset: Asset = {
+  ...asset,
+  id: result.data._id || Date.now().toString(),
+  purchasePrice: asset.purchasePrice,
+  currentValue: asset.purchasePrice,
+  value: asset.purchasePrice, // Legacy field
+};
+
         setAssets([...assets, newAsset]);
         setShowAssetModal(false);
         setEditingAsset(null);
@@ -320,6 +344,11 @@ export default function App() {
 
   const handleUpdateAsset = async (asset: Asset) => {
     try {
+      if (!asset.id) {
+        alert('Asset ID is missing. Cannot update asset.');
+        return;
+      }
+      
       const response = await fetch(`/api/assets/${asset.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -329,10 +358,8 @@ export default function App() {
           status: asset.status === 'active' ? 'available' : asset.status,
           location: asset.location,
           description: asset.description,
-          currentValue: asset.value,
           condition: asset.condition,
           details: asset.details || {},
-          serialNumber: asset.serialNumber,
           warrantyExpiry: asset.warrantyEndDate
         })
       });
@@ -353,6 +380,11 @@ export default function App() {
 
   const handleDeleteAsset = async (id: string) => {
     try {
+      if (!id || id === 'undefined') {
+        alert('Invalid asset ID');
+        return;
+      }
+      
       const response = await fetch(`/api/assets/${id}`, {
         method: 'DELETE'
       });
@@ -584,16 +616,16 @@ export default function App() {
         {currentView === 'dashboard' && <Dashboard assets={assets} />}
         {currentView === 'assets' && (
           <AssetList 
-            assets={assets}
-            organizations={organizations}
-            onEdit={handleEdit}
+            assets={assets as any}
+            organizations={organizations as any}
+            onEdit={handleEdit as any}
             onDelete={handleDeleteAsset}
             onAddNew={() => {
               setEditingAsset(null);
               setShowAssetModal(true);
             }}
             onViewDetails={(asset) => {
-              setEditingAsset(asset);
+              setEditingAsset(asset as any);
               setCurrentView('asset-detail');
             }}
           />
@@ -616,8 +648,9 @@ export default function App() {
               ...editingAsset,
               _id: editingAsset.id,
               assetTag: editingAsset.serialNumber || `AST-${editingAsset.id}`,
-              purchasePrice: editingAsset.value,
-              currentValue: editingAsset.value,
+              purchasePrice: editingAsset.purchasePrice,
+currentValue: editingAsset.currentValue,
+
               purchaseDate: editingAsset.purchaseDate,
               depreciationMethod: 'straight-line' as const,
               usefulLife: editingAsset.depreciationRate ? Math.floor(100 / editingAsset.depreciationRate) : 5,
