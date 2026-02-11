@@ -5,6 +5,7 @@ import Asset from '@/models/Asset';
 import Notification from '@/models/Notification';
 import { ApiResponse, PaginatedResponse, IAsset } from '@/types';
 import { broadcastNotification, emitAssetUpdate } from '@/lib/socket';
+import { getDefaultUsefulLife } from '@/utils/depreciation';
 
 // GET /api/assets - Get all assets with pagination and filters
 export async function GET(request: NextRequest) {
@@ -120,10 +121,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Set currentValue to purchasePrice if not provided
-    if (!body.currentValue) {
-      body.currentValue = body.purchasePrice;
+    // Auto-populate usefulLife if not provided based on category
+    if (!body.usefulLife) {
+      body.usefulLife = getDefaultUsefulLife(body.category);
     }
+
+    // Note: currentValue will be auto-calculated by pre-save hook in Asset model
+    // based on purchasePrice, purchaseDate, and depreciation settings
 
     // Handle details and maintenance fields
     const asset = await Asset.create({

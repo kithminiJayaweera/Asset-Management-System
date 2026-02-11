@@ -897,23 +897,6 @@ export function AssetRequestsList() {
                 </button>
               )}
             </div>
-
-            {request.status === 'approved' && request.approvalDate && !request.archived && (
-              <div className="pt-4 border-t border-gray-200 mt-4">
-                <p className="text-xs text-green-700">
-                  Approved on {new Date(request.approvalDate).toLocaleDateString()}
-                </p>
-                {request.requestType === 'new' && (
-                  <button
-                    onClick={() => openAssignModal(request, false)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <Link className="w-4 h-4" />
-                    Assign Asset
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         ))}
       </div>
