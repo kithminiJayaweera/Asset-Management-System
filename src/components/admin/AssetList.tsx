@@ -160,7 +160,7 @@ export function AssetList({
               <TableHead className="text-black font-semibold">Location</TableHead>
               <TableHead className="text-black font-semibold">Status</TableHead>
               <TableHead className="text-black font-semibold">Purchase Date</TableHead>
-              <TableHead className="text-black font-semibold">Value</TableHead>
+              <TableHead className="text-black font-semibold">Value (LKR)</TableHead>
               <TableHead className="text-black font-semibold">Assigned To</TableHead>
               <TableHead className="text-black font-semibold text-right">
                 Actions
@@ -205,13 +205,13 @@ export function AssetList({
                   <div className="flex gap-2 justify-end">
                     <button
                       onClick={() => onViewDetails(asset)}
-                      className="p-2 text-gray-700 hover:text-green-600 hover:bg-green-100 rounded-lg"
+                      className="p-2 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg transition-colors"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEdit(asset)}
-                      className="p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-100 rounded-lg"
+                      className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -221,7 +221,7 @@ export function AssetList({
                           onDelete(asset.id);
                         }
                       }}
-                      className="p-2 text-gray-700 hover:text-red-600 hover:bg-red-100 rounded-lg"
+                      className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

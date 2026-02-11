@@ -158,11 +158,11 @@ export function AssetList({
               <TableHead className="font-semibold text-black">
                 Location
               </TableHead>
-              <TableHead className="font-semibold text-black">Status</TableHead>
+              <TableHead className="font-semibold text-black">Sus</TableHead>
               <TableHead className="font-semibold text-black">
                 Purchase Date
               </TableHead>
-              <TableHead className="font-semibold text-black">Value</TableHead>
+              <TableHead className="font-semibold text-black">Value (LKR)</TableHead>
               <TableHead className="font-semibold text-black">
                 Assigned To
               </TableHead>
@@ -210,14 +210,14 @@ export function AssetList({
                   >
                     <button
                       onClick={() => onViewDetails(asset)}
-                      className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      className="p-2 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg transition-colors"
                       title="View"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEdit(asset)}
-                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -232,7 +232,7 @@ export function AssetList({
                           onDelete(asset.id);
                         }
                       }}
-                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

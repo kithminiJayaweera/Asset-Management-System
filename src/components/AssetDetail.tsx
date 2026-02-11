@@ -34,12 +34,13 @@ interface AssetDetailProps {
   organization: IOrganization | undefined;
   assignedEmployee: IUser | undefined;
   employees: IUser[];
+  organizations: IOrganization[];
   onBack: () => void;
   onEdit: () => void;
   onReassign: (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => void;
 }
 
-export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign }: AssetDetailProps) {
+export function AssetDetail({ asset, organization, assignedEmployee, employees, organizations, onBack, onEdit, onReassign }: AssetDetailProps) {
   const depreciation = calculateDepreciation(asset);
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
@@ -400,6 +401,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                       <p className="text-xs text-gray-700 mt-1">{assignedEmployee.position} • {assignedEmployee.department}</p>
                       <p className="text-xs text-gray-700">Employee ID: {assignedEmployee.employeeId}</p>
                       <p className="text-xs text-gray-700">Email: {assignedEmployee.email}</p>
+                      <p className="text-xs text-gray-700">Organization: {organizations.find(org => String(org._id) === String(assignedEmployee.organizationId))?.name || 'N/A'}</p>
                     </>
                   ) : (
                     <p className="text-sm text-black">{String(asset.assignedTo)}</p>
@@ -734,6 +736,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                             {employee.position} • {employee.department}
                           </p>
                           <p className="text-xs text-gray-600">{employee.email}</p>
+                          <p className="text-xs text-gray-600">Org: {organizations.find(org => String(org._id) === String(employee.organizationId))?.name || 'N/A'}</p>
                         </div>
                       </div>
                       {selectedAssignEmployee?._id === employee._id && (

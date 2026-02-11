@@ -678,6 +678,14 @@ export default function App() {
               createdAt: new Date(),
               updatedAt: new Date()
             } as any as IUser))}
+            organizations={organizations.map(o => ({
+              ...o,
+              _id: o.id,
+              email: o.contactEmail,
+              phone: o.contactPhone,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            } as any as IOrganization))}
             onBack={() => {
               setCurrentView('assets');
               setEditingAsset(null);
