@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 interface NavbarProps {
@@ -11,16 +11,11 @@ interface NavbarProps {
 
 export function Navbar({ userName = 'Admin User', userRole = 'Administrator', notificationCount = 0 }: NavbarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
       }
@@ -38,73 +33,12 @@ export function Navbar({ userName = 'Admin User', userRole = 'Administrator', no
           <h2 className="text-lg font-semibold text-gray-800">Asset Management System</h2>
         </div>
 
-        {/* Right side - Notifications and User Profile */}
+        {/* Right side - User Profile */}
         <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <div className="relative" ref={notificationRef}>
-            <button
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                setShowProfileMenu(false);
-              }}
-              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Bell className="w-5 h-5 text-gray-700" />
-              {notificationCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notificationCount > 9 ? '9+' : notificationCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                <div className="px-4 py-2 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-800">Notifications</h3>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notificationCount === 0 ? (
-                    <div className="px-4 py-8 text-center text-gray-500">
-                      <Bell className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-sm">No new notifications</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {/* Sample notifications - replace with real data */}
-                      <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                        <p className="text-sm text-gray-800">New asset request submitted</p>
-                        <p className="text-xs text-gray-500 mt-1">2 minutes ago</p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                        <p className="text-sm text-gray-800">Asset maintenance due</p>
-                        <p className="text-xs text-gray-500 mt-1">1 hour ago</p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                        <p className="text-sm text-gray-800">New organization registered</p>
-                        <p className="text-xs text-gray-500 mt-1">3 hours ago</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {notificationCount > 0 && (
-                  <div className="px-4 py-2 border-t border-gray-200">
-                    <button className="text-sm text-blue-600 hover:text-blue-700 w-full text-center">
-                      View all notifications
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
           {/* User Profile */}
           <div className="relative" ref={profileRef}>
             <button
-              onClick={() => {
-                setShowProfileMenu(!showProfileMenu);
-                setShowNotifications(false);
-              }}
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">

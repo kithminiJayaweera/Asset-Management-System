@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import '@/models'; // Import all models
 import AssetRequest from '@/models/AssetRequest';
+import Notification from '@/models/Notification';
 import { ApiResponse, IAssetRequest } from '@/types';
+import { emitNotification } from '@/lib/socket';
 
 // GET /api/requests - Get all asset requests
 export async function GET(request: NextRequest) {
@@ -53,6 +56,16 @@ export async function POST(request: NextRequest) {
       .populate('assetId', 'name assetTag category status assignedTo')
       .populate('approvedBy', 'name email')
       .lean();
+
+    // Notify admins about new request
+    const notification = await Notification.create({
+      userId: 'admin',
+      type: 'asset_request',
+      title: 'New Asset Request',
+      message: `${body.requestedBy?.name || 'Employee'} requested ${body.assetCategory}`,
+      data: { requestId: assetRequest._id },
+    });
+    emitNotification('admin', notification);
 
     return NextResponse.json<ApiResponse<IAssetRequest>>(
       { success: true, data: populatedRequest as IAssetRequest, message: 'Request created successfully' },

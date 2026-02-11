@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Next.js 16 still uses middleware export name
-export function middleware(request: NextRequest) {
-  // Add your middleware logic here
-  // For example: authentication checks, redirects, etc.
-  
+export default function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import '@/models'; // Import all models
 import AssetRequest from '@/models/AssetRequest';
 import Asset from '@/models/Asset';
+import Notification from '@/models/Notification';
 import { ApiResponse, IAssetRequest } from '@/types';
+import { emitNotification } from '@/lib/socket';
 
 interface Params {
   params: Promise<{
@@ -51,10 +54,10 @@ export async function PUT(request: NextRequest, context: Params) {
     const body = await request.json();
     const { id } = await context.params;
 
+    const assetRequest = await AssetRequest.findById(id).populate('requestedBy', 'name');
+
     // If approving an assignment request, update asset status
     if (body.status === 'approved') {
-      const assetRequest = await AssetRequest.findById(id);
-      
       if (assetRequest && assetRequest.requestType === 'assignment' && assetRequest.assetId) {
         await Asset.findByIdAndUpdate(assetRequest.assetId, {
           status: 'assigned',
@@ -63,6 +66,28 @@ export async function PUT(request: NextRequest, context: Params) {
       }
 
       body.approvalDate = new Date();
+
+      // Send notification to requester
+      const notification = await Notification.create({
+        userId: assetRequest.requestedBy._id || assetRequest.requestedBy,
+        type: 'request_approved',
+        title: 'Request Approved',
+        message: `Your ${assetRequest.assetCategory} request has been approved`,
+        data: { requestId: id },
+      });
+      emitNotification(notification.userId, notification);
+    }
+
+    if (body.status === 'rejected') {
+      // Send notification to requester
+      const notification = await Notification.create({
+        userId: assetRequest.requestedBy._id || assetRequest.requestedBy,
+        type: 'request_rejected',
+        title: 'Request Rejected',
+        message: `Your ${assetRequest.assetCategory} request has been rejected`,
+        data: { requestId: id },
+      });
+      emitNotification(notification.userId, notification);
     }
 
     const updatedRequest = await AssetRequest.findByIdAndUpdate(

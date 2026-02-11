@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import '@/models'; // Import all models
 import Asset from '@/models/Asset';
+import Notification from '@/models/Notification';
 import { ApiResponse, PaginatedResponse, IAsset } from '@/types';
+import { broadcastNotification, emitAssetUpdate } from '@/lib/socket';
 
 // GET /api/assets - Get all assets with pagination and filters
 export async function GET(request: NextRequest) {
@@ -128,6 +131,27 @@ export async function POST(request: NextRequest) {
       details: body.details || {},
       maintenance: body.maintenance || { condition: 'good' }
     });
+
+    // Save notification to database for admin
+    await Notification.create({
+      userId: 'admin',
+      type: 'asset_updated',
+      title: 'New Asset Added',
+      message: `${asset.name} (${asset.category}) has been added to inventory`,
+      data: { assetId: asset._id },
+    });
+
+    // Broadcast notification to all users
+    const notification = {
+      _id: Date.now().toString(),
+      type: 'asset_updated',
+      title: 'New Asset Added',
+      message: `${asset.name} (${asset.category}) has been added to inventory`,
+      read: false,
+      createdAt: new Date(),
+    };
+    broadcastNotification(notification);
+    emitAssetUpdate();
 
     return NextResponse.json<ApiResponse<IAsset>>(
       { success: true, data: asset as IAsset, message: 'Asset created successfully' },

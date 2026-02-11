@@ -43,7 +43,7 @@ npm run lint         # Run ESLint
 - **Roles**: `admin`, `employee`, `organization_admin` (stored in User model)
 - **Multi-org support**: Assets/Users scoped to `organizationId` via refs in Mongoose schemas
 - Password hashing with bcryptjs; JWT-ready infrastructure
-- **Current limitation**: Auth middleware in [src/middleware.ts](src/middleware.ts) is minimal—add role-based protection for new routes
+- **Current limitation**: Auth middleware in [src/middleware.ts](../src/middleware.ts) is minimal—add role-based protection for new routes
 
 ### Component Patterns
 
@@ -70,14 +70,14 @@ export function AssetForm() {
 }
 ```
 
-**API Route Pattern** (see [src/app/api/assets/route.ts](src/app/api/assets/route.ts)):
+**API Route Pattern** (see [src/app/api/assets/route.ts](../src/app/api/assets/route.ts)):
 - Accept query params for pagination (`page`, `limit`)
 - Build MongoDB `query` object with filters
 - Return `PaginatedResponse<T>` type for consistency
 - Populate related fields (e.g., `assignedTo`, `organizationId`) before responding
 
 ### Database Connection
-Always call `dbConnect()` before any query—utility cached in global state (see [src/lib/mongodb.ts](src/lib/mongodb.ts)):
+Always call `dbConnect()` before any query—utility cached in global state (see [src/lib/mongodb.ts](../src/lib/mongodb.ts)):
 ```typescript
 await dbConnect(); // Safe to call multiple times; reuses connection
 const assets = await Asset.find({ organizationId });
@@ -87,7 +87,7 @@ const assets = await Asset.find({ organizationId });
 
 ### Asset Depreciation
 - **Multiple methods**: `straight-line` (default), `declining-balance`, `none`
-- **Calculation**: [src/utils/depreciation.ts](src/utils/depreciation.ts) computes `currentValue` based on `purchaseDate` + `usefulLife`
+- **Calculation**: Computes `currentValue` based on `purchaseDate` + `usefulLife`
 - **When adding features**: Use depreciation utility for value calculations; store `depreciationMethod` + `usefulLife` in Asset model
 
 ### Asset Lifecycle
@@ -97,7 +97,7 @@ const assets = await Asset.find({ organizationId });
 - Asset Request flow: `pending` → `approved`/`rejected` → `completed`
 
 ### Constants & Enums
-Use [src/config/constants.ts](src/config/constants.ts) for all hardcoded values:
+Use [src/config/constants.ts](../src/config/constants.ts) for all hardcoded values:
 ```typescript
 import { ASSET_CATEGORIES, ASSET_STATUS, REQUEST_TYPES } from '@/config/constants';
 ```
@@ -141,11 +141,11 @@ Check `user.role` to show/hide admin vs. employee sections:
 
 ## Recommended Reading Order
 
-1. [src/types/index.ts](src/types/index.ts) — Understand core domain types
-2. [src/models/Asset.ts](src/models/Asset.ts) — Core domain model structure
-3. [src/actions/assets.ts](src/actions/assets.ts) — Server Action patterns
-4. [src/app/api/assets/route.ts](src/app/api/assets/route.ts) — API endpoint design
-5. [src/components/admin/AssetList.tsx](src/components/admin/AssetList.tsx) — UI component composition
+1. [src/types/index.ts](../src/types/index.ts) — Understand core domain types
+2. [src/models/Asset.ts](../src/models/Asset.ts) — Core domain model structure
+3. [src/actions/assets.ts](../src/actions/assets.ts) — Server Action patterns
+4. [src/app/api/assets/route.ts](../src/app/api/assets/route.ts) — API endpoint design
+5. [src/components/admin/AssetList.tsx](../src/components/admin/AssetList.tsx) — UI component composition
 
 ---
 

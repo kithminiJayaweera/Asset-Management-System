@@ -2,6 +2,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { SocketProvider } from '@/contexts/SocketContext';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
 import { AssetForm } from '@/components/AssetForm';
@@ -142,6 +144,11 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+
         // Fetch assets (returns paginated response with data.data structure)
         const assetsResponse = await fetch('/api/assets');
         const assetsResult = await assetsResponse.json();
@@ -255,6 +262,16 @@ export default function App() {
     };
 
     fetchData();
+
+    // Listen for Socket.IO asset updates instead of polling
+    const handleAssetUpdate = () => {
+      fetchData();
+    };
+    window.addEventListener('assetUpdated', handleAssetUpdate);
+
+    return () => {
+      window.removeEventListener('assetUpdated', handleAssetUpdate);
+    };
   }, []);
 
   const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
@@ -513,19 +530,19 @@ export default function App() {
 
   return (
     <MainLayout>
-      <Sidebar 
-        title=""
-      >
-        <NavButton
-          onClick={() => {
-            setCurrentView('dashboard');
-            setEditingAsset(null);
-          }}
-          isActive={currentView === 'dashboard'}
-          icon={<LayoutDashboard className="w-5 h-5" />}
+        <Sidebar 
+          title=""
         >
-          Dashboard
-        </NavButton>
+          <NavButton
+            onClick={() => {
+              setCurrentView('dashboard');
+              setEditingAsset(null);
+            }}
+            isActive={currentView === 'dashboard'}
+            icon={<LayoutDashboard className="w-5 h-5" />}
+          >
+            Dashboard
+          </NavButton>
         
         <NavButton
           onClick={() => {
@@ -606,6 +623,9 @@ export default function App() {
       </Sidebar>
 
       <div className="ml-64 pt-16 p-8">
+        <div className="fixed top-4 right-8 z-50">
+          <NotificationBell />
+        </div>
         {currentView === 'dashboard' && <Dashboard assets={assets} />}
         {currentView === 'assets' && (
           <AssetList 

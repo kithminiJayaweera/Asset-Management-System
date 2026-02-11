@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import '@/models'; // Import all models
 import Asset from '@/models/Asset';
 import AssetRequest from '@/models/AssetRequest';
+import Notification from '@/models/Notification';
 import { ApiResponse, IAsset } from '@/types';
+import { emitNotification, broadcastNotification, emitAssetUpdate } from '@/lib/socket';
 
 interface Params {
   params: Promise<{
@@ -74,27 +77,55 @@ export async function PUT(request: NextRequest, context: Params) {
       assignedTo: asset.assignedTo
     });
 
+    // Broadcast update notification
+    await Notification.create({
+      userId: 'admin',
+      type: 'asset_updated',
+      title: 'Asset Updated',
+      message: `${asset.name} has been updated`,
+      data: { assetId: asset._id },
+    });
+    const updateNotif = {
+      _id: Date.now().toString(),
+      type: 'asset_updated',
+      title: 'Asset Updated',
+      message: `${asset.name} has been updated`,
+      read: false,
+      createdAt: new Date(),
+    };
+    broadcastNotification(updateNotif);
+    emitAssetUpdate();
+
     // If assignedTo is being updated, sync with asset requests
     if (body.assignedTo !== undefined) {
       if (body.assignedTo) {
-        // Asset is being assigned - find approved requests from this user for this asset category
+        // Asset is being assigned
         const approvedRequest = await AssetRequest.findOne({
           requestedBy: body.assignedTo,
           status: 'approved',
           $or: [
-            { assetId: id }, // Already linked to this asset
-            { assetId: null, assetCategory: asset.category } // Not yet linked but matching category
+            { assetId: id },
+            { assetId: null, assetCategory: asset.category }
           ]
         }).sort({ createdAt: -1 });
 
         if (approvedRequest && !approvedRequest.assetId) {
-          // Link the request to this asset
           await AssetRequest.findByIdAndUpdate(approvedRequest._id, {
             assetId: id
           });
         }
+
+        // Notify user about asset assignment
+        const notification = await Notification.create({
+          userId: body.assignedTo,
+          type: 'asset_assigned',
+          title: 'Asset Assigned',
+          message: `${asset.name} has been assigned to you`,
+          data: { assetId: id },
+        });
+        emitNotification(body.assignedTo, notification);
       } else {
-        // Asset is being unassigned - remove from any requests
+        // Asset is being unassigned
         await AssetRequest.updateMany(
           { assetId: id },
           { $set: { assetId: null } }
@@ -131,6 +162,18 @@ export async function DELETE(request: NextRequest, context: Params) {
         { status: 404 }
       );
     }
+
+    // Broadcast delete notification
+    const deleteNotif = {
+      _id: Date.now().toString(),
+      type: 'asset_updated',
+      title: 'Asset Deleted',
+      message: `${asset.name} has been deleted from inventory`,
+      read: false,
+      createdAt: new Date(),
+    };
+    broadcastNotification(deleteNotif);
+    emitAssetUpdate();
 
     return NextResponse.json<ApiResponse>({
       success: true,

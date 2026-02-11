@@ -499,7 +499,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               {/* Depreciation Rate */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-700 mb-1">Annual Depreciation Rate</p>
-                <p className="text-xl text-black">{depreciation.depreciationPercentage.toFixed(1)}%</p>
+                <p className="text-xl text-black">{depreciation.annualDepreciationRate.toFixed(1)}%</p>
               </div>
 
               {/* Asset Age */}
@@ -706,7 +706,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               </div>
             </div>
 
-            <div className="overflow-y-auto max-h-[400px] space-y-2">
+            <div className="overflow-y-auto max-h-100 space-y-2">
               {filteredEmployees.length === 0 ? (
                 <div className="text-center py-8 text-gray-700">
                   <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
@@ -715,7 +715,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               ) : (
                 filteredEmployees.map((employee) => (
                   <div
-                    key={employee._id}
+                    key={String(employee._id)}
                     onClick={() => setSelectedAssignEmployee(employee)}
                     className={`border rounded-lg p-4 cursor-pointer transition-all ${
                       selectedAssignEmployee?._id === employee._id

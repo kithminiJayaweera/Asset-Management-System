@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search, Link } from 'lucide-react';
 
 interface RequestedByUser {
   _id: string;
@@ -61,6 +61,7 @@ export function AssetRequestsList() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [showStarredOnly, setShowStarredOnly] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -109,18 +110,20 @@ export function AssetRequestsList() {
     }
   };
 
-  const updateRequestStatus = async (requestId: string, status: 'approved' | 'rejected', notes?: string) => {
+  const updateRequestStatus = async (requestId: string, status: 'approved' | 'rejected', notes?: string, assetId?: string) => {
     try {
+      const payload: any = { status, notes };
+      if (assetId) payload.assetId = assetId;
+
       const response = await fetch(`/api/requests/${requestId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
       
       if (result.success) {
-        // Refresh the list
         fetchRequests();
       }
     } catch (error) {
@@ -358,6 +361,7 @@ export function AssetRequestsList() {
   const filteredRequests = requests.filter(req => {
     const matchesStatus = filterStatus === 'all' || req.status === filterStatus;
     const matchesType = filterType === 'all' || req.requestType === filterType;
+    const matchesCategory = filterCategory === 'all' || req.assetCategory === filterCategory;
     
     // Handle archived filter - show archived if showArchived is true, otherwise show non-archived
     const isArchived = req.archived === true;
@@ -367,7 +371,7 @@ export function AssetRequestsList() {
     const isStarred = req.starred === true;
     const matchesStarred = showStarredOnly ? isStarred : true;
     
-    return matchesStatus && matchesType && matchesArchived && matchesStarred;
+    return matchesStatus && matchesType && matchesCategory && matchesArchived && matchesStarred;
   });
 
   // Get unique categories from requests
@@ -409,20 +413,23 @@ export function AssetRequestsList() {
       asset.category.toLowerCase().includes(assetSearchQuery.toLowerCase());
     
     // Filter by category matching the request's assetCategory
-    // Handle multi-category requests like "Laptop/PC" by splitting on / and checking if any part matches
-    const assetCategory = (asset.category || '').toLowerCase().trim();
-    const requestCategory = selectedRequest ? (selectedRequest.assetCategory || '').toLowerCase().trim() : '';
+    const assetCategory = (asset.category || '').trim();
+    const requestCategory = selectedRequest ? (selectedRequest.assetCategory || '').trim() : '';
     
-    // Split request category by / to handle combined categories
-    const requestCategoryParts = requestCategory.split('/').map(part => part.trim());
-    
+    // Simple exact match (case-insensitive)
     const matchesCategory = !selectedRequest || 
-      assetCategory === requestCategory ||
-      requestCategoryParts.some(part => 
-        assetCategory.includes(part) || 
-        part.includes(assetCategory) ||
-        assetCategory === part
-      );
+      assetCategory.toLowerCase() === requestCategory.toLowerCase();
+    
+    // Debug all assets
+    if (selectedRequest) {
+      console.log('Asset filter:', {
+        assetName: asset.name,
+        assetCategory,
+        requestCategory,
+        match: matchesCategory,
+        status: asset.status
+      });
+    }
     
     // Filter by asset name if specified in the request
     // For example, if request says "Camera" in assetName, filter electronics to show only cameras
@@ -431,10 +438,11 @@ export function AssetRequestsList() {
     
     const matchesAssetName = !requestedAssetName || assetName.includes(requestedAssetName);
     
-    // Show available assets or already assigned to any user (to see reassignment options)
+    // Show available assets or already assigned assets (to allow reassignment)
     const isAvailableOrAssigned = 
       asset.status?.toLowerCase() === 'available' || 
       asset.status?.toLowerCase() === 'active' ||
+      asset.status?.toLowerCase() === 'assigned' ||
       (selectedRequest && asset._id === (typeof selectedRequest.assetId === 'object' ? selectedRequest.assetId?._id : selectedRequest.assetId));
     
     const passes = matchesSearch && matchesCategory && matchesAssetName && isAvailableOrAssigned;
@@ -451,9 +459,47 @@ export function AssetRequestsList() {
     setIsReadOnlyMode(readOnly);
   };
 
-  const handleAssignAsset = () => {
+  const handleAssignAsset = async () => {
     if (selectedRequest && selectedAsset) {
-      assignAssetToRequest(selectedRequest._id, selectedAsset._id);
+      if (selectedRequest.status === 'pending') {
+        // Approve request and assign asset in one action
+        try {
+          // First update asset
+          const assetResponse = await fetch(`/api/assets/${selectedAsset._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              assignedTo: selectedRequest.requestedBy?._id,
+              status: 'assigned'
+            }),
+          });
+
+          const assetResult = await assetResponse.json();
+          
+          if (!assetResult.success) {
+            alert('Failed to assign asset. Please try again.');
+            return;
+          }
+
+          // Then approve request with asset
+          await updateRequestStatus(selectedRequest._id, 'approved', 'Request approved with asset assignment', selectedAsset._id);
+          
+          await Promise.all([fetchRequests(), fetchAssets()]);
+          
+          setShowAssignModal(false);
+          setSelectedRequest(null);
+          setSelectedAsset(null);
+          setIsReadOnlyMode(false);
+          
+          alert('Request approved and asset assigned successfully!');
+        } catch (error) {
+          console.error('Error approving with asset:', error);
+          alert('An error occurred.');
+        }
+      } else {
+        // Existing reassign logic for approved requests
+        assignAssetToRequest(selectedRequest._id, selectedAsset._id);
+      }
     }
   };
 
@@ -710,21 +756,13 @@ export function AssetRequestsList() {
               </div>
             )}
 
-            {/* Assigned Asset Display - Pending Requests (Read-only search) */}
+            {/* Assigned Asset Display - Pending Requests */}
             {request.status === 'pending' && (
-              <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-gray-700 font-semibold">Available Assets</p>
-                  <button
-                    onClick={() => openAssignModal(request, true)}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 text-gray-700 border border-gray-300 rounded hover:bg-gray-200 transition-colors"
-                    title="Search Assets"
-                  >
-                    <Search className="w-3 h-3" />
-                    Search Assets
-                  </button>
+                  <p className="text-xs text-blue-700 font-semibold">Asset Assignment</p>
                 </div>
-                <p className="text-sm text-gray-600 italic mt-2">Approve this request to assign an asset</p>
+                <p className="text-sm text-gray-700 mt-2">Click "Approve & Assign" to select an available {request.assetCategory} asset and approve this request</p>
               </div>
             )}
 
@@ -794,11 +832,11 @@ export function AssetRequestsList() {
               {request.status === 'pending' && !request.archived && (
                 <>
                   <button
-                    onClick={() => updateRequestStatus(request._id, 'approved')}
+                    onClick={() => openAssignModal(request, false)}
                     className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    Approve
+                    Approve & Assign
                   </button>
                   <button
                     onClick={() => updateRequestStatus(request._id, 'rejected', 'Request denied')}
@@ -867,10 +905,10 @@ export function AssetRequestsList() {
                 </p>
                 {request.requestType === 'new' && (
                   <button
-                    onClick={() => openAssetSelection(request)}
+                    onClick={() => openAssignModal(request, false)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    <LinkIcon className="w-4 h-4" />
+                    <Link className="w-4 h-4" />
                     Assign Asset
                   </button>
                 )}
@@ -899,17 +937,17 @@ export function AssetRequestsList() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl text-black">
-                  {isReadOnlyMode ? 'Search Available Assets' : (selectedRequest.assetId ? 'Reassign Asset' : 'Assign Asset')}
+                  {selectedRequest.status === 'pending' ? 'Select Asset to Approve Request' : (selectedRequest.assetId ? 'Reassign Asset' : 'Assign Asset')}
                 </h3>
                 <p className="text-sm text-gray-700 mt-1">
                   Request by {selectedRequest.requestedBy?.name || 'Unknown'} • Category: {selectedRequest.assetCategory}
                 </p>
-                {isReadOnlyMode && (
-                  <p className="text-xs text-yellow-700 mt-2 bg-yellow-50 px-2 py-1 rounded inline-block">
-                    ℹ️ Approve this request to assign assets
+                {selectedRequest.status === 'pending' && (
+                  <p className="text-xs text-green-700 mt-2 bg-green-50 px-2 py-1 rounded inline-block">
+                    Select an asset below to approve and assign in one action
                   </p>
                 )}
-                {!isReadOnlyMode && (
+                {selectedRequest.status === 'approved' && (
                   <p className="text-xs text-blue-700 mt-2 bg-blue-50 px-2 py-1 rounded inline-block">
                     Showing only {selectedRequest.assetCategory} assets
                   </p>
@@ -972,8 +1010,10 @@ export function AssetRequestsList() {
               {assets.length > 0 && filteredAssets.length === 0 && (
                 <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-xs text-yellow-800 mb-2">
-                    <strong>Debug:</strong> {assets.length} total assets found, but none match category "{selectedRequest.assetCategory}". 
-                    Check if asset categories in database match the request category exactly.
+                    <strong>Debug:</strong> {assets.length} total assets found, but none match category "{selectedRequest.assetCategory}".
+                  </p>
+                  <p className="text-xs text-yellow-700 mb-2">
+                    Asset categories in database: {Array.from(new Set(assets.map(a => a.category))).join(', ')}
                   </p>
                   <button
                     onClick={() => setShowAllAssets(!showAllAssets)}
@@ -1055,12 +1095,21 @@ export function AssetRequestsList() {
                   disabled={!selectedAsset}
                   className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                     selectedAsset
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? (selectedRequest.status === 'pending' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-blue-600 text-white hover:bg-blue-700')
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  <UserPlus className="w-4 h-4" />
-                  {selectedRequest.assetId ? 'Reassign Asset' : 'Assign Asset'}
+                  {selectedRequest.status === 'pending' ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Approve & Assign
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      {selectedRequest.assetId ? 'Reassign Asset' : 'Assign Asset'}
+                    </>
+                  )}
                 </button>
               )}
             </div>
