@@ -139,6 +139,8 @@ export default function App() {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   // Fetch all data from database on component mount
   useEffect(() => {
@@ -528,8 +530,33 @@ export default function App() {
     setAssetRequests(assetRequests.map(r => r.id === request.id ? request : r));
   };
 
+  const handleNotificationNavigate = (type: string, id: string) => {
+    console.log('handleNotificationNavigate called:', { type, id, currentView });
+    
+    if (type === 'asset-requests') {
+      setSelectedRequestId(id);
+      setCurrentView('asset-requests');
+      console.log('Navigated to asset-requests');
+    } else if (type === 'asset-detail') {
+      const asset = assets.find(a => a.id === id);
+      if (asset) {
+        setEditingAsset(asset);
+        setCurrentView('asset-detail');
+        console.log('Navigated to asset-detail');
+      } else {
+        console.log('Asset not found:', id);
+      }
+    } else if (type === 'assets') {
+      setCurrentView('assets');
+      console.log('Navigated to assets list, currentView set to:', 'assets');
+    } else {
+      console.log('Unknown navigation type:', type);
+    }
+  };
+
   return (
-    <MainLayout>
+    <SocketProvider userId="admin">
+      <MainLayout>
         <Sidebar 
           title=""
         >
@@ -624,7 +651,7 @@ export default function App() {
 
       <div className="ml-64 pt-16 p-8">
         <div className="fixed top-4 right-8 z-50">
-          <NotificationBell />
+          <NotificationBell onNavigate={handleNotificationNavigate} />
         </div>
         {currentView === 'dashboard' && <Dashboard assets={assets} />}
         {currentView === 'assets' && (
@@ -706,6 +733,10 @@ export default function App() {
               setCurrentView('add-asset');
             }}
             onReassign={handleReassignAsset}
+            onNavigateToRequests={() => {
+              setCurrentView('asset-requests');
+              setEditingAsset(null);
+            }}
           />
         )}
         {currentView === 'organizations' && (
@@ -777,7 +808,7 @@ export default function App() {
           </div>
         )}
         {currentView === 'asset-requests' && (
-          <AssetRequestsList />
+          <AssetRequestsList highlightRequestId={selectedRequestId} />
         )}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
@@ -827,5 +858,6 @@ export default function App() {
 
 
     </MainLayout>
+    </SocketProvider>
   );
 }

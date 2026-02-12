@@ -16,6 +16,7 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+      index: true,
     },
     password: {
       type: String,
@@ -52,7 +53,6 @@ const UserSchema = new Schema<IUser>(
 );
 
 // Indexes
-UserSchema.index({ email: 1 });
 UserSchema.index({ organizationId: 1 });
 UserSchema.index({ role: 1 });
 

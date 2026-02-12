@@ -56,7 +56,7 @@ interface Asset {
   };
 }
 
-export function AssetRequestsList() {
+export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?: string | null }) {
   const [requests, setRequests] = useState<AssetRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -76,6 +76,19 @@ export function AssetRequestsList() {
     fetchRequests();
     fetchAssets();
   }, []);
+
+  useEffect(() => {
+    if (highlightRequestId && requests.length > 0) {
+      setTimeout(() => {
+        const element = document.getElementById(`request-${highlightRequestId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-4', 'ring-blue-500');
+          setTimeout(() => element.classList.remove('ring-4', 'ring-blue-500'), 3000);
+        }
+      }, 100);
+    }
+  }, [highlightRequestId, requests]);
 
   const fetchRequests = async () => {
     try {
@@ -680,7 +693,13 @@ export function AssetRequestsList() {
       {/* Requests List */}
       <div className="space-y-4">
         {filteredRequests.map(request => (
-          <div key={request._id} className="bg-white rounded-lg border border-gray-200 p-6">
+          <div 
+            key={request._id} 
+            id={`request-${request._id}`}
+            className={`bg-white rounded-lg border border-gray-200 p-6 transition-all ${
+              highlightRequestId === request._id ? 'ring-2 ring-blue-400' : ''
+            }`}
+          >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-100 rounded-full">

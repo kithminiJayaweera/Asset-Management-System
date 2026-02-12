@@ -31,3 +31,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    await dbConnect();
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'userId required' }, { status: 400 });
+    }
+
+    await Notification.deleteMany({ userId });
+
+    return NextResponse.json({ success: true, message: 'All notifications cleared' });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}

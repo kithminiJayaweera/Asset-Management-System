@@ -8,6 +8,7 @@ const OrganizationSchema = new Schema<IOrganization>(
       required: [true, 'Organization name is required'],
       trim: true,
       unique: true,
+      index: true,
     },
     address: {
       type: String,
@@ -26,6 +27,7 @@ const OrganizationSchema = new Schema<IOrganization>(
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+      index: true,
     },
     website: {
       type: String,
@@ -40,10 +42,6 @@ const OrganizationSchema = new Schema<IOrganization>(
     timestamps: true,
   }
 );
-
-// Index for faster queries
-OrganizationSchema.index({ name: 1 });
-OrganizationSchema.index({ email: 1 });
 
 const Organization: Model<IOrganization> =
   mongoose.models.Organization || mongoose.model<IOrganization>('Organization', OrganizationSchema);

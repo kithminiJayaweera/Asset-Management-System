@@ -37,9 +37,18 @@ interface AssetDetailProps {
   onBack: () => void;
   onEdit: () => void;
   onReassign: (assetId: string, newEmployeeName: string | undefined, oldEmployeeName: string | undefined) => void;
+  onNavigateToRequests?: () => void;
 }
 
-export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign }: AssetDetailProps) {
+interface AuditLog {
+  _id: string;
+  action: string;
+  performedBy: { name: string } | null;
+  changes?: any;
+  createdAt: string;
+}
+
+export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign, onNavigateToRequests }: AssetDetailProps) {
   const depreciation = calculateDepreciation(asset);
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | undefined>(assignedEmployee);
@@ -49,11 +58,13 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedAssignEmployee, setSelectedAssignEmployee] = useState<IUser | null>(null);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
   
   useEffect(() => {
     fetchPendingRequests();
-  }, [asset.category]);
+    fetchAuditLogs();
+  }, [asset.category, asset._id]);
 
   const fetchPendingRequests = async () => {
     try {
@@ -69,6 +80,18 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    try {
+      const response = await fetch(`/api/audit-logs?entityType=asset&entityId=${asset._id}`);
+      const result = await response.json();
+      if (result.success) {
+        setAuditLogs(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
     }
   };
 
@@ -93,13 +116,21 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       const requestResponse = await fetch(`/api/requests/${request._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assetId: asset._id }),
+        body: JSON.stringify({ 
+          assetId: asset._id,
+          status: 'approved'
+        }),
       });
 
       if (requestResponse.ok) {
-        alert('Asset assigned successfully!');
+        alert('Asset assigned and request approved successfully!');
         setShowAssignFromRequestModal(false);
-        window.location.reload();
+        // Navigate to asset requests page using callback
+        if (onNavigateToRequests) {
+          onNavigateToRequests();
+        } else {
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error('Error assigning asset:', error);
@@ -464,7 +495,36 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           )}
 
           {/* Asset History Log */}
-          {/* Asset logs not available in current schema - can be added with AuditLog integration */}
+          {auditLogs.length > 0 && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h3 className="text-lg text-black mb-4 flex items-center gap-2">
+                <History className="w-5 h-5" />
+                Activity History
+              </h3>
+              <div className="space-y-3">
+                {auditLogs.map((log) => (
+                  <div key={log._id} className="flex gap-3 pb-3 border-b border-gray-100 last:border-0">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-black">{log.action}</p>
+                      <p className="text-xs text-gray-700 mt-1">
+                        By {log.performedBy?.name || 'System'} • {new Date(log.createdAt).toLocaleString()}
+                      </p>
+                      {log.changes && Object.keys(log.changes).length > 0 && (
+                        <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+                          {Object.entries(log.changes).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-medium">{key}:</span> {JSON.stringify(value)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar - Quick Stats */}

@@ -55,6 +55,10 @@ export async function PUT(request: NextRequest, context: Params) {
 
     console.log('Updating asset:', id, 'with data:', body);
 
+    // Get old asset data BEFORE update for comparison
+    const oldAsset = await Asset.findById(id).select('assignedTo name').lean();
+    const previousAssignee = oldAsset?.assignedTo?.toString();
+
     const asset = await Asset.findByIdAndUpdate(
       id,
       { $set: body },
@@ -99,7 +103,6 @@ export async function PUT(request: NextRequest, context: Params) {
     // If assignedTo is being updated, sync with asset requests
     if (body.assignedTo !== undefined) {
       if (body.assignedTo) {
-        // Asset is being assigned
         const approvedRequest = await AssetRequest.findOne({
           requestedBy: body.assignedTo,
           status: 'approved',
@@ -115,17 +118,83 @@ export async function PUT(request: NextRequest, context: Params) {
           });
         }
 
-        // Notify user about asset assignment
-        const notification = await Notification.create({
-          userId: body.assignedTo,
-          type: 'asset_assigned',
-          title: 'Asset Assigned',
-          message: `${asset.name} has been assigned to you`,
-          data: { assetId: id },
-        });
-        emitNotification(body.assignedTo, notification);
+        // Notify previous assignee if reassigning
+        if (previousAssignee && previousAssignee !== body.assignedTo.toString()) {
+          try {
+            await Notification.updateMany(
+              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { $set: { read: true } }
+            );
+            await Notification.create({
+              userId: previousAssignee,
+              type: 'asset_updated',
+              title: 'Asset Unassigned',
+              message: `${asset.name} has been reassigned to another user`,
+              data: { assetId: id },
+            });
+            const unassignNotif = {
+              _id: Date.now().toString(),
+              type: 'asset_updated',
+              title: 'Asset Unassigned',
+              message: `${asset.name} has been reassigned`,
+              read: false,
+              createdAt: new Date(),
+            };
+            emitNotification(previousAssignee, unassignNotif);
+          } catch (notifError) {
+            console.error('Error notifying previous assignee:', notifError);
+          }
+        }
+
+        // Notify new assignee
+        try {
+          await Notification.create({
+            userId: body.assignedTo.toString(),
+            type: 'asset_assigned',
+            title: 'Asset Assigned',
+            message: `${asset.name} has been assigned to you`,
+            data: { assetId: id },
+          });
+          const assignNotif = {
+            _id: Date.now().toString(),
+            type: 'asset_assigned',
+            title: 'Asset Assigned',
+            message: `${asset.name} has been assigned`,
+            read: false,
+            createdAt: new Date(),
+          };
+          emitNotification(body.assignedTo.toString(), assignNotif);
+        } catch (notifError) {
+          console.error('Error creating assignment notification:', notifError);
+        }
       } else {
-        // Asset is being unassigned
+        // Asset unassigned completely
+        if (previousAssignee) {
+          try {
+            await Notification.updateMany(
+              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { $set: { read: true } }
+            );
+            await Notification.create({
+              userId: previousAssignee,
+              type: 'asset_updated',
+              title: 'Asset Unassigned',
+              message: `${asset.name} has been unassigned from you`,
+              data: { assetId: id },
+            });
+            const unassignNotif = {
+              _id: Date.now().toString(),
+              type: 'asset_updated',
+              title: 'Asset Unassigned',
+              message: `${asset.name} has been unassigned`,
+              read: false,
+              createdAt: new Date(),
+            };
+            emitNotification(previousAssignee, unassignNotif);
+          } catch (notifError) {
+            console.error('Error notifying unassignment:', notifError);
+          }
+        }
         await AssetRequest.updateMany(
           { assetId: id },
           { $set: { assetId: null } }

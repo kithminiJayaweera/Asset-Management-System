@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, X, Check } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { useSocket } from '@/contexts/SocketContext';
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  onNavigate?: (type: string, id: string) => void;
+}
+
+export function NotificationBell({ onNavigate }: NotificationBellProps) {
   const { notifications, unreadCount, markAsRead, clearAll } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -17,7 +21,7 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+        className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors "
       >
         <Bell className="w-6 h-6" />
         {mounted && unreadCount > 0 && (
@@ -59,7 +63,39 @@ export function NotificationBell() {
                   className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
                     !notification.read ? 'bg-blue-50' : ''
                   }`}
-                  onClick={() => markAsRead(notification._id)}
+                  onClick={() => {
+                    markAsRead(notification._id);
+                    const data = notification.data || {};
+                    
+                    console.log('Notification clicked:', {
+                      title: notification.title,
+                      type: notification.type,
+                      data: data,
+                      onNavigate: !!onNavigate
+                    });
+                    
+                    if (onNavigate) {
+                      if (notification.type === 'asset_request' && data.requestId) {
+                        console.log('Navigating to asset-requests');
+                        onNavigate('asset-requests', data.requestId);
+                      } else if ((notification.type === 'request_approved' || notification.type === 'request_rejected') && data.requestId) {
+                        console.log('Navigating to asset-requests');
+                        onNavigate('asset-requests', data.requestId);
+                      } else if ((notification.type === 'asset_assigned' || notification.type === 'asset_updated') && data.assetId) {
+                        console.log('Navigating to asset-detail');
+                        onNavigate('asset-detail', data.assetId);
+                      } else if (notification.title === 'New Asset Added') {
+                        console.log('Navigating to assets list');
+                        onNavigate('assets', '');
+                      } else {
+                        console.log('No navigation match found');
+                      }
+                    } else {
+                      console.log('onNavigate callback not provided');
+                    }
+                    
+                    setIsOpen(false);
+                  }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

@@ -16,7 +16,8 @@ export interface AssetLog {
 export interface Asset {
   id: string;
   name: string;
-  category: string;
+  category?: string; // DEPRECATED
+  categoryId?: string; // NEW
   status: 'active' | 'maintenance' | 'retired' | 'lost';
   location: string;
   purchaseDate: string;
@@ -44,6 +45,7 @@ export interface Asset {
   mileage?: string;
   condition?: string;
   lastMaintenanceDate?: string;
+  customFields?: Record<string, any>; // NEW
 }
 
 export interface Organization {

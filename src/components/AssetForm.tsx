@@ -64,12 +64,46 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
     serialNumber: initialData?.serialNumber || '',
     condition: initialData?.condition || 'good',
     warrantyEndDate: initialData?.warrantyEndDate || '',
-    // Category-specific fields
-    details: {} as Record<string, any>,
+    // Category-specific fields - populate from initialData.details
+    details: (initialData?.details || {}) as Record<string, any>,
     // Maintenance fields
-    maintenanceCondition: 'good',
-    lastMaintenanceDate: initialData?.lastMaintenanceDate || '',
+    maintenanceCondition: initialData?.maintenance?.condition || 'good',
+    lastMaintenanceDate: initialData?.maintenance?.lastMaintenanceDate || initialData?.lastMaintenanceDate || '',
   });
+
+  // Update form data when initialData changes (for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      // Helper to format date for input field
+      const formatDate = (date: string | undefined) => {
+        if (!date) return '';
+        try {
+          return new Date(date).toISOString().split('T')[0];
+        } catch {
+          return '';
+        }
+      };
+
+      setFormData({
+        name: initialData.name || '',
+        category: initialData.category || 'PC/Laptop',
+        status: initialData.status || 'active',
+        location: initialData.location || '',
+        purchaseDate: formatDate(initialData.purchaseDate),
+        value: initialData.value?.toString() || '',
+        depreciationRate: initialData.depreciationRate?.toString() || '20',
+        assignedTo: initialData.assignedTo || '',
+        description: initialData.description || '',
+        organizationId: initialData.organizationId || '',
+        serialNumber: initialData.serialNumber || '',
+        condition: initialData.condition || 'good',
+        warrantyEndDate: formatDate(initialData.warrantyEndDate),
+        details: (initialData.details || {}) as Record<string, any>,
+        maintenanceCondition: initialData.maintenance?.condition || 'good',
+        lastMaintenanceDate: formatDate(initialData.maintenance?.lastMaintenanceDate || initialData.lastMaintenanceDate),
+      });
+    }
+  }, [initialData]);
 
   // Calculate current value in real-time
   useEffect(() => {
@@ -153,28 +187,32 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
         const aiInfo = result.aiInfo;
         
         // Convert USD to LKR (approximate rate)
-        const estimatedPriceLKR = Math.round(aiInfo.estimatedPrice * 300);
+        const estimatedPriceLKR = aiInfo.estimatedPrice ? Math.round(aiInfo.estimatedPrice * 300) : 0;
         
         console.log('AI specs received:', aiInfo.specs);
         
         setFormData(prev => ({
           ...prev,
-          name: `${aiInfo.manufacturer} ${aiInfo.model}`,
-          category: aiInfo.category,
-          description: aiInfo.description,
-          value: estimatedPriceLKR.toString(),
+          name: aiInfo.manufacturer && aiInfo.model ? `${aiInfo.manufacturer} ${aiInfo.model}` : prev.name,
+          category: aiInfo.category || prev.category,
+          description: aiInfo.description || prev.description,
+          value: estimatedPriceLKR > 0 ? estimatedPriceLKR.toString() : prev.value,
           depreciationRate: aiInfo.depreciationRate?.toString() || prev.depreciationRate,
           // Populate details with specs - ensure it's a new object to trigger re-render
-          details: { ...(aiInfo.specs || {}) },
+          details: aiInfo.specs ? { ...aiInfo.specs } : prev.details,
         }));
         
         console.log('Form data updated with AI info');
         
+        const priceText = estimatedPriceLKR > 0 
+          ? `Est. Price: Rs. ${estimatedPriceLKR.toLocaleString()}` 
+          : 'Price not available';
+        
         setSearchMessage(
-          `Information found: ${aiInfo.manufacturer} ${aiInfo.model}\n` +
-          `Category: ${aiInfo.category} | Est. Price: Rs. ${estimatedPriceLKR.toLocaleString()}\n` +
-          `${aiInfo.description}\n` +
-          ` Category-specific fields have been auto-filled below!`
+          `✅ Information found: ${aiInfo.manufacturer || ''} ${aiInfo.model || ''}\n` +
+          `Category: ${aiInfo.category || 'Unknown'} | ${priceText}\n` +
+          `${aiInfo.description || ''}\n` +
+          `✨ Category-specific fields have been auto-filled below!`
         );
       }
     } catch (error) {

@@ -9,16 +9,22 @@ const AssetSchema = new Schema<IAsset>(
       unique: true,
       trim: true,
       uppercase: true,
+      index: true,
     },
     name: {
       type: String,
       required: [true, 'Asset name is required'],
       trim: true,
     },
+    // DEPRECATED: Keep for backward compatibility, will be removed in v2.0
     category: {
       type: String,
-      required: [true, 'Category is required'],
       trim: true,
+    },
+    // NEW: Reference to Category collection
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
     },
     description: {
       type: String,
@@ -93,10 +99,15 @@ const AssetSchema = new Schema<IAsset>(
       type: String,
       trim: true,
     },
-    // Category-specific fields stored as flexible object
+    // DEPRECATED: Keep for backward compatibility
     details: {
       type: Map,
       of: String,
+      default: {},
+    },
+    // NEW: Dynamic custom fields based on category definition
+    customFields: {
+      type: Schema.Types.Mixed,
       default: {},
     },
     maintenance: {
@@ -115,37 +126,55 @@ const AssetSchema = new Schema<IAsset>(
 );
 
 // Indexes for faster queries
-AssetSchema.index({ assetTag: 1 });
 AssetSchema.index({ organizationId: 1 });
 AssetSchema.index({ status: 1 });
 AssetSchema.index({ assignedTo: 1 });
-AssetSchema.index({ category: 1 });
+AssetSchema.index({ category: 1 }); // Keep for backward compatibility
+AssetSchema.index({ categoryId: 1 }); // NEW index
 AssetSchema.index({ serialNumber: 1 });
 AssetSchema.index({ model: 1, manufacturer: 1 });
 
-// Pre-save hook to automatically calculate currentValue based on depreciation
-AssetSchema.pre('save', function(next) {
-  // Only calculate if purchasePrice and purchaseDate are present
+// Virtual to get category name (backward compatible)
+AssetSchema.virtual('categoryName').get(function() {
+  return this.category || (this.populated('categoryId') ? (this.categoryId as any)?.name : null);
+});
+
+// Pre-save hook - UPDATED to handle both old and new category fields
+AssetSchema.pre('save', async function(next) {
+  // Sync category and categoryId for backward compatibility
+  if (this.isModified('categoryId') && this.categoryId) {
+    try {
+      const Category = mongoose.model('Category');
+      const cat = await Category.findById(this.categoryId).select('name').lean();
+      if (cat) {
+        this.category = (cat as any).name;
+      }
+    } catch (err) {
+      // Category model might not exist yet, skip
+    }
+  }
+
+  // Depreciation calculation
   if (this.purchasePrice && this.purchaseDate && this.depreciationMethod !== 'none') {
-    // Dynamically import to avoid circular dependencies
-    import('@/utils/depreciation').then(({ calculateCurrentValue, getDefaultUsefulLife }) => {
-      // Set default usefulLife if not provided
+    try {
+      const { calculateCurrentValue, getDefaultUsefulLife } = await import('@/utils/depreciation');
+      
       if (!this.usefulLife) {
-        this.usefulLife = getDefaultUsefulLife(this.category);
+        this.usefulLife = getDefaultUsefulLife(this.category || 'General');
       }
       
-      // Calculate and set currentValue
       this.currentValue = calculateCurrentValue(
         this.purchasePrice,
         this.purchaseDate,
-        this.category,
+        this.category || 'General',
         this.usefulLife
       );
       
       next();
-    }).catch(next);
+    } catch (err) {
+      next(err as Error);
+    }
   } else {
-    // If depreciation is 'none' or no purchase data, set currentValue to purchasePrice
     if (!this.currentValue && this.purchasePrice) {
       this.currentValue = this.purchasePrice;
     }

@@ -36,7 +36,8 @@ export interface IAsset {
   _id: Types.ObjectId | string;
   assetTag: string;
   name: string;
-  category: string;
+  category?: string; // DEPRECATED but kept for compatibility
+  categoryId?: Types.ObjectId | string; // NEW: Reference to Category
   description?: string;
   serialNumber?: string;
   model?: string;
@@ -54,11 +55,32 @@ export interface IAsset {
   warrantyExpiry?: Date;
   notes?: string;
   imageUrl?: string;
-  details?: Record<string, any>; // Category-specific fields
+  details?: Record<string, any>; // DEPRECATED: Category-specific fields
+  customFields?: Record<string, any>; // NEW: Dynamic custom fields
   maintenance?: {
     condition?: AssetCondition;
     lastMaintenanceDate?: Date;
   };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Category Types
+export interface ICategoryField {
+  name: string;
+  key: string;
+  type: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'email' | 'url';
+  required: boolean;
+  options?: string[];
+  defaultValue?: string;
+}
+
+export interface ICategory {
+  _id: Types.ObjectId | string;
+  name: string;
+  organizationId: Types.ObjectId | string;
+  fields: ICategoryField[];
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

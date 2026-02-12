@@ -34,7 +34,7 @@ export function Navbar({ userName = 'Admin User', userRole = 'Administrator', no
         </div>
 
         {/* Right side - User Profile */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative right-15">
           {/* User Profile */}
           <div className="relative" ref={profileRef}>
             <button

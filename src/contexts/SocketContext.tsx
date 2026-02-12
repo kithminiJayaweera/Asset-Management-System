@@ -23,19 +23,26 @@ export const useSocket = () => useContext(SocketContext);
 
 export function SocketProvider({ children, userId }: { children: React.ReactNode; userId?: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [notifications, setNotifications] = useState<any[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('notifications');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Load notifications from API on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('notifications', JSON.stringify(notifications));
+    if (userId && !isInitialized) {
+      fetch(`/api/notifications?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setNotifications(data.data);
+          }
+          setIsInitialized(true);
+        })
+        .catch(err => {
+          console.error('Failed to load notifications:', err);
+          setIsInitialized(true);
+        });
     }
-  }, [notifications]);
+  }, [userId, isInitialized]);
 
   useEffect(() => {
     const socketInstance = io(window.location.origin, {
@@ -79,21 +86,46 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
 
   useEffect(() => {
     const handleAssetUpdate = () => {
-      window.location.reload();
+      console.log('🔄 Refreshing asset data...');
+      window.dispatchEvent(new Event('refreshAssets'));
     };
 
     window.addEventListener('assetUpdated', handleAssetUpdate);
     return () => window.removeEventListener('assetUpdated', handleAssetUpdate);
   }, []);
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n._id === id ? { ...n, read: true } : n))
     );
+    
+    // Only update in database if it's a valid MongoDB ObjectId (24 hex chars)
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      try {
+        await fetch(`/api/notifications/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ read: true }),
+        });
+      } catch (err) {
+        console.error('Failed to mark notification as read:', err);
+      }
+    }
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
     setNotifications([]);
+    
+    // Clear in database
+    if (userId) {
+      try {
+        await fetch(`/api/notifications?userId=${userId}`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.error('Failed to clear notifications:', err);
+      }
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
