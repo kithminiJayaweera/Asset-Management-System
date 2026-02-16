@@ -49,10 +49,12 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedAssignEmployee, setSelectedAssignEmployee] = useState<IUser | null>(null);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
+  const [organizations, setOrganizations] = useState<IOrganization[]>([]);
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
   
   useEffect(() => {
     fetchPendingRequests();
+    fetchOrganizations();
   }, [asset.category]);
 
   const fetchPendingRequests = async () => {
@@ -70,6 +72,23 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
     } catch (error) {
       console.error('Error fetching requests:', error);
     }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+      const response = await fetch('/api/organizations');
+      const result = await response.json();
+      if (result.success) {
+        setOrganizations(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+    }
+  };
+
+  const getEmployeeOrganization = (employee: IUser) => {
+    const orgId = typeof employee.organizationId === 'object' && employee.organizationId ? employee.organizationId._id : employee.organizationId;
+    return organizations.find(org => String(org._id) === String(orgId));
   };
 
   const assignToRequester = async (request: AssetRequest) => {
@@ -362,7 +381,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           )}
 
           {/* Assignment Information */}
-          {(asset.assignedTo || assignedEmployee) && (
+          {(asset.assignedTo || assignedEmployee) && asset.status !== 'maintenance' && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-black">Assignment Information</h3>
@@ -410,7 +429,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           )}
 
           {/* Unassigned State */}
-          {!asset.assignedTo && !assignedEmployee && (
+          {!asset.assignedTo && !assignedEmployee && asset.status !== 'maintenance' && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-black">Assignment Information</h3>
@@ -713,39 +732,48 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   <p>No employees found</p>
                 </div>
               ) : (
-                filteredEmployees.map((employee) => (
-                  <div
-                    key={String(employee._id)}
-                    onClick={() => setSelectedAssignEmployee(employee)}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedAssignEmployee?._id === employee._id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-full">
-                          <User className="w-4 h-4 text-blue-600" />
+                filteredEmployees.map((employee) => {
+                  const employeeOrg = getEmployeeOrganization(employee);
+                  return (
+                    <div
+                      key={String(employee._id)}
+                      onClick={() => setSelectedAssignEmployee(employee)}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedAssignEmployee?._id === employee._id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-full">
+                            <User className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-black">{employee.name}</p>
+                            <p className="text-xs text-gray-700">
+                              {employee.position} • {employee.department}
+                            </p>
+                            {employeeOrg && (
+                              <p className="text-xs text-gray-600 flex items-center gap-1 mt-1">
+                                <Building2 className="w-3 h-3" />
+                                {employeeOrg.name}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-600">{employee.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-black">{employee.name}</p>
-                          <p className="text-xs text-gray-700">
-                            {employee.position} • {employee.department}
-                          </p>
-                          <p className="text-xs text-gray-600">{employee.email}</p>
-                        </div>
+                        {selectedAssignEmployee?._id === employee._id && (
+                          <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                      {selectedAssignEmployee?._id === employee._id && (
-                        <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 

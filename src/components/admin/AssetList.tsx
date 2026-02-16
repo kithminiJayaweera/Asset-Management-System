@@ -159,8 +159,9 @@ export function AssetList({
               <TableHead className="text-black font-semibold">Category</TableHead>
               <TableHead className="text-black font-semibold">Location</TableHead>
               <TableHead className="text-black font-semibold">Status</TableHead>
+              <TableHead className="text-black font-semibold">Assignment</TableHead>
               <TableHead className="text-black font-semibold">Purchase Date</TableHead>
-              <TableHead className="text-black font-semibold">Value</TableHead>
+              <TableHead className="text-black font-semibold">Value (LKR)</TableHead>
               <TableHead className="text-black font-semibold">Assigned To</TableHead>
               <TableHead className="text-black font-semibold text-right">
                 Actions
@@ -187,6 +188,15 @@ export function AssetList({
                     )}`}
                   >
                     {asset.status}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      asset.assignedTo ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {asset.assignedTo ? 'Assigned' : 'Unassigned'}
                   </span>
                 </TableCell>
                 <TableCell className="text-black">

@@ -181,7 +181,7 @@ export default function App() {
             id: asset._id,
             name: asset.name,
             category: asset.category,
-            status: (asset.status === 'available' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
+            status: (asset.status === 'available' || asset.status === 'assigned' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
             location: asset.location || '',
             purchaseDate: asset.purchaseDate,
             value: (asset.currentValue || asset.purchasePrice || asset.value || 0) as number,
