@@ -295,7 +295,7 @@ export default function App() {
         currentValue: asset.value,
         depreciationMethod: 'straight-line' as const,
         usefulLife: asset.depreciationRate ? Math.floor(100 / asset.depreciationRate) : 5,
-        status: asset.status === 'active' ? 'available' : asset.status,
+        status: asset.status,
         condition: (asset.condition || 'good').toLowerCase(),
         location: asset.location,
         organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
@@ -346,7 +346,7 @@ export default function App() {
         body: JSON.stringify({
           name: asset.name,
           category: asset.category,
-          status: asset.status === 'active' ? 'available' : asset.status,
+          status: asset.status,
           location: asset.location,
           description: asset.description,
           currentValue: asset.value,
@@ -649,7 +649,7 @@ export default function App() {
         </NavButton>
       </Sidebar>
 
-      <div className="ml-64 pt-16 p-8">
+      <div className="ml-64 pt-16 p-2" style={{ backgroundColor: '#F3E6EC', minHeight: '100vh' }}>
         <div className="fixed top-4 right-8 z-50">
           <NotificationBell onNavigate={handleNotificationNavigate} />
         </div>
@@ -801,7 +801,7 @@ export default function App() {
                 setCurrentView('employees');
                 setSelectedEmployee(null);
               }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg"
             >
               Back to Employees
             </button>

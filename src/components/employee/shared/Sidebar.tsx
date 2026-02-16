@@ -13,21 +13,22 @@ interface SidebarProps {
 
 export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onBack, children }: SidebarProps) {
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200">
+    <div className="fixed left-0 top-0 h-full w-64 border-r border-gray-200" style={{ backgroundColor: '#D6BFDD', color: '#391B49' }}>
       <div className="p-6">
         {showBackButton && onBack && (
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-700 hover:text-black mb-4 text-sm"
+            className="flex items-center gap-2 hover:text-black mb-4 text-sm "
+            style={{ color: '#391B49' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
         )}
-        <h1 className="text-xl text-black">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-700 mt-1">{subtitle}</p>}
+        <h1 className="text-xl" style={{ color: '#391B49' }}>{title}</h1>
+        {subtitle && <p className="text-sm mt-1" style={{ color: '#391B49' }}>{subtitle}</p>}
         {linkTo && linkText && (
-          <a href={linkTo} className="text-sm text-blue-600 hover:text-blue-700 mt-2 block">
+          <a href={linkTo} className="text-sm text-purple-600 hover:text-purple-700 mt-2 block">
             {linkText}
           </a>
         )}

@@ -28,7 +28,7 @@ const AuditLogSchema = new Schema<IAuditLog>(
     organizationId: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',
-      required: [true, 'Organization ID is required'],
+      required: false,
     },
   },
   {

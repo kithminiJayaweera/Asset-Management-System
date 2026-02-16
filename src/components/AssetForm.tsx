@@ -308,12 +308,12 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
 
       {/* Asset Detection Search */}
       {!initialData && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+        <div className="mb-6 p-4 bg-purple-50 border border-purple-400 rounded-lg">
+          <h3 className="text-sm font-semibold text-purple-900 mb-2 flex items-center gap-2">
             <Search className="w-4 h-4" />
             Quick Asset Detection
           </h3>
-          <p className="text-xs text-blue-700 mb-3">
+          <p className="text-xs text-purple-600 mb-3">
             Search for existing assets by serial number or model to auto-fill details
           </p>
           <div className="flex gap-2">
@@ -323,13 +323,13 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAssetSearch()}
               placeholder="Enter serial number or model (e.g., AST-001 or Latitude 5520)"
-              className="flex-1 px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
+              className="flex-1 px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 text-sm"
             />
             <button
               type="button"
               onClick={handleAssetSearch}
               disabled={searching}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 text-sm"
             >
               {searching ? 'Searching...' : 'Search'}
             </button>
@@ -353,7 +353,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="e.g., Dell Laptop XPS 15"
             />
           </div>
@@ -368,7 +368,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.category}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="PC/Laptop">PC/Laptop</option>
               <option value="Office Furniture">Office Furniture</option>
@@ -387,7 +387,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.status}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
@@ -407,7 +407,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.location}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="e.g., Office - Floor 2"
             />
           </div>
@@ -423,7 +423,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.purchaseDate}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             />
           </div>
 
@@ -440,7 +440,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               required
               min="0"
               step="0.01"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="e.g., 150000"
             />
           </div>
@@ -475,10 +475,10 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               min="0"
               max="100"
               step="0.1"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="e.g., 20"
             />
-            <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
               <p className="text-xs text-blue-900 font-semibold mb-2">Recommended Rates (Sri Lanka):</p>
               <ul className="text-xs text-blue-800 space-y-1">
                 <li>• <strong>Computer/Laptop:</strong> 20-33%</li>
@@ -488,7 +488,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                 <li>• <strong>Machinery/Equipment:</strong> 10-15%</li>
                 <li>• <strong>Software:</strong> 20-25%</li>
               </ul>
-              <p className="text-xs text-blue-700 mt-2">
+              <p className="text-xs text-purple-700 mt-2">
                 <strong>Example:</strong> If asset costs ₨150,000 at 20% rate: Annual depreciation = ₨30,000
               </p>
             </div>
@@ -504,7 +504,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="assignedTo"
               value={formData.assignedTo}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="e.g., John Doe"
             />
           </div>
@@ -519,7 +519,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="Additional notes about the asset..."
             />
           </div>
@@ -533,7 +533,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="organizationId"
               value={formData.organizationId}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="">Select an organization</option>
               {organizations.map(org => (
@@ -555,7 +555,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 ${
                 !serialValidation.isValid 
                   ? 'border-red-300 focus:ring-red-500' 
-                  : 'border-gray-300 focus:ring-blue-500'
+                  : 'border-gray-300 focus:ring-purple-500'
               }`}
               placeholder="e.g., SN-2024-001"
             />
@@ -578,7 +578,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="condition"
               value={formData.condition}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="excellent">Excellent</option>
               <option value="good">Good</option>
@@ -597,7 +597,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="warrantyEndDate"
               value={formData.warrantyEndDate}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             />
           </div>
 
@@ -610,7 +610,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="maintenanceCondition"
               value={formData.maintenanceCondition}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="excellent">Excellent</option>
               <option value="good">Good</option>
@@ -629,7 +629,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="lastMaintenanceDate"
               value={formData.lastMaintenanceDate}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             />
           </div>
 
@@ -655,7 +655,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
                         console.log(`Field ${field.name} changed to: ${e.target.value}`);
                         handleDetailChange(field.name, e.target.value);
                       }}
-                      className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                      className="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900"
                       placeholder={field.placeholder}
                       required
                     />
@@ -669,7 +669,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-purple-400 text-black rounded-lg hover:bg-purple-300 transition-colors"
             >
               <Save className="w-4 h-4" />
               {initialData ? 'Update Asset' : 'Add Asset'}

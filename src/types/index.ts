@@ -29,7 +29,7 @@ export interface IOrganization {
 }
 
 // Asset Types
-export type AssetStatus = 'available' | 'assigned' | 'maintenance' | 'retired';
+export type AssetStatus = 'active' | 'maintenance' | 'retired' | 'lost';
 export type AssetCondition = 'excellent' | 'good' | 'fair' | 'poor';
 
 export interface IAsset {

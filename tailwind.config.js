@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        background: '#F3E6EC',
+      },
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-in-out',
         'slideUp': 'slideUp 0.3s ease-out',

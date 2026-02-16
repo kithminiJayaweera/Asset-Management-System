@@ -71,6 +71,9 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   const [assetSearchQuery, setAssetSearchQuery] = useState('');
   const [showAllAssets, setShowAllAssets] = useState(false);
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingRequest, setRejectingRequest] = useState<AssetRequest | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -83,8 +86,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
         const element = document.getElementById(`request-${highlightRequestId}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('ring-4', 'ring-blue-500');
-          setTimeout(() => element.classList.remove('ring-4', 'ring-blue-500'), 3000);
+          element.classList.add('ring-4', 'ring-purple-500');
+          setTimeout(() => element.classList.remove('ring-4', 'ring-purple-500'), 3000);
         }
       }, 100);
     }
@@ -395,7 +398,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       case 'approved': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-purple-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -526,16 +529,16 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between ml-5 ">
         <div>
-          <h2 className="text-2xl text-black mb-2">Asset Requests</h2>
+          <h2 className="text-2xl text-black mb-2 mt-5">Asset Requests</h2>
           <p className="text-gray-800">Manage employee asset requests</p>
         </div>
         
@@ -548,7 +551,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               !showArchived && !showStarredOnly
-                ? 'bg-blue-600 text-white'
+                ? 'bg-purple-500 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -646,7 +649,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           </div>
         )}
         {!showArchived && !showStarredOnly && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>Active View:</strong> Showing all non-archived requests. Archive old requests to keep this view clean.
             </p>
@@ -661,7 +664,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -678,7 +681,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>
@@ -702,8 +705,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <User className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-purple-100 rounded-full">
+                  <User className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -777,9 +780,9 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
 
             {/* Assigned Asset Display - Pending Requests */}
             {request.status === 'pending' && (
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-blue-700 font-semibold">Asset Assignment</p>
+                  <p className="text-xs text-purple-700 font-semibold">Asset Assignment</p>
                 </div>
                 <p className="text-sm text-gray-700 mt-2">Click "Approve & Assign" to select an available {request.assetCategory} asset and approve this request</p>
               </div>
@@ -795,7 +798,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
               const isAssignedToSomeoneElse = assetObj && assetAssignedToId && assetAssignedToId !== requestedById;
 
               return (
-                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-gray-700 font-semibold">Assigned Asset</p>
                     <div className="flex gap-2">
@@ -811,7 +814,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                       )}
                       <button
                         onClick={() => openAssignModal(request, false)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-purple-50 text-purple-600 border border-purple-200 rounded hover:bg-purple-100 transition-colors"
                         title={assetObj ? 'Reassign Asset' : 'Assign Asset'}
                       >
                         <UserPlus className="w-3 h-3" />
@@ -821,8 +824,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   </div>
                   {isAssignedToRequester ? (
                     <div className="flex items-start gap-3 mt-2">
-                      <div className="p-2 bg-blue-100 rounded">
-                        <Package className="w-4 h-4 text-blue-600" />
+                      <div className="p-2 bg-purple-100 rounded">
+                        <Package className="w-4 h-4 text-purple-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-black font-medium">{assetObj.name}</p>
@@ -858,7 +861,11 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                     Approve & Assign
                   </button>
                   <button
-                    onClick={() => updateRequestStatus(request._id, 'rejected', 'Request denied')}
+                    onClick={() => {
+                      setRejectingRequest(request);
+                      setRejectReason('');
+                      setShowRejectModal(true);
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
                     <XCircle className="w-4 h-4" />
@@ -932,6 +939,82 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
         </div>
       )}
 
+      {/* Reject Reason Modal */}
+      {showRejectModal && rejectingRequest && (
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all animate-slideUp border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl text-black">Reject Request</h3>
+                <p className="text-sm text-gray-700 mt-1">
+                  Request by {rejectingRequest.requestedBy?.name || 'Unknown'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectingRequest(null);
+                  setRejectReason('');
+                }}
+                className="text-gray-600 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm text-gray-700 mb-2">
+                Reason for Rejection *
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Please provide a reason for rejecting this request..."
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black resize-none"
+              />
+              <p className="text-xs text-gray-600 mt-2">
+                This reason will be sent to {rejectingRequest.requestedBy?.name} via email
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectingRequest(null);
+                  setRejectReason('');
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rejectReason.trim()) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                  }
+                  await updateRequestStatus(rejectingRequest._id, 'rejected', rejectReason);
+                  setShowRejectModal(false);
+                  setRejectingRequest(null);
+                  setRejectReason('');
+                }}
+                disabled={!rejectReason.trim()}
+                className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  rejectReason.trim()
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <XCircle className="w-4 h-4" />
+                Reject Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Assign Asset Modal */}
       {showAssignModal && selectedRequest && (
         <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
@@ -950,7 +1033,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   </p>
                 )}
                 {selectedRequest.status === 'approved' && (
-                  <p className="text-xs text-blue-700 mt-2 bg-blue-50 px-2 py-1 rounded inline-block">
+                  <p className="text-xs text-purple-700 mt-2 bg-purple-50 px-2 py-1 rounded inline-block">
                     Showing only {selectedRequest.assetCategory} assets
                   </p>
                 )}
@@ -982,18 +1065,18 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   placeholder="Search by name, asset tag, or category..."
                   value={assetSearchQuery}
                   onChange={(e) => setAssetSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
                 />
               </div>
             </div>
 
             {/* Current Selection */}
             {selectedAsset && (
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                 <p className="text-xs text-gray-700 mb-2">Selected Asset</p>
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded">
-                    <Package className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-purple-100 rounded">
+                    <Package className="w-5 h-5 text-purple-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-black font-medium">{selectedAsset.name}</p>
@@ -1032,16 +1115,16 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                     onClick={() => setSelectedAsset(asset)}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       selectedAsset?._id === asset._id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300 bg-white'
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-purple-300 bg-white'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded ${
-                        selectedAsset?._id === asset._id ? 'bg-blue-100' : 'bg-gray-100'
+                        selectedAsset?._id === asset._id ? 'bg-purple-100' : 'bg-gray-100'
                       }`}>
                         <Package className={`w-5 h-5 ${
-                          selectedAsset?._id === asset._id ? 'text-blue-600' : 'text-gray-600'
+                          selectedAsset?._id === asset._id ? 'text-purple-600' : 'text-gray-600'
                         }`} />
                       </div>
                       <div className="flex-1">
@@ -1097,7 +1180,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   disabled={!selectedAsset}
                   className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                     selectedAsset
-                      ? (selectedRequest.status === 'pending' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-blue-600 text-white hover:bg-blue-700')
+                      ? (selectedRequest.status === 'pending' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-purple-500 text-white hover:bg-purple-600')
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >

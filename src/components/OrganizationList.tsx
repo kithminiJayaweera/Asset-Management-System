@@ -11,15 +11,15 @@ interface OrganizationListProps {
 
 export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, onViewDetails }: OrganizationListProps) {
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
+    <div className='bg-[#F3E6EC]'>
+      <div className="mb-8 flex items-center justify-between ml-5">
         <div>
-          <h2 className="text-2xl text-black mb-2">Organizations</h2>
+          <h2 className="text-2xl text-black mb-2 mt-5 ">Organizations</h2>
           <p className="text-gray-800">Manage your organization branches and locations</p>
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
         >
           <Plus className="w-5 h-5" />
           Add Organization
@@ -67,8 +67,8 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <Building2 className="w-4 h-4 text-blue-600" />
+                        <div className="p-2 bg-purple-50 rounded-lg">
+                          <Building2 className="w-4 h-4 text-purple-600" />
                         </div>
                         <div>
                           <div className="text-sm font-medium text-black">{org.name}</div>
@@ -107,7 +107,7 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
                             e.stopPropagation();
                             onEdit(org);
                           }}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           title="Edit Organization"
                         >
                           <Edit2 className="w-4 h-4" />

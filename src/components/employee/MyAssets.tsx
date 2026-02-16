@@ -106,8 +106,8 @@ export function MyAssets({ employee }: MyAssetsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white rounded-lg p-6 border border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Package className="w-6 h-6 text-blue-600" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <Package className="w-6 h-6 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-gray-700">Total Assets</p>
@@ -154,7 +154,7 @@ export function MyAssets({ employee }: MyAssetsProps) {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEdit(asset)}
-                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                   title="Request Edit"
                 >
                   <Edit2 className="w-4 h-4" />

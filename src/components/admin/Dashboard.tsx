@@ -1,234 +1,292 @@
-import { Package, DollarSign, AlertCircle, TrendingUp, AlertTriangle, Activity, Archive, Wrench } from 'lucide-react';
+'use client';
+
+import { Package, DollarSign, TrendingUp, AlertTriangle, Shield, Wrench, Activity, Clock, Target } from 'lucide-react';
 import { Asset } from '@/types/shared';
+import { useMemo } from 'react';
+import { KPICard } from '../dashboard/KPICard';
+import { AlertPanel } from '../dashboard/AlertPanel';
+import { LineChartCard, BarChartCard, PieChartCard } from '../dashboard/ChartCards';
 
 interface DashboardProps {
   assets: Asset[];
 }
 
 export function Dashboard({ assets }: DashboardProps) {
-  const totalAssets = assets.length;
-  const activeAssets = assets.filter(a => a.status === 'active').length;
-  const maintenanceAssets = assets.filter(a => a.status === 'maintenance').length;
-  const lostAssets = assets.filter(a => a.status === 'lost').length;
-  const retiredAssets = assets.filter(a => a.status === 'retired').length;
-  const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0);
-  const lostValue = assets.filter(a => a.status === 'lost').reduce((sum, asset) => sum + asset.value, 0);
-  const activePercentage = totalAssets > 0 ? ((activeAssets / totalAssets) * 100).toFixed(1) : '0';
+  const analytics = useMemo(() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const categories = assets.reduce((acc, asset) => {
-    acc[asset.category] = (acc[asset.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    // Current period (last 30 days)
+    const currentAssets = assets.filter(a => new Date(a.purchaseDate) >= thirtyDaysAgo);
+    const previousAssets = assets.filter(a => new Date(a.purchaseDate) >= sixtyDaysAgo && new Date(a.purchaseDate) < thirtyDaysAgo);
 
-  const stats = [
-    {
-      title: 'Total Assets',
-      value: totalAssets,
-      icon: Package,
-      gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-blue-100',
-      iconBg: 'bg-blue-500',
-      change: '+12%',
-      changeType: 'increase'
-    },
-    {
-      title: 'Active Assets',
-      value: activeAssets,
-      icon: Activity,
-      gradient: 'from-emerald-500 to-emerald-600',
-      bgGradient: 'from-emerald-50 to-emerald-100',
-      iconBg: 'bg-emerald-500',
-      change: `${activePercentage}%`,
-      changeType: 'neutral'
-    },
-    {
-      title: 'In Maintenance',
-      value: maintenanceAssets,
-      icon: Wrench,
-      gradient: 'from-amber-500 to-amber-600',
-      bgGradient: 'from-amber-50 to-amber-100',
-      iconBg: 'bg-amber-500',
-      change: maintenanceAssets > 0 ? 'Attention' : 'Good',
-      changeType: maintenanceAssets > 0 ? 'warning' : 'increase'
-    },
-    {
-      title: 'Total Value',
-      value: `₨${totalValue.toLocaleString()}`,
-      icon: DollarSign,
-      gradient: 'from-purple-500 to-purple-600',
-      bgGradient: 'from-purple-50 to-purple-100',
-      iconBg: 'bg-purple-500',
-      change: '+8.2%',
-      changeType: 'increase'
+    const total = assets.length;
+    const active = assets.filter(a => a.status === 'active').length;
+    const maintenance = assets.filter(a => a.status === 'maintenance').length;
+    const lost = assets.filter(a => a.status === 'lost').length;
+    const retired = assets.filter(a => a.status === 'retired').length;
+
+    const totalValue = assets.reduce((sum, a) => sum + a.value, 0);
+    const lostValue = assets.filter(a => a.status === 'lost').reduce((sum, a) => sum + a.value, 0);
+
+    const depreciatedValue = assets.reduce((sum, a) => {
+      const years = (now.getTime() - new Date(a.purchaseDate).getTime()) / (1000 * 60 * 60 * 24 * 365);
+      const depreciation = a.value * (a.depreciationRate / 100) * years;
+      return sum + Math.max(0, a.value - depreciation);
+    }, 0);
+
+    const maintenanceOverdue = assets.filter(a => {
+      if (!a.lastMaintenanceDate) return false;
+      const daysSince = (now.getTime() - new Date(a.lastMaintenanceDate).getTime()) / (1000 * 60 * 60 * 24);
+      return daysSince > 90;
+    });
+
+    const warrantyExpiring = assets.filter(a => {
+      if (!a.warrantyEndDate) return false;
+      const daysUntil = (new Date(a.warrantyEndDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return daysUntil > 0 && daysUntil <= 30;
+    });
+
+    const noWarranty = assets.filter(a => !a.warrantyEndDate || new Date(a.warrantyEndDate) < now);
+
+    // REAL TREND CALCULATIONS
+    const previousTotalValue = previousAssets.reduce((sum, a) => sum + a.value, 0);
+    const currentTotalValue = currentAssets.reduce((sum, a) => sum + a.value, 0);
+    const valueTrend = previousTotalValue > 0 ? (((currentTotalValue - previousTotalValue) / previousTotalValue) * 100).toFixed(1) : '0';
+
+    const previousActive = previousAssets.filter(a => a.status === 'active').length;
+    const currentActive = currentAssets.filter(a => a.status === 'active').length;
+    const healthTrend = previousActive > 0 ? (((currentActive - previousActive) / previousActive) * 100).toFixed(1) : '0';
+
+    const previousUtilized = previousAssets.filter(a => a.assignedTo).length;
+    const currentUtilized = currentAssets.filter(a => a.assignedTo).length;
+    const utilizationTrend = previousUtilized > 0 ? (((currentUtilized - previousUtilized) / previousUtilized) * 100).toFixed(1) : '0';
+
+    const previousRisk = previousAssets.filter(a => a.status === 'lost').reduce((sum, a) => sum + a.value, 0);
+    const currentRisk = currentAssets.filter(a => a.status === 'lost').reduce((sum, a) => sum + a.value, 0);
+    const riskTrend = previousRisk > 0 ? (((currentRisk - previousRisk) / previousRisk) * 100).toFixed(1) : currentRisk > 0 ? '100' : '0';
+
+    // IMPROVED HEALTH SCORE
+    const overdueRatio = maintenanceOverdue.length / Math.max(total, 1);
+    const warrantyRiskRatio = noWarranty.length / Math.max(total, 1);
+    const lostRatio = lost / Math.max(total, 1);
+
+    const healthScore = total > 0 ? (
+      (active / total) * 35 +
+      (1 - overdueRatio) * 25 +
+      (1 - lostRatio) * 25 +
+      (1 - warrantyRiskRatio) * 15
+    ).toFixed(1) : '0';
+
+    // IMPROVED FINANCIAL RISK
+    const financialRisk = 
+      lostValue +
+      maintenanceOverdue.reduce((sum, a) => sum + a.value * 0.3, 0) +
+      noWarranty.reduce((sum, a) => sum + a.value * 0.15, 0);
+
+    const utilizationRate = total > 0 ? ((assets.filter(a => a.assignedTo).length / total) * 100).toFixed(1) : '0';
+
+    const categories = assets.reduce((acc, a) => {
+      const cat = a.category || 'Uncategorized';
+      if (!acc[cat]) acc[cat] = { count: 0, value: 0 };
+      acc[cat].count++;
+      acc[cat].value += a.value;
+      return acc;
+    }, {} as Record<string, { count: number; value: number }>);
+
+    const statusData = [
+      { name: 'Active', value: active },
+      { name: 'Maintenance', value: maintenance },
+      { name: 'Retired', value: retired },
+      { name: 'Lost', value: lost }
+    ].filter(s => s.value > 0);
+
+    const categoryData = Object.entries(categories)
+      .sort(([, a], [, b]) => b.count - a.count)
+      .slice(0, 6)
+      .map(([name, data]) => ({ name, value: data.count }));
+
+    const valueData = Array.from({ length: 6 }, (_, i) => {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const monthAssets = assets.filter(a => new Date(a.purchaseDate) <= monthDate);
+      const value = monthAssets.reduce((sum, a) => {
+        const years = (monthDate.getTime() - new Date(a.purchaseDate).getTime()) / (1000 * 60 * 60 * 24 * 365);
+        const depreciation = a.value * (a.depreciationRate / 100) * years;
+        return sum + Math.max(0, a.value - depreciation);
+      }, 0);
+      return {
+        name: monthDate.toLocaleDateString('en-US', { month: 'short' }),
+        value: Math.round(value / 1000)
+      };
+    });
+
+    const riskyAssets = assets
+      .filter(a => a.status === 'maintenance' || !a.warrantyEndDate || maintenanceOverdue.some(m => m.id === a.id))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    return {
+      total, active, maintenance, lost, retired, totalValue, depreciatedValue, lostValue,
+      healthScore, financialRisk, utilizationRate, maintenanceOverdue, warrantyExpiring,
+      statusData, categoryData, valueData, riskyAssets,
+      valueTrend, healthTrend, utilizationTrend, riskTrend
+    };
+  }, [assets]);
+
+  const alerts = useMemo(() => {
+    const alertList = [];
+    
+    if (analytics.lost > 0) {
+      alertList.push({
+        id: 'lost-assets',
+        type: 'critical' as const,
+        title: `${analytics.lost} Assets Lost`,
+        message: `Total value at risk: ₨${analytics.lostValue.toLocaleString()}. Immediate action required.`
+      });
     }
-  ];
 
-  const categoryColors = ['bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500'];
+    if (analytics.maintenanceOverdue.length > 0) {
+      alertList.push({
+        id: 'maintenance-overdue',
+        type: 'warning' as const,
+        title: `${analytics.maintenanceOverdue.length} Assets Overdue for Maintenance`,
+        message: 'Assets have not been serviced in over 90 days. Schedule maintenance to prevent failures.'
+      });
+    }
+
+    if (analytics.warrantyExpiring.length > 0) {
+      alertList.push({
+        id: 'warranty-expiring',
+        type: 'warning' as const,
+        title: `${analytics.warrantyExpiring.length} Warranties Expiring Soon`,
+        message: 'Warranties expiring within 30 days. Review and renew if necessary.'
+      });
+    }
+
+    if (parseFloat(analytics.healthScore) < 70) {
+      alertList.push({
+        id: 'low-health',
+        type: 'warning' as const,
+        title: 'Asset Health Score Below Target',
+        message: `Current score: ${analytics.healthScore}/100. Review maintenance and replacement strategies.`
+      });
+    }
+
+    return alertList;
+  }, [analytics]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-black mb-2">Dashboard</h2>
-        <p className="text-gray-800">Welcome Back! Here's what had been happening with your assets.</p>
-      </div>
-
-      {/* Stats Grid with Gradient Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <div 
-            key={index} 
-            className="group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
-          >
-            {/* Gradient Background */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            
-            <div className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.iconBg} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                  stat.changeType === 'increase' ? 'bg-green-100 text-green-700' :
-                  stat.changeType === 'warning' ? 'bg-amber-100 text-amber-700' :
-                  'bg-gray-100 text-gray-700'
-                }`}>
-                  {stat.change}
-                </span>
-              </div>
-              <p className="text-sm text-gray-700 mb-1 font-medium">{stat.title}</p>
-              <p className="text-3xl font-bold text-black group-hover:text-gray-800">{stat.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Assets by Category - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-black">Assets by Category</h3>
-            <span className="text-sm text-gray-700">{Object.keys(categories).length} Categories</span>
-          </div>
-          <div className="space-y-5">
-            {Object.entries(categories).map(([category, count], index) => {
-              const percentage = ((count / totalAssets) * 100).toFixed(1);
-              return (
-                <div key={category} className="group">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full ${categoryColors[index % categoryColors.length]}`} />
-                      <span className="text-gray-800 font-medium group-hover:text-blue-600 transition-colors">{category}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-700">{percentage}%</span>
-                      <span className="text-black font-semibold">{count}</span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                    <div 
-                      className={`${categoryColors[index % categoryColors.length]} h-3 rounded-full transition-all duration-500 ease-out shadow-sm`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+    <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#F3E6EC' }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[#3F303D]">Asset Analytics Dashboard</h1>
+          <p className="text-[#3F303D] mt-1">Real-time insights and performance metrics</p>
         </div>
-
-        {/* Status Distribution */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-black mb-6">Status Overview</h3>
-          <div className="space-y-3">
-            <div className="group relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-gray-800 font-medium">Active</span>
-                </div>
-                <span className="text-lg font-bold text-emerald-700">{activeAssets}</span>
-              </div>
-            </div>
-            
-            <div className="group relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-amber-500 rounded-full" />
-                  <span className="text-gray-800 font-medium">Maintenance</span>
-                </div>
-                <span className="text-lg font-bold text-amber-700">{maintenanceAssets}</span>
-              </div>
-            </div>
-            
-            <div className="group relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-gray-500 rounded-full" />
-                  <span className="text-gray-800 font-medium">Retired</span>
-                </div>
-                <span className="text-lg font-bold text-gray-700">{retiredAssets}</span>
-              </div>
-            </div>
-            
-            <div className="group relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-red-500 rounded-full" />
-                  <span className="text-gray-800 font-medium">Lost</span>
-                </div>
-                <span className="text-lg font-bold text-red-700">{lostAssets}</span>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border">
+          <Clock className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-600">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         </div>
       </div>
 
-      {/* Lost Assets Alert */}
-      {lostAssets > 0 && (
-        <div className="bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-red-100 rounded-xl">
-              <AlertTriangle className="w-7 h-7 text-red-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-red-900 mb-2">⚠️ Lost Assets Alert</h3>
-              <p className="text-red-700 mb-4 text-sm leading-relaxed">
-                There are <strong className="font-bold">{lostAssets} assets</strong> marked as lost with a total value of <strong className="font-bold">Rs. {lostValue.toLocaleString()}</strong>
-              </p>
-              <div className="bg-white rounded-xl p-5 border border-red-200 shadow-sm">
-                <h4 className="text-sm font-bold text-black mb-4 flex items-center gap-2">
-                  <Archive className="w-4 h-4" />
-                  Lost Items:
-                </h4>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {assets.filter(a => a.status === 'lost').map(asset => (
-                    <div key={asset.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 transition-colors">
-                      <div>
-                        <p className="text-sm font-semibold text-black">{asset.name}</p>
-                        <p className="text-xs text-gray-700 mt-1">
-                          <span className="inline-flex items-center gap-1">
-                            <Package className="w-3 h-3" />
-                            {asset.category}
-                          </span>
-                        </p>
-                      </div>
-                      <p className="text-sm font-bold text-red-700">Rs. {asset.value.toLocaleString()}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+      {alerts.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            Action Required
+          </h2>
+          <AlertPanel alerts={alerts} />
         </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard
+          title="Asset Health Score"
+          value={`${analytics.healthScore}/100`}
+          icon={Target}
+          color={parseFloat(analytics.healthScore) >= 80 ? 'emerald' : parseFloat(analytics.healthScore) >= 60 ? 'amber' : 'red'}
+          trend={{ value: `${analytics.healthTrend}%`, direction: Number(analytics.healthTrend) >= 0 ? 'up' : 'down' }}
+          subtitle={`${analytics.active} active assets`}
+        />
+        <KPICard
+          title="Total Asset Value"
+          value={`₨${(analytics.totalValue / 1000000).toFixed(2)}M`}
+          icon={DollarSign}
+          color="blue"
+          trend={{ value: `${analytics.valueTrend}%`, direction: Number(analytics.valueTrend) >= 0 ? 'up' : 'down' }}
+          subtitle={`₨${(analytics.depreciatedValue / 1000000).toFixed(2)}M current value`}
+        />
+        <KPICard
+          title="Financial Risk"
+          value={`₨${(analytics.financialRisk / 1000).toFixed(0)}K`}
+          icon={AlertTriangle}
+          color={analytics.financialRisk > 100000 ? 'red' : 'amber'}
+          trend={{ value: `${analytics.riskTrend}%`, direction: Number(analytics.riskTrend) >= 0 ? 'up' : 'down' }}
+          subtitle="Lost + maintenance + no warranty"
+        />
+        <KPICard
+          title="Utilization Rate"
+          value={`${analytics.utilizationRate}%`}
+          icon={TrendingUp}
+          color="purple"
+          trend={{ value: `${analytics.utilizationTrend}%`, direction: Number(analytics.utilizationTrend) >= 0 ? 'up' : 'down' }}
+          subtitle={`${analytics.total - Math.round(parseFloat(analytics.utilizationRate) * analytics.total / 100)} available`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LineChartCard title="Asset Value Trend (6 Months)" data={analytics.valueData} dataKey="value" color="#3b82f6" />
+        <BarChartCard title="Assets by Category" data={analytics.categoryData} dataKey="value" color="#10b981" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <PieChartCard title="Status Distribution" data={analytics.statusData} colors={['#10b981', '#f59e0b', '#6b7280', '#ef4444']} />
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-amber-600" />
+            <h3 className="text-lg font-bold text-gray-900">Top Risk Assets</h3>
+          </div>
+          <div className="space-y-3">
+            {analytics.riskyAssets.map(asset => (
+              <div key={asset.id} className="p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{asset.name}</p>
+                    <p className="text-xs text-gray-600 mt-1">{asset.category} • {asset.status}</p>
+                  </div>
+                  <span className="text-xs font-medium text-amber-700 ml-2">₨{(asset.value / 1000).toFixed(0)}K</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-5 h-5 text-purple-600" />
+            <h3 className="text-lg font-bold text-gray-900">Quick Stats</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50">
+              <span className="text-sm font-medium text-gray-700">Active Assets</span>
+              <span className="text-lg font-bold text-emerald-700">{analytics.active}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50">
+              <span className="text-sm font-medium text-gray-700">In Maintenance</span>
+              <span className="text-lg font-bold text-amber-700">{analytics.maintenance}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <span className="text-sm font-medium text-gray-700">Retired</span>
+              <span className="text-lg font-bold text-gray-700">{analytics.retired}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-red-50">
+              <span className="text-sm font-medium text-gray-700">Lost</span>
+              <span className="text-lg font-bold text-red-700">{analytics.lost}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
-
-
-
-
-

@@ -4,8 +4,10 @@ import '@/models'; // Import all models
 import Asset from '@/models/Asset';
 import AssetRequest from '@/models/AssetRequest';
 import Notification from '@/models/Notification';
+import AuditLog from '@/models/AuditLog';
 import { ApiResponse, IAsset } from '@/types';
 import { emitNotification, broadcastNotification, emitAssetUpdate } from '@/lib/socket';
+import mongoose from 'mongoose';
 
 interface Params {
   params: Promise<{
@@ -19,6 +21,13 @@ export async function GET(request: NextRequest, context: Params) {
     await dbConnect();
     
     const { id } = await context.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Invalid asset ID' },
+        { status: 400 }
+      );
+    }
 
     const asset = await Asset.findById(id)
       .populate('assignedTo', 'name email department position')
@@ -53,11 +62,33 @@ export async function PUT(request: NextRequest, context: Params) {
     const body = await request.json();
     const { id } = await context.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Invalid asset ID' },
+        { status: 400 }
+      );
+    }
+
     console.log('Updating asset:', id, 'with data:', body);
 
-    // Get old asset data BEFORE update for comparison
-    const oldAsset = await Asset.findById(id).select('assignedTo name').lean();
-    const previousAssignee = oldAsset?.assignedTo?.toString();
+    // Get old asset data BEFORE update
+    const oldAsset = await Asset.findById(id).select('assignedTo name status').lean();
+    if (!oldAsset) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Asset not found' },
+        { status: 404 }
+      );
+    }
+
+    // Validation: Cannot assign retired/lost assets
+    if (body.assignedTo && (body.status === 'retired' || body.status === 'lost' || oldAsset.status === 'retired' || oldAsset.status === 'lost')) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: `Cannot assign ${body.status || oldAsset.status} assets` },
+        { status: 400 }
+      );
+    }
+
+    const previousAssignee = oldAsset.assignedTo?.toString();
 
     const asset = await Asset.findByIdAndUpdate(
       id,
@@ -75,32 +106,32 @@ export async function PUT(request: NextRequest, context: Params) {
       );
     }
 
-    console.log('Asset updated in database:', {
-      _id: asset._id,
-      status: asset.status,
-      assignedTo: asset.assignedTo
-    });
+    console.log('Asset updated:', { _id: asset._id, status: asset.status, assignedTo: asset.assignedTo });
 
     // Broadcast update notification
-    await Notification.create({
-      userId: 'admin',
-      type: 'asset_updated',
-      title: 'Asset Updated',
-      message: `${asset.name} has been updated`,
-      data: { assetId: asset._id },
-    });
-    const updateNotif = {
-      _id: Date.now().toString(),
-      type: 'asset_updated',
-      title: 'Asset Updated',
-      message: `${asset.name} has been updated`,
-      read: false,
-      createdAt: new Date(),
-    };
-    broadcastNotification(updateNotif);
-    emitAssetUpdate();
+    try {
+      await Notification.create({
+        userId: 'admin',
+        type: 'asset_updated',
+        title: 'Asset Updated',
+        message: `${asset.name} has been updated`,
+        data: { assetId: asset._id },
+      });
+      const updateNotif = {
+        _id: Date.now().toString(),
+        type: 'asset_updated',
+        title: 'Asset Updated',
+        message: `${asset.name} has been updated`,
+        read: false,
+        createdAt: new Date(),
+      };
+      broadcastNotification(updateNotif);
+      emitAssetUpdate();
+    } catch (notifError) {
+      console.error('Error broadcasting notification:', notifError);
+    }
 
-    // If assignedTo is being updated, sync with asset requests
+    // Handle assignment changes
     if (body.assignedTo !== undefined) {
       if (body.assignedTo) {
         const approvedRequest = await AssetRequest.findOne({
@@ -148,6 +179,21 @@ export async function PUT(request: NextRequest, context: Params) {
 
         // Notify new assignee
         try {
+          const assignedUser = await Asset.findById(id).populate('assignedTo', 'name').lean();
+          const assignedUserName = assignedUser?.assignedTo?.name || 'User';
+          
+          console.log('Creating audit log for assignment:', { assetId: id, userName: assignedUserName });
+          
+          const auditLog = await AuditLog.create({
+            entityType: 'asset',
+            entityId: id,
+            action: `Assigned to ${assignedUserName}`,
+            performedBy: body.assignedTo,
+            changes: { assignedTo: body.assignedTo },
+          });
+          
+          console.log('Audit log created:', auditLog);
+          
           await Notification.create({
             userId: body.assignedTo.toString(),
             type: 'asset_assigned',
@@ -171,6 +217,18 @@ export async function PUT(request: NextRequest, context: Params) {
         // Asset unassigned completely
         if (previousAssignee) {
           try {
+            console.log('Creating audit log for unassignment:', { assetId: id, previousAssignee });
+            
+            const auditLog = await AuditLog.create({
+              entityType: 'asset',
+              entityId: id,
+              action: 'Asset unassigned',
+              performedBy: previousAssignee,
+              changes: { assignedTo: null },
+            });
+            
+            console.log('Unassignment audit log created:', auditLog);
+            
             await Notification.updateMany(
               { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
               { $set: { read: true } }
@@ -209,6 +267,7 @@ export async function PUT(request: NextRequest, context: Params) {
     });
   } catch (error: any) {
     console.error('Error updating asset:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json<ApiResponse>(
       { success: false, error: error.message || 'Failed to update asset' },
       { status: 500 }
@@ -223,6 +282,13 @@ export async function DELETE(request: NextRequest, context: Params) {
     
     const { id } = await context.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Invalid asset ID' },
+        { status: 400 }
+      );
+    }
+
     const asset = await Asset.findByIdAndDelete(id);
 
     if (!asset) {
@@ -233,16 +299,20 @@ export async function DELETE(request: NextRequest, context: Params) {
     }
 
     // Broadcast delete notification
-    const deleteNotif = {
-      _id: Date.now().toString(),
-      type: 'asset_updated',
-      title: 'Asset Deleted',
-      message: `${asset.name} has been deleted from inventory`,
-      read: false,
-      createdAt: new Date(),
-    };
-    broadcastNotification(deleteNotif);
-    emitAssetUpdate();
+    try {
+      const deleteNotif = {
+        _id: Date.now().toString(),
+        type: 'asset_updated',
+        title: 'Asset Deleted',
+        message: `${asset.name} has been deleted from inventory`,
+        read: false,
+        createdAt: new Date(),
+      };
+      broadcastNotification(deleteNotif);
+      emitAssetUpdate();
+    } catch (notifError) {
+      console.error('Error broadcasting delete notification:', notifError);
+    }
 
     return NextResponse.json<ApiResponse>({
       success: true,
@@ -250,6 +320,7 @@ export async function DELETE(request: NextRequest, context: Params) {
     });
   } catch (error: any) {
     console.error('Error deleting asset:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json<ApiResponse>(
       { success: false, error: error.message || 'Failed to delete asset' },
       { status: 500 }

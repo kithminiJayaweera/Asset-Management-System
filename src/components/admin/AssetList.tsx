@@ -6,7 +6,9 @@ import {
   Trash2,
   Plus,
   Package,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   Table,
@@ -17,6 +19,17 @@ import {
   TableRow
 } from '../ui/table';
 import { Asset, Organization } from '@/types/shared';
+
+type AssignmentFilter = 'all' | 'assigned' | 'unassigned';
+type StatusFilter = 'all' | 'active' | 'maintenance' | 'retired' | 'lost';
+type CategoryFilter = 'all' | string;
+
+interface FilterState {
+  search: string;
+  category: CategoryFilter;
+  assignment: AssignmentFilter;
+  status: StatusFilter;
+}
 
 interface AssetListProps {
   assets: Asset[];
@@ -35,27 +48,68 @@ export function AssetList({
   onAddNew,
   onViewDetails
 }: AssetListProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filters, setFilters] = useState<FilterState>({
+    search: '',
+    category: 'all',
+    assignment: 'all',
+    status: 'all'
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const categories = ['all', ...Array.from(new Set(assets.map(a => a.category)))];
 
   const filteredAssets = assets.filter(asset => {
-    const matchesSearch =
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (asset.assignedTo &&
-        asset.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      const matchesSearch = 
+        asset.name.toLowerCase().includes(searchLower) ||
+        asset.location.toLowerCase().includes(searchLower) ||
+        asset.assignedTo?.toLowerCase().includes(searchLower);
+      
+      if (!matchesSearch) return false;
+    }
 
-    const matchesCategory =
-      filterCategory === 'all' || asset.category === filterCategory;
+    // Category filter
+    if (filters.category !== 'all' && asset.category !== filters.category) {
+      return false;
+    }
 
-    const matchesStatus =
-      filterStatus === 'all' || asset.status === filterStatus;
+    // Assignment filter (independent dimension)
+    if (filters.assignment !== 'all') {
+      const isAssigned = Boolean(asset.assignedTo && asset.assignedTo.trim());
+      if (filters.assignment === 'assigned' && !isAssigned) return false;
+      if (filters.assignment === 'unassigned' && isAssigned) return false;
+    }
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    // Status filter (independent dimension)
+    if (filters.status !== 'all') {
+      // Normalize legacy status values
+      const normalizedStatus = asset.status === 'assigned' || asset.status === 'available' 
+        ? 'active' 
+        : asset.status;
+      
+      if (normalizedStatus !== filters.status) {
+        return false;
+      }
+    }
+
+    return true;
   });
+
+  // Pagination logic
+  const totalItems = filteredAssets.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAssets = filteredAssets.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (key: keyof FilterState, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -67,13 +121,24 @@ export function AssetList({
         return 'bg-gray-200 text-gray-800';
       case 'lost':
         return 'bg-red-100 text-red-800';
+      case 'assigned': // Legacy - treat as active
+        return 'bg-green-100 text-green-800';
+      case 'available': // Legacy - treat as active
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-200 text-gray-800';
     }
   };
 
+  const getAssignmentBadge = (assignedTo?: string) => {
+    if (assignedTo && assignedTo.trim()) {
+      return 'bg-purple-100 text-blue-800';
+    }
+    return 'bg-gray-100 text-gray-700';
+  };
+
   return (
-    <div className="text-black bg-white opacity-100">
+    <div className="text-black opacity-100" style={{ backgroundColor: '#F3E6EC', minHeight: '100vh', padding: '1.5rem' }}>
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -82,45 +147,35 @@ export function AssetList({
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 px-4 py-2  text-black rounded-lg hover:bg-purple-600 transition bg-purple-400"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 " />
           Add Asset
         </button>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg p-6 border border-gray-300 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" />
             <input
               type="text"
               placeholder="Search assets..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="
-                w-full pl-10 pr-4 py-2
-                border border-gray-300 rounded-lg
-                bg-white text-black placeholder-gray-500
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-              "
+              value={filters.search}
+              onChange={e => handleFilterChange('search', e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
-          {/* Category */}
+          {/* Category Filter */}
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" />
             <select
-              value={filterCategory}
-              onChange={e => setFilterCategory(e.target.value)}
-              className="
-                w-full pl-10 pr-4 py-2
-                border border-gray-300 rounded-lg
-                bg-white text-black
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-              "
+              value={filters.category}
+              onChange={e => handleFilterChange('category', e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -130,16 +185,22 @@ export function AssetList({
             </select>
           </div>
 
-          {/* Status */}
+          {/* Assignment Filter */}
           <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="
-              w-full px-4 py-2
-              border border-gray-300 rounded-lg
-              bg-white text-black
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-            "
+            value={filters.assignment}
+            onChange={e => handleFilterChange('assignment', e.target.value as AssignmentFilter)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="all">All Assignments</option>
+            <option value="assigned">Assigned</option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={filters.status}
+            onChange={e => handleFilterChange('status', e.target.value as StatusFilter)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -151,25 +212,43 @@ export function AssetList({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead className="text-black font-semibold">Asset Name</TableHead>
-              <TableHead className="text-black font-semibold">Category</TableHead>
-              <TableHead className="text-black font-semibold">Location</TableHead>
-              <TableHead className="text-black font-semibold">Status</TableHead>
-              <TableHead className="text-black font-semibold">Purchase Date</TableHead>
-              <TableHead className="text-black font-semibold">Value</TableHead>
-              <TableHead className="text-black font-semibold">Assigned To</TableHead>
-              <TableHead className="text-black font-semibold text-right">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
+      <div className="bg-white rounded-lg border border-gray-300">
+        <div className="w-full">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-100">
+                <TableHead className="text-black font-semibold w-[15%]">
+                  Asset Name
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[10%]">
+                  Category
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[12%]">
+                  Location
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[8%]">
+                  Status
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[10%]">
+                  Assignment
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[15%]">
+                  Assigned To
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[10%]">
+                  Purchase Date
+                </TableHead>
+                <TableHead className="text-black font-semibold w-[10%]">
+                  Value
+                </TableHead>
+                <TableHead className="text-black font-semibold text-right w-[10%]">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
 
           <TableBody>
-            {filteredAssets.map(asset => (
+            {paginatedAssets.map(asset => (
               <TableRow
                 key={asset.id}
                 className="hover:bg-gray-50 cursor-pointer"
@@ -186,17 +265,28 @@ export function AssetList({
                       asset.status
                     )}`}
                   >
-                    {asset.status}
+                    {asset.status === 'assigned' || asset.status === 'available' ? 'active' : asset.status}
                   </span>
+                </TableCell>
+                {/* Assignment status badge */}
+                <TableCell>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getAssignmentBadge(
+                      asset.assignedTo
+                    )}`}
+                  >
+                    {asset.assignedTo && asset.assignedTo.trim() ? 'Assigned' : 'Unassigned'}
+                  </span>
+                </TableCell>
+                {/* Assigned person */}
+                <TableCell className="text-black">
+                  {asset.assignedTo || '-'}
                 </TableCell>
                 <TableCell className="text-black">
                   {new Date(asset.purchaseDate).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-black">
                   ₨{asset.value.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-black">
-                  {asset.assignedTo || '-'}
                 </TableCell>
                 <TableCell
                   className="text-right"
@@ -211,7 +301,7 @@ export function AssetList({
                     </button>
                     <button
                       onClick={() => onEdit(asset)}
-                      className="p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-100 rounded-lg"
+                      className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-100 rounded-lg"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -231,6 +321,7 @@ export function AssetList({
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Empty State */}
@@ -238,6 +329,89 @@ export function AssetList({
         <div className="text-center py-12">
           <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-700">No assets found</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filteredAssets.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-300 p-4 mt-4">
+          <div className="flex items-center justify-between">
+            {/* Items per page */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={e => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-1 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700">
+                of {totalItems} results
+              </span>
+            </div>
+
+            {/* Page info and navigation */}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-700" />
+                </button>
+                
+                {/* Page numbers */}
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                          currentPage === pageNum
+                            ? 'bg-purple-500 text-white'
+                            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-700" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

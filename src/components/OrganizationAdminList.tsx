@@ -122,15 +122,15 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between ml-5">
         <div>
-          <h2 className="text-2xl text-black mb-2">Organization Admins</h2>
+          <h2 className="text-2xl text-black mb-2 mt-5">Organization Admins</h2>
           <p className="text-gray-800">Manage organization administrators</p>
         </div>
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Admin
@@ -153,7 +153,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
                   placeholder="e.g., John Doe"
                 />
               </div>
@@ -165,7 +165,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
                   placeholder="e.g., admin@company.com"
                 />
               </div>
@@ -186,7 +186,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                   value={formData.organizationId}
                   onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
                 >
                   <option value="">Select Organization</option>
                   {organizations.map(org => (
@@ -210,7 +210,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                         setFormData({ ...formData, permissions: ['all'] });
                       }
                     }}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                   />
                   <span className="text-sm text-gray-700 font-medium">All Permissions</span>
                 </label>
@@ -221,7 +221,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                       checked={formData.permissions.includes(permission.id)}
                       onChange={() => togglePermission(permission.id)}
                       disabled={formData.permissions.includes('all')}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                     />
                     <span className="text-sm text-gray-700">{permission.label}</span>
                   </label>
@@ -232,7 +232,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
               >
                 {editingAdmin ? 'Update Admin' : 'Add Admin'}
               </button>
@@ -258,7 +258,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
               placeholder="Search admins..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
             />
           </div>
 
@@ -267,7 +267,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
             <select
               value={filterOrganization}
               onChange={(e) => setFilterOrganization(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-black"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none text-black"
             >
               <option value="all">All Organizations</option>
               {organizations.map(org => (
@@ -369,7 +369,7 @@ export function OrganizationAdminList({ subAdmins, organizations, onAdd, onUpdat
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleEdit(admin)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           title="Edit Admin"
                         >
                           <Edit2 className="w-4 h-4" />

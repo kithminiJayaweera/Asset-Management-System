@@ -67,8 +67,9 @@ const AssetSchema = new Schema<IAsset>(
     },
     status: {
       type: String,
-      enum: ['available', 'assigned', 'maintenance', 'retired'],
-      default: 'available',
+      enum: ['active', 'maintenance', 'retired', 'lost'],
+      default: 'active',
+      required: true,
     },
     condition: {
       type: String,
@@ -133,10 +134,24 @@ AssetSchema.index({ category: 1 }); // Keep for backward compatibility
 AssetSchema.index({ categoryId: 1 }); // NEW index
 AssetSchema.index({ serialNumber: 1 });
 AssetSchema.index({ model: 1, manufacturer: 1 });
+AssetSchema.index({ assetTag: 1, organizationId: 1 }, { unique: true });
 
 // Virtual to get category name (backward compatible)
 AssetSchema.virtual('categoryName').get(function() {
   return this.category || (this.populated('categoryId') ? (this.categoryId as any)?.name : null);
+});
+
+// Virtual for assignment state
+AssetSchema.virtual('assignmentState').get(function() {
+  return this.assignedTo ? 'assigned' : 'unassigned';
+});
+
+// Validation: Cannot assign retired/lost assets
+AssetSchema.pre('save', function(next) {
+  if (this.assignedTo && (this.status === 'retired' || this.status === 'lost')) {
+    return next(new Error(`Cannot assign ${this.status} assets`));
+  }
+  next();
 });
 
 // Pre-save hook - UPDATED to handle both old and new category fields

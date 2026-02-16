@@ -48,6 +48,55 @@ interface AuditLog {
   createdAt: string;
 }
 
+interface TimelineEventData {
+  action: string;
+  type: 'audit' | 'status';
+  createdAt?: string;
+  date?: string;
+  performedBy?: { name: string } | null;
+  changes?: any;
+}
+
+const TimelineEvent = ({ event, style }: { event: TimelineEventData; style: React.CSSProperties }) => (
+  <div style={style} className="flex gap-3 pb-3 border-b border-gray-100">
+    <div className={`w-2 h-2 rounded-full mt-2 ${event.type === 'status' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
+    <div className="flex-1">
+      <p className="text-sm text-black">{event.action}</p>
+      <p className="text-xs text-gray-700 mt-1">
+        {event.type === 'audit' ? `By ${event.performedBy?.name || 'System'}` : 'System Event'} • {new Date(event.createdAt || event.date!).toLocaleString()}
+      </p>
+      {event.changes && Object.keys(event.changes).length > 0 && (
+        <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+          {Object.entries(event.changes).map(([key, value]) => (
+            <div key={key}>
+              <span className="font-medium">{key}:</span> {JSON.stringify(value)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const VirtualTimeline = ({ events }: { events: TimelineEventData[] }) => {
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 10 });
+  const containerRef = useState<HTMLDivElement | null>(null)[0];
+  
+  return (
+    <div className="overflow-y-auto" style={{ height: 400 }} onScroll={(e) => {
+      const scrollTop = e.currentTarget.scrollTop;
+      const start = Math.floor(scrollTop / 100);
+      setVisibleRange({ start, end: start + 10 });
+    }}>
+      <div style={{ height: events.length * 100 }}>
+        {events.slice(visibleRange.start, visibleRange.end).map((event, idx) => (
+          <TimelineEvent key={visibleRange.start + idx} event={event} style={{ position: 'absolute', top: (visibleRange.start + idx) * 100 }} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export function AssetDetail({ asset, organization, assignedEmployee, employees, onBack, onEdit, onReassign, onNavigateToRequests }: AssetDetailProps) {
   const depreciation = calculateDepreciation(asset);
   const [showReassignModal, setShowReassignModal] = useState(false);
@@ -59,8 +108,12 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [selectedAssignEmployee, setSelectedAssignEmployee] = useState<IUser | null>(null);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [filterMonth, setFilterMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
-  
+
   useEffect(() => {
     fetchPendingRequests();
     fetchAuditLogs();
@@ -71,8 +124,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       const response = await fetch('/api/requests');
       const result = await response.json();
       if (result.success) {
-        const filtered = result.data.filter((req: AssetRequest) => 
-          req.assetCategory === asset.category && 
+        const filtered = result.data.filter((req: AssetRequest) =>
+          req.assetCategory === asset.category &&
           req.status === 'pending' &&
           req.requestType === 'assignment'
         );
@@ -85,9 +138,16 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
   const fetchAuditLogs = async () => {
     try {
+      console.log('Fetching audit logs for asset:', asset._id);
       const response = await fetch(`/api/audit-logs?entityType=asset&entityId=${asset._id}`);
+      if (!response.ok) {
+        console.warn('Failed to fetch audit logs:', response.status);
+        return;
+      }
       const result = await response.json();
+      console.log('Audit logs response:', result);
       if (result.success) {
+        console.log('Audit logs data:', result.data);
         setAuditLogs(result.data);
       }
     } catch (error) {
@@ -97,14 +157,19 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
   const assignToRequester = async (request: AssetRequest) => {
     if (!request.requestedBy || asset.assignedTo) return;
-    
+
+    // Prevent assigning retired/lost assets
+    if (asset.status === 'retired' || asset.status === 'lost') {
+      alert(`Cannot assign ${asset.status} assets`);
+      return;
+    }
+
     try {
       const assetResponse = await fetch(`/api/assets/${asset._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          assignedTo: request.requestedBy._id,
-          status: 'assigned'
+        body: JSON.stringify({
+          assignedTo: request.requestedBy._id
         }),
       });
 
@@ -116,7 +181,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       const requestResponse = await fetch(`/api/requests/${request._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           assetId: asset._id,
           status: 'approved'
         }),
@@ -125,7 +190,6 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       if (requestResponse.ok) {
         alert('Asset assigned and request approved successfully!');
         setShowAssignFromRequestModal(false);
-        // Navigate to asset requests page using callback
         if (onNavigateToRequests) {
           onNavigateToRequests();
         } else {
@@ -140,11 +204,15 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
   const unassignAsset = async () => {
     if (!confirm('Are you sure you want to unassign this asset?')) return;
-    
+
     try {
       const assetResponse = await fetch(`/api/assets/${asset._id}`);
+      if (!assetResponse.ok) {
+        alert('Asset not found. It may have been deleted.');
+        return;
+      }
       const assetResult = await assetResponse.json();
-      
+
       if (!assetResult.success) {
         alert('Failed to fetch asset details.');
         return;
@@ -152,7 +220,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
 
       const currentAsset = assetResult.data;
       let updatedDescription = currentAsset.description || '';
-      
+
       if (assignedEmployee?.name && updatedDescription.includes(assignedEmployee.name)) {
         updatedDescription = updatedDescription.replace(new RegExp(`Assigned to: ${assignedEmployee.name}\.?\\s*`, 'gi'), '').trim();
       }
@@ -160,16 +228,18 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       const updateResponse = await fetch(`/api/assets/${asset._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           assignedTo: null,
-          status: 'available',
           description: updatedDescription
         }),
       });
 
       if (updateResponse.ok) {
         alert('Asset unassigned successfully!');
+        await fetchAuditLogs();
         window.location.reload();
+      } else {
+        alert('Failed to unassign asset. It may have been deleted.');
       }
     } catch (error) {
       console.error('Error unassigning asset:', error);
@@ -178,25 +248,33 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   };
 
   const assignEmployeeToAsset = async (employeeId: string) => {
+    // Prevent assigning retired/lost assets
+    if (asset.status === 'retired' || asset.status === 'lost') {
+      alert(`Cannot assign ${asset.status} assets`);
+      return;
+    }
+
     try {
+      console.log('Assigning employee to asset:', { assetId: asset._id, employeeId });
       const response = await fetch(`/api/assets/${asset._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          assignedTo: employeeId,
-          status: 'assigned'
+        body: JSON.stringify({
+          assignedTo: employeeId
         }),
       });
 
+      console.log('Response status:', response.status);
       const result = await response.json();
-      
+      console.log('Response data:', result);
+
       if (result.success) {
         alert('Employee assigned successfully!');
         setShowAssignModal(false);
         setSelectedAssignEmployee(null);
         window.location.reload();
       } else {
-        alert('Failed to assign employee');
+        alert(result.error || 'Failed to assign employee. Asset may not exist.');
       }
     } catch (error) {
       console.error('Error assigning employee:', error);
@@ -204,21 +282,25 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
     }
   };
 
-  const filteredEmployees = employees.filter(emp => 
+  const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
     emp.email.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
     emp.department?.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
     emp.position?.toLowerCase().includes(employeeSearchQuery.toLowerCase())
   );
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'maintenance': return 'bg-yellow-100 text-yellow-800';
-      case 'retired': return 'bg-red-100 text-red-800';
+      case 'retired': return 'bg-gray-100 text-gray-800';
       case 'lost': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getAssignmentColor = (assigned: boolean) => {
+    return assigned ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600';
   };
 
 
@@ -235,7 +317,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 ml-5 mt-5">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-gray-700 hover:text-black mb-4"
@@ -494,44 +576,58 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             </div>
           )}
 
-          {/* Asset History Log */}
-          {auditLogs.length > 0 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg text-black mb-4 flex items-center gap-2">
+          {/* Unified Timeline */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg text-black flex items-center gap-2">
                 <History className="w-5 h-5" />
-                Activity History
+                Timeline
               </h3>
-              <div className="space-y-3">
-                {auditLogs.map((log) => (
-                  <div key={log._id} className="flex gap-3 pb-3 border-b border-gray-100 last:border-0">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm text-black">{log.action}</p>
-                      <p className="text-xs text-gray-700 mt-1">
-                        By {log.performedBy?.name || 'System'} • {new Date(log.createdAt).toLocaleString()}
-                      </p>
-                      {log.changes && Object.keys(log.changes).length > 0 && (
-                        <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
-                          {Object.entries(log.changes).map(([key, value]) => (
-                            <div key={key}>
-                              <span className="font-medium">{key}:</span> {JSON.stringify(value)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <input
+                type="month"
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+               
+              />
             </div>
-          )}
+            {(() => {
+              const statusEvents: TimelineEventData[] = [
+                { date: asset.purchaseDate, action: 'Asset Purchased', type: 'status' },
+                ...(asset.status === 'maintenance' ? [{ date: new Date().toISOString(), action: 'Under Maintenance', type: 'status' }] : []),
+                ...(asset.status === 'retired' ? [{ date: new Date().toISOString(), action: 'Asset Retired', type: 'status' }] : [])
+              ];
+              const allEvents = [
+                ...auditLogs.map(log => ({ ...log, type: 'audit' as const })),
+                ...statusEvents
+              ].sort((a, b) => new Date(b.createdAt || b.date!).getTime() - new Date(a.createdAt || a.date!).getTime())
+              .filter(event => {
+                if (!filterMonth) return true;
+                const eventDate = new Date(event.createdAt || event.date!);
+                const [year, month] = filterMonth.split('-');
+                return eventDate.getFullYear() === parseInt(year) && eventDate.getMonth() === parseInt(month) - 1;
+              });
+              
+              if (allEvents.length === 0) {
+                return <p className="text-sm text-gray-700 text-center py-4">No events found</p>;
+              }
+              
+              return (
+                <div className="overflow-y-auto space-y-3" style={{ maxHeight: 400 }}>
+                  {allEvents.map((event, idx) => (
+                    <TimelineEvent key={idx} event={event} style={{}} />
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Sidebar - Quick Stats */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
             <h3 className="text-lg text-black mb-4">Quick Stats</h3>
-            
+
             <div className="space-y-4">
               {/* Purchase Value */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -572,7 +668,9 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               {/* Current Status */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-700 mb-1">Current Status</p>
-                <p className="text-xl text-black capitalize">{asset.status}</p>
+                <p className="text-xl text-black capitalize">
+                  {asset.status === 'assigned' || asset.status === 'available' ? 'active' : asset.status}
+                </p>
               </div>
 
               {/* Assignment Status */}
@@ -584,46 +682,6 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               </div>
             </div>
 
-            {/* Timeline */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-sm text-gray-700 mb-3">Timeline</h4>
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
-                  <div>
-                    <p className="text-xs text-black">Purchased</p>
-                    <p className="text-xs text-gray-700">{new Date(asset.purchaseDate).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                {asset.assignedTo && (
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1"></div>
-                    <div>
-                      <p className="text-xs text-black">Assigned to {String(asset.assignedTo)}</p>
-                      <p className="text-xs text-gray-700">Current</p>
-                    </div>
-                  </div>
-                )}
-                {asset.status === 'maintenance' && (
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1"></div>
-                    <div>
-                      <p className="text-xs text-black">Under Maintenance</p>
-                      <p className="text-xs text-gray-700">Current</p>
-                    </div>
-                  </div>
-                )}
-                {asset.status === 'retired' && (
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-1"></div>
-                    <div>
-                      <p className="text-xs text-black">Retired</p>
-                      <p className="text-xs text-gray-700">Current</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -663,11 +721,11 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   onChange={(e) => {
                     const employeeId = e.target.value;
                     if (employeeId === '') {
-                        setSelectedEmployee(undefined);
-                      } else {
-                        const employee = employees.find(emp => String(emp._id) === employeeId);
-                        setSelectedEmployee(employee);
-                      }
+                      setSelectedEmployee(undefined);
+                    } else {
+                      const employee = employees.find(emp => String(emp._id) === employeeId);
+                      setSelectedEmployee(employee);
+                    }
                   }}
                 >
                   <option value="">-- Unassign Employee --</option>
@@ -677,7 +735,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                     </option>
                   ))}
                 </select>
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -777,11 +835,10 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   <div
                     key={String(employee._id)}
                     onClick={() => setSelectedAssignEmployee(employee)}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedAssignEmployee?._id === employee._id
+                    className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedAssignEmployee?._id === employee._id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -920,7 +977,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <X className="w-5 h-5 text-gray-700" />
               </button>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 flex justify-center mb-4" id="modal-qr-code">
               <QRCodeCanvas
                 value={qrCodeData}

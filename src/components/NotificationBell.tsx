@@ -60,8 +60,8 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                    !notification.read ? 'bg-blue-50' : ''
+                  className={`p-4 border-b border-gray-100 hover:bg-[#F5E1E0] cursor-pointer ${
+                    !notification.read ? 'bg-purple-50' : ''
                   }`}
                   onClick={() => {
                     markAsRead(notification._id);
@@ -106,7 +106,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                       </p>
                     </div>
                     {!notification.read && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-1"></div>
                     )}
                   </div>
                 </div>

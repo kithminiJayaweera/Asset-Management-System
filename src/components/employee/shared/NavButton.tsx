@@ -13,9 +13,10 @@ export function NavButton({ onClick, isActive, icon, children }: NavButtonProps)
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
         isActive 
-          ? 'bg-blue-50 text-blue-600' 
-          : 'text-gray-700 hover:bg-gray-50'
+          ? 'bg-purple-50' 
+          : 'hover:bg-gray-50'
       }`}
+      style={{ color: isActive ? '#391B49' : '#391B49' }}
     >
       {icon}
       {children}
