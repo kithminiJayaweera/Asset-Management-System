@@ -60,7 +60,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`p-4 border-b border-gray-100 hover:bg-[#F5E1E0] cursor-pointer ${
+                  className={`p-4 border-b border-gray-100 hover:bg-[#D1B9CC] cursor-pointer ${
                     !notification.read ? 'bg-purple-50' : ''
                   }`}
                   onClick={() => {

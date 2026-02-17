@@ -151,8 +151,8 @@ export default function App() {
           Notification.requestPermission();
         }
 
-        // Fetch assets (returns paginated response with data.data structure)
-        const assetsResponse = await fetch('/api/assets');
+        // Fetch assets with no pagination limit to get all assets
+        const assetsResponse = await fetch('/api/assets?limit=10000');
         const assetsResult = await assetsResponse.json();
         
         if (assetsResult.success && assetsResult.data) {

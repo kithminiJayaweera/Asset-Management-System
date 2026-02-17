@@ -147,7 +147,7 @@ export function AssetList({
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2  text-black rounded-lg hover:bg-purple-600 transition bg-purple-400"
+          className="flex items-center gap-2 px-4 py-2  text-white rounded-lg hover:bg-purple-600 transition bg-purple-500"
         >
           <Plus className="w-5 h-5 " />
           Add Asset
@@ -155,7 +155,7 @@ export function AssetList({
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-6 border border-gray-300 mb-6">
+      <div className="bg-transparent rounded-lg p-6 border border-[#775872] mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -165,7 +165,7 @@ export function AssetList({
               placeholder="Search assets..."
               value={filters.search}
               onChange={e => handleFilterChange('search', e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
             />
           </div>
 
@@ -175,7 +175,7 @@ export function AssetList({
             <select
               value={filters.category}
               onChange={e => handleFilterChange('category', e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -189,7 +189,7 @@ export function AssetList({
           <select
             value={filters.assignment}
             onChange={e => handleFilterChange('assignment', e.target.value as AssignmentFilter)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
           >
             <option value="all">All Assignments</option>
             <option value="assigned">Assigned</option>
@@ -200,7 +200,7 @@ export function AssetList({
           <select
             value={filters.status}
             onChange={e => handleFilterChange('status', e.target.value as StatusFilter)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -212,7 +212,7 @@ export function AssetList({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-300">
+      <div className="bg-white rounded-lg border border-[[#775872]">
         <div className="w-full">
           <Table>
             <TableHeader>
