@@ -30,7 +30,7 @@ export function Navbar({ userName = 'Admin User', userRole = 'Administrator', no
       <div className="h-full px-8 flex items-center justify-between">
         {/* Left side - can add breadcrumbs or page title here */}
         <div className="flex items-center">
-          <h2 className="text-lg font-semibold text-gray-800">Asset Management System</h2>
+          
         </div>
 
         {/* Right side - User Profile */}

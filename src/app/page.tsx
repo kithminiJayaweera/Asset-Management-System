@@ -404,7 +404,6 @@ export default function App() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: newEmployeeName ? 'assigned' : 'available',
           assignedTo: employee?.id || null,
         }),
       });
@@ -419,7 +418,6 @@ export default function App() {
           const updatedAsset = {
             ...asset,
             assignedTo: newEmployeeName,
-            status: newEmployeeName ? 'assigned' : 'available',
             logs: [
               ...(asset.logs || []),
               {

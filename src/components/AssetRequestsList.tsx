@@ -247,8 +247,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          assignedTo: request.requestedBy._id,
-          status: 'assigned'
+          assignedTo: request.requestedBy._id
         }),
       });
 
@@ -278,8 +277,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            assignedTo: null,
-            status: 'available'
+            assignedTo: null
           }),
         });
         alert('Failed to link asset to request. Please try again.');
@@ -330,13 +328,12 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           .trim();
       }
       
-      // Update asset: unassign, set to available, clean description
+      // Update asset: unassign and clean description
       const updateAssetResponse = await fetch(`/api/assets/${currentAssetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           assignedTo: null,
-          status: 'available',
           description: updatedDescription || 'Available for assignment'
         }),
       });
@@ -485,8 +482,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              assignedTo: selectedRequest.requestedBy?._id,
-              status: 'assigned'
+              assignedTo: selectedRequest.requestedBy?._id
             }),
           });
 

@@ -162,7 +162,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl text-black">Assign Employee</h3>
+              <h3 className="text-xl text-black">Assign Employee 123</h3>
               <button onClick={() => setShowAssignModal(false)}>
                 <X className="w-6 h-6" />
               </button>

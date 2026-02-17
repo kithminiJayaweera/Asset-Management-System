@@ -4,6 +4,8 @@
  * This file contains configuration constants for the application
  */
 
+export const LOGO_TEXT = "BC";
+
 export const APP_CONFIG = {
   name: 'Asset Management System',
   description: 'Comprehensive asset tracking and management solution',

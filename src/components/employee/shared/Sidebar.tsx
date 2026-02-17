@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 
 interface SidebarProps {
   title: string;
@@ -14,7 +15,10 @@ interface SidebarProps {
 export function Sidebar({ title, subtitle, linkTo, linkText, showBackButton, onBack, children }: SidebarProps) {
   return (
     <div className="fixed left-0 top-0 h-full w-64 border-r border-gray-200" style={{ backgroundColor: '#D6BFDD', color: '#391B49' }}>
-      <div className="p-6">
+      <div className="p-6 ">
+        <Logo className="text-2xl" />
+      </div>
+      <div className="p-2">
         {showBackButton && onBack && (
           <button
             onClick={onBack}
