@@ -20,6 +20,7 @@ export interface ILocation extends Document {
   y?: number;
   width?: number;
   height?: number;
+  gridData?: any;
   metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +41,7 @@ const LocationSchema = new Schema<ILocation>(
     y: { type: Number, default: null },
     width: { type: Number, default: null },
     height: { type: Number, default: null },
+    gridData: { type: Schema.Types.Mixed, default: null },
     metadata: { type: Schema.Types.Mixed, default: {} }
   },
   { timestamps: true }

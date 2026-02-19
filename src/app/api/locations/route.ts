@@ -7,12 +7,14 @@ export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     const { searchParams } = new URL(request.url);
-    const parentId = searchParams.get('parent');
+    const parentId = searchParams.get('parent') || searchParams.get('parentId');
     const organizationId = searchParams.get('organizationId');
+    const type = searchParams.get('type');
 
     const query: any = {};
     if (parentId) query.parentId = parentId === 'null' ? null : parentId;
     if (organizationId) query.organizationId = organizationId;
+    if (type) query.type = type;
 
     const locations = await Location.find(query)
       .populate('parentId', 'name type code')
