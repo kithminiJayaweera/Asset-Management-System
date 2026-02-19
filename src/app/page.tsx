@@ -22,7 +22,8 @@ import { Sidebar } from '@/components/employee/shared/Sidebar';
 import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
 import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
-import type { IAsset, IOrganization, IUser } from '@/types';
+import type { IAsset, IOrganization, IUser, IAssetRequest } from '@/types';
+import type { AssetLog as SharedAssetLog, Asset as SharedAsset, Organization as SharedOrganization, SubAdmin as SharedSubAdmin } from '@/types/shared';
 
 export interface AssetLog {
   id: string;
@@ -39,68 +40,11 @@ export interface AssetLog {
   notes?: string;
 }
 
-export interface Asset {
-  id: string;
-  name: string;
-  category: string;
-  status: 'active' | 'maintenance' | 'retired' | 'lost';
-  location: string;
-  purchaseDate: string;
-  value: number;
-  depreciationRate: number; // Annual depreciation rate as percentage (e.g., 20 for 20%)
-  assignedTo?: string;
-  description?: string;
-  organizationId?: string;
-  logs?: AssetLog[];
-  // Additional fields
-  brand?: string;
-  model?: string;
-  serialNumber?: string;
-  processor?: string;
-  ram?: string;
-  storage?: string;
-  operatingSystem?: string;
-  macAddress?: string;
-  warrantyEndDate?: string;
-  // Furniture Specifications
-  material?: string;
-  color?: string;
-  dimensions?: string;
-  // Vehicle Specifications
-  vehicleType?: string;
-  registrationNumber?: string;
-  fuelType?: string;
-  mileage?: string;
-  // Common Specs
-  condition?: string;
-  lastMaintenanceDate?: string;
-  // Category-specific specifications
-  details?: Record<string, unknown>;
-  maintenance?: {
-    condition?: string;
-    lastMaintenanceDate?: string;
-  };
-}
+export type Asset = SharedAsset & { details?: Record<string, unknown>; maintenance?: { condition?: string; lastMaintenanceDate?: string } };
 
-export interface Organization {
-  id: string;
-  name: string;
-  code: string;
-  address: string;
-  contactEmail: string;
-  contactPhone: string;
-  createdDate: string;
-}
+export type Organization = SharedOrganization;
 
-export interface SubAdmin {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'sub-admin';
-  organizationId: string;
-  permissions: string[];
-  createdDate: string;
-}
+export type SubAdmin = SharedSubAdmin;
 
 export interface Employee {
   id: string;
@@ -138,7 +82,7 @@ export default function App() {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
 
-  const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
+  const [assetRequests, setAssetRequests] = useState<IAssetRequest[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
@@ -414,12 +358,12 @@ export default function App() {
       }
 
       // Update local state
-      setAssets(assets.map(asset => {
+      setAssets(assets.map((asset) => {
         if (asset.id === assetId) {
-          const updatedAsset = {
+          return {
             ...asset,
             assignedTo: newEmployeeName,
-            status: newEmployeeName ? 'assigned' : 'available',
+            status: (newEmployeeName ? 'assigned' : 'available') as any,
             logs: [
               ...(asset.logs || []),
               {
@@ -435,10 +379,7 @@ export default function App() {
                   : `Asset unassigned from ${oldEmployeeName}`
               } as AssetLog
             ]
-          };
-          // Update the editing asset if it's the one being reassigned
-          setEditingAsset(updatedAsset);
-          return updatedAsset;
+          } as typeof asset;
         }
         return asset;
       }));
@@ -518,16 +459,16 @@ export default function App() {
     setSubAdmins(subAdmins.filter(a => a.id !== id));
   };
 
-  const handleAddAssetRequest = (request: Omit<AssetRequest, 'id'>) => {
-    const newRequest = {
-      ...request,
-      id: Date.now().toString()
+  const handleAddAssetRequest = (request: Omit<IAssetRequest, '_id'>) => {
+    const newRequest: IAssetRequest = {
+      ...(request as IAssetRequest),
+      _id: Date.now().toString(),
     };
     setAssetRequests([...assetRequests, newRequest]);
   };
 
-  const handleUpdateAssetRequest = (request: AssetRequest) => {
-    setAssetRequests(assetRequests.map(r => r.id === request.id ? request : r));
+  const handleUpdateAssetRequest = (request: IAssetRequest) => {
+    setAssetRequests(assetRequests.map(r => r._id === request._id ? request : r));
   };
 
   const handleNotificationNavigate = (type: string, id: string) => {
@@ -656,15 +597,15 @@ export default function App() {
         {currentView === 'dashboard' && <Dashboard assets={assets} />}
         {currentView === 'assets' && (
           <AssetList 
-            assets={assets}
-            organizations={organizations}
+            assets={assets as any}
+            organizations={organizations as any}
             onEdit={handleEdit}
             onDelete={handleDeleteAsset}
             onAddNew={() => {
               setEditingAsset(null);
               setShowAssetModal(true);
             }}
-            onViewDetails={(asset) => {
+            onViewDetails={(asset: any) => {
               setEditingAsset(asset);
               setCurrentView('asset-detail');
             }}
@@ -748,7 +689,7 @@ export default function App() {
               setEditingOrganization(null);
               setShowOrganizationModal(true);
             }}
-            onViewDetails={(org) => {
+            onViewDetails={(org: any) => {
               setSelectedOrganization(org);
               setCurrentView('organization-detail');
             }}

@@ -57,6 +57,13 @@ export async function PUT(request: NextRequest, context: Params) {
 
     const assetRequest = await AssetRequest.findById(id).populate('requestedBy', 'name email');
 
+    if (!assetRequest) {
+      return NextResponse.json(
+        { success: false, error: 'Request not found' },
+        { status: 404 }
+      );
+    }
+
     // If approving an assignment request, update asset status
     if (body.status === 'approved') {
       let assignedAsset = null;
@@ -65,7 +72,7 @@ export async function PUT(request: NextRequest, context: Params) {
       console.log('🔍 Asset ID in request:', assetRequest.assetId);
       console.log('🔍 Asset category in request:', assetRequest.assetCategory);
       
-      if (assetRequest && assetRequest.requestType === 'assignment') {
+      if (assetRequest.requestType === 'assignment') {
         if (assetRequest.assetId) {
           console.log('📋 Assigning specific asset:', assetRequest.assetId);
           // Specific asset requested
@@ -130,8 +137,9 @@ export async function PUT(request: NextRequest, context: Params) {
       body.approvalDate = new Date();
 
       // Send notification to requester
+      const requestedByUser = assetRequest.requestedBy as any;
       const notification = await Notification.create({
-        userId: assetRequest.requestedBy._id || assetRequest.requestedBy,
+        userId: requestedByUser._id || assetRequest.requestedBy,
         type: 'request_approved',
         title: 'Request Approved',
         message: `Your ${assetRequest.assetCategory} request has been approved`,
@@ -140,8 +148,8 @@ export async function PUT(request: NextRequest, context: Params) {
       emitNotification(notification.userId, notification);
       
       // Send approval email
-      const requesterEmail = assetRequest.requestedBy.email;
-      const requesterName = assetRequest.requestedBy.name;
+      const requesterEmail = requestedByUser.email;
+      const requesterName = requestedByUser.name;
       
       console.log('📧 Preparing approval email for:', requesterEmail);
       console.log('Asset details:', { name: assignedAsset?.name, tag: assignedAsset?.assetTag });
@@ -150,7 +158,7 @@ export async function PUT(request: NextRequest, context: Params) {
         try {
           const emailData = await generateApprovalEmail(
             requesterName,
-            assetRequest.assetCategory,
+            assetRequest.assetCategory || 'Asset',
             assignedAsset?.name,
             assignedAsset?.assetTag
           );
@@ -178,8 +186,9 @@ export async function PUT(request: NextRequest, context: Params) {
       console.log('Requester:', assetRequest.requestedBy);
       
       // Send notification to requester
+      const requestedByUser = assetRequest.requestedBy as any;
       const notification = await Notification.create({
-        userId: assetRequest.requestedBy._id || assetRequest.requestedBy,
+        userId: requestedByUser._id || assetRequest.requestedBy,
         type: 'request_rejected',
         title: 'Request Rejected',
         message: `Your ${assetRequest.assetCategory} request has been rejected: ${rejectionReason}`,
@@ -188,15 +197,15 @@ export async function PUT(request: NextRequest, context: Params) {
       emitNotification(notification.userId, notification);
 
       // Send email to requester
-      const requesterEmail = assetRequest.requestedBy.email;
-      const requesterName = assetRequest.requestedBy.name;
+      const requesterEmail = requestedByUser.email;
+      const requesterName = requestedByUser.name;
       
       console.log('📧 Preparing to send email to:', requesterEmail);
       
       if (requesterEmail) {
         const emailHtml = generateRejectionEmail(
           requesterName,
-          assetRequest.assetCategory,
+          assetRequest.assetCategory || 'Asset',
           rejectionReason
         );
         

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search, Link } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search, Link, FileText, AlertCircle } from 'lucide-react';
 
 interface RequestedByUser {
   _id: string;
@@ -74,6 +74,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingRequest, setRejectingRequest] = useState<AssetRequest | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailRequest, setDetailRequest] = useState<AssetRequest | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -874,6 +876,19 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                 </>
               )}
 
+              {/* View Details button */}
+              <button
+                onClick={() => {
+                  setDetailRequest(request);
+                  setShowDetailModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                title="View full request details"
+              >
+                <Package className="w-4 h-4" />
+                Details
+              </button>
+
               {/* Star/Unstar button */}
               <button
                 onClick={() => toggleStar(request._id, request.starred)}
@@ -1195,6 +1210,224 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                       {selectedRequest.assetId ? 'Reassign Asset' : 'Assign Asset'}
                     </>
                   )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Details Modal */}
+      {showDetailModal && detailRequest && (
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all animate-slideUp border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Package className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-black">Request Details</h3>
+                  <p className="text-sm text-gray-600 mt-1">Complete information about this asset request</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setDetailRequest(null);
+                }}
+                className="text-gray-600 hover:text-gray-800 transition-colors p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Request Header Info */}
+              <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Request ID</p>
+                    <p className="text-sm font-mono text-gray-900 font-bold">{String(detailRequest._id).slice(0, 12)}...</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Status</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(detailRequest.status)}`}>
+                      {detailRequest.status.charAt(0).toUpperCase() + detailRequest.status.slice(1)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Request Type</p>
+                    <p className="text-sm text-gray-900 font-medium">{getRequestTypeLabel(detailRequest.requestType)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Created</p>
+                    <p className="text-sm text-gray-900">{new Date(detailRequest.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Last Updated</p>
+                    <p className="text-sm text-gray-900">{new Date(detailRequest.updatedAt).toLocaleDateString()}</p>
+                  </div>
+                  {detailRequest.approvalDate && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Approved</p>
+                      <p className="text-sm text-gray-900">{new Date(detailRequest.approvalDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Requester Information */}
+              <div className="border border-gray-200 rounded-lg p-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5 text-blue-600" />
+                  Requested By
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Name</p>
+                    <p className="text-sm text-gray-900 font-medium">{detailRequest.requestedBy?.name || 'Unknown'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Position</p>
+                      <p className="text-sm text-gray-900">{detailRequest.requestedBy?.position || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Department</p>
+                      <p className="text-sm text-gray-900">{detailRequest.requestedBy?.department || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Email</p>
+                    <p className="text-sm text-blue-600 break-all">{detailRequest.requestedBy?.email || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Asset Information */}
+              <div className="border border-gray-200 rounded-lg p-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-purple-600" />
+                  Asset Information
+                </h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Category</p>
+                      <p className="text-sm text-gray-900 font-medium">{detailRequest.assetCategory}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Specific Name/Model</p>
+                      <p className="text-sm text-gray-900">{detailRequest.assetName || 'Not specified'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Request Reason */}
+              <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-orange-600" />
+                  Request Reason
+                </h4>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{detailRequest.reason}</p>
+              </div>
+
+              {/* Notes Section */}
+              {detailRequest.notes && (
+                <div className="border border-green-200 rounded-lg p-6 bg-green-50">
+                  <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-green-600" />
+                    Admin Notes
+                  </h4>
+                  <p className="text-sm text-green-900 whitespace-pre-wrap leading-relaxed">{detailRequest.notes}</p>
+                </div>
+              )}
+
+              {/* Approval Information */}
+              {detailRequest.approvedBy && (
+                <div className="border border-green-200 rounded-lg p-6 bg-green-50">
+                  <h4 className="text-lg font-bold text-gray-900 mb-4">Approved By</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Admin Name</p>
+                      <p className="text-sm text-gray-900 font-medium">{detailRequest.approvedBy.name}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Email</p>
+                        <p className="text-sm text-green-600 break-all">{detailRequest.approvedBy.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Approval Date</p>
+                        <p className="text-sm text-gray-900">{detailRequest.approvalDate ? new Date(detailRequest.approvalDate).toLocaleDateString() : 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Assigned Asset Information */}
+              {detailRequest.status === 'approved' && typeof detailRequest.assetId === 'object' && detailRequest.assetId && (() => {
+                const assetObj = detailRequest.assetId as Asset;
+                return (
+                  <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
+                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Package className="w-5 h-5 text-purple-600" />
+                      Assigned Asset
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Asset Name</p>
+                        <p className="text-sm text-gray-900 font-medium">{assetObj.name}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Asset Tag</p>
+                          <p className="text-sm font-mono text-gray-900">{assetObj.assetTag}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Category</p>
+                          <p className="text-sm text-gray-900">{assetObj.category}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Status</p>
+                        <span className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-800 font-semibold">
+                          {assetObj.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setDetailRequest(null);
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
+              >
+                Close
+              </button>
+              {detailRequest.status === 'pending' && (
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    setDetailRequest(null);
+                    setTimeout(() => {
+                      openAssignModal(detailRequest, false);
+                    }, 100);
+                  }}
+                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Approve & Assign
                 </button>
               )}
             </div>

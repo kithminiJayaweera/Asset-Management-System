@@ -9,9 +9,10 @@ import { apiRateLimit } from '@/lib/rate-limit';
 // POST /api/assets/[id]/assign - Assign asset to user
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const rateLimitResponse = apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -20,7 +21,7 @@ export async function POST(
     const { userId } = await request.json();
     const performedBy = 'admin';
 
-    const asset = await AssetService.assignAsset(params.id, userId, performedBy);
+    const asset = await AssetService.assignAsset(id, userId, performedBy);
 
     return NextResponse.json({
       success: true,
@@ -35,16 +36,17 @@ export async function POST(
 // DELETE /api/assets/[id]/assign - Unassign asset
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const rateLimitResponse = apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
     await dbConnect();
 
     const performedBy = 'admin';
-    const asset = await AssetService.unassignAsset(params.id, performedBy);
+    const asset = await AssetService.unassignAsset(id, performedBy);
 
     return NextResponse.json({
       success: true,
