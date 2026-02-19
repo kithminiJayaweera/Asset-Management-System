@@ -57,15 +57,18 @@ export async function POST(request: NextRequest) {
       .populate('approvedBy', 'name email')
       .lean();
 
-    // Notify admins about new request
-    const notification = await Notification.create({
-      userId: 'admin',
-      type: 'asset_request',
-      title: 'New Asset Request',
-      message: `${body.requestedBy?.name || 'Employee'} requested ${body.assetCategory}`,
-      data: { requestId: assetRequest._id },
-    });
-    emitNotification('admin', notification);
+    // Emit socket event for real-time update (only this, not notification)
+    if (global.io) {
+      console.log('🚀 Emitting asset_request_created event to all clients');
+      global.io.emit('asset_request_created', {
+        requestId: assetRequest._id,
+        requestedBy: body.requestedBy?.name || 'Employee',
+        assetCategory: body.assetCategory,
+      });
+      console.log('✅ Event emitted successfully');
+    } else {
+      console.warn('⚠️ global.io is not available - Socket.IO not initialized');
+    }
 
     return NextResponse.json<ApiResponse<IAssetRequest>>(
       { success: true, data: populatedRequest as IAssetRequest, message: 'Request created successfully' },

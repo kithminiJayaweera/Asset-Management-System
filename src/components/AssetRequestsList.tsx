@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search, Link } from 'lucide-react';
 
 interface RequestedByUser {
@@ -78,6 +79,18 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   useEffect(() => {
     fetchRequests();
     fetchAssets();
+    
+    // Listen for real-time request updates
+    const handleNewRequest = () => {
+      console.log('New request event received, refreshing...');
+      fetchRequests();
+    };
+    
+    window.addEventListener('assetRequestCreated', handleNewRequest);
+    
+    return () => {
+      window.removeEventListener('assetRequestCreated', handleNewRequest);
+    };
   }, []);
 
   useEffect(() => {
@@ -140,10 +153,17 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (result.success) {
-        fetchRequests();
+        await fetchRequests();
+        const message = status === 'approved' ? 'Request approved successfully!' : 'Request rejected successfully!';
+        console.log('Showing toast:', message);
+        toast.success(message);
+      } else {
+        console.log('Showing error toast');
+        toast.error('Failed to update request');
       }
     } catch (error) {
       console.error('Error updating request:', error);
+      toast.error('Error updating request');
     }
   };
 
@@ -174,13 +194,15 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (!result.success) {
-        // Revert on error
         fetchRequests();
+        toast.error('Failed to archive request');
+      } else {
+        toast.success(currentArchived ? 'Request restored successfully!' : 'Request archived successfully!');
       }
     } catch (error) {
       console.error('Error archiving request:', error);
-      // Revert on error
       fetchRequests();
+      toast.error('Error archiving request');
     }
   };
 
@@ -204,13 +226,13 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (!result.success) {
-        // Revert on error
         fetchRequests();
+        toast.error('Failed to star request');
       }
     } catch (error) {
       console.error('Error starring request:', error);
-      // Revert on error
       fetchRequests();
+      toast.error('Error starring request');
     }
   };
 
@@ -228,9 +250,13 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (result.success) {
         fetchRequests();
+        toast.success('Request deleted successfully!');
+      } else {
+        toast.error('Failed to delete request');
       }
     } catch (error) {
       console.error('Error deleting request:', error);
+      toast.error('Error deleting request');
     }
   };
 
@@ -255,7 +281,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!assetResult.success) {
         console.error('Failed to update asset:', assetResult.error);
-        alert('Failed to assign asset. Please try again.');
+        toast.error('Failed to assign asset');
         return;
       }
       
@@ -280,7 +306,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             assignedTo: null
           }),
         });
-        alert('Failed to link asset to request. Please try again.');
+        toast.error('Failed to link asset to request');
         return;
       }
         
@@ -293,10 +319,10 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       setSelectedAsset(null);
       setIsReadOnlyMode(false);
       
-      alert('Asset successfully assigned!');
+      toast.success('Asset assigned successfully!');
     } catch (error) {
       console.error('Error assigning asset:', error);
-      alert('An error occurred while assigning the asset.');
+      toast.error('Error assigning asset');
     }
   };
 
@@ -311,7 +337,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const assetResult = await assetResponse.json();
       
       if (!assetResult.success) {
-        alert('Failed to fetch asset details.');
+        toast.error('Failed to fetch asset details');
         return;
       }
 
@@ -342,7 +368,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!updateAssetResult.success) {
         console.error('Failed to unassign asset:', updateAssetResult.error);
-        alert('Failed to unassign asset. Please try again.');
+        toast.error('Failed to unassign asset');
         return;
       }
 
@@ -357,17 +383,17 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!requestResult.success) {
         console.error('Failed to update request:', requestResult.error);
-        alert('Failed to update request. Please try again.');
+        toast.error('Failed to update request');
         return;
       }
         
       // Refresh both requests and assets
       await Promise.all([fetchRequests(), fetchAssets()]);
       
-      alert('Asset successfully unassigned!');
+      toast.success('Asset unassigned successfully!');
     } catch (error) {
       console.error('Error unassigning asset:', error);
-      alert('An error occurred while unassigning the asset.');
+      toast.error('Error unassigning asset');
     }
   };
 
@@ -410,6 +436,16 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
     }
   };
 
+  // Normalize category names to handle variations like "Laptop/PC" vs "PC/Laptop"
+  const normalizeCategory = (category: string): string => {
+    const normalized = category.toLowerCase().trim();
+    // Normalize laptop/pc variations
+    if (normalized.includes('laptop') && normalized.includes('pc')) {
+      return 'pc/laptop';
+    }
+    return normalized;
+  };
+
   const filteredAssets = assets.filter(asset => {
     // If showAllAssets is enabled, skip category filtering for debugging
     if (showAllAssets) {
@@ -426,12 +462,11 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       asset.category.toLowerCase().includes(assetSearchQuery.toLowerCase());
     
     // Filter by category matching the request's assetCategory
-    const assetCategory = (asset.category || '').trim();
-    const requestCategory = selectedRequest ? (selectedRequest.assetCategory || '').trim() : '';
+    const assetCategory = normalizeCategory(asset.category || '');
+    const requestCategory = selectedRequest ? normalizeCategory(selectedRequest.assetCategory || '') : '';
     
-    // Simple exact match (case-insensitive)
-    const matchesCategory = !selectedRequest || 
-      assetCategory.toLowerCase() === requestCategory.toLowerCase();
+    // Match normalized categories
+    const matchesCategory = !selectedRequest || assetCategory === requestCategory;
     
     // Debug all assets
     if (selectedRequest) {
@@ -489,7 +524,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           const assetResult = await assetResponse.json();
           
           if (!assetResult.success) {
-            alert('Failed to assign asset. Please try again.');
+            toast.error('Failed to assign asset');
             return;
           }
 
@@ -503,10 +538,10 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           setSelectedAsset(null);
           setIsReadOnlyMode(false);
           
-          alert('Request approved and asset assigned successfully!');
+          toast.success('Request approved and asset assigned successfully!');
         } catch (error) {
           console.error('Error approving with asset:', error);
-          alert('An error occurred.');
+          toast.error('Error approving request');
         }
       } else {
         // Existing reassign logic for approved requests
@@ -538,6 +573,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           <p className="text-gray-800">Manage employee asset requests</p>
         </div>
         
+
         {/* View Toggles */}
         <div className="flex gap-3">
           <button

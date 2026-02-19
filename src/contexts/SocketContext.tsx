@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -63,11 +64,65 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
       console.log('🔔 Notification received:', notification);
       setNotifications((prev) => [notification, ...prev]);
       
+      // Browser notification only (no toast to avoid duplicates)
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(notification.title, {
           body: notification.message,
         });
       }
+    });
+
+    socketInstance.on('asset_request_created', async (data) => {
+      console.log('📝 New asset request received:', data);
+      
+      // Fetch current pending count
+      try {
+        const response = await fetch('/api/requests');
+        const result = await response.json();
+        const pendingCount = result.success 
+          ? result.data.filter((r: any) => r.status === 'pending' && !r.archived).length 
+          : 0;
+        
+        // Show toast notification with pending count
+        toast.info('🔔 New Asset Request', {
+          description: `${data.requestedBy} requested ${data.assetCategory}\n📋 Total Pending: ${pendingCount}`,
+          duration: 8000,
+          style: {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: '2px solid #5a67d8',
+            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+          },
+          action: {
+            label: '👁️ View',
+            onClick: () => {
+              window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Error fetching pending count:', error);
+        // Fallback toast without count
+        toast.info('🔔 New Asset Request', {
+          description: `${data.requestedBy} requested ${data.assetCategory}`,
+          duration: 8000,
+          style: {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: '2px solid #5a67d8',
+            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+          },
+          action: {
+            label: '👁️ View',
+            onClick: () => {
+              window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
+            },
+          },
+        });
+      }
+      
+      // Trigger refresh
+      window.dispatchEvent(new Event('assetRequestCreated'));
     });
 
     socketInstance.on('asset_updated', () => {

@@ -336,7 +336,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             </span>
             <button
               onClick={onEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-400 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
               Edit Asset

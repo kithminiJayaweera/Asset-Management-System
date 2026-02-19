@@ -669,7 +669,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex items-center gap-2 px-6 py-2 bg-purple-400 text-black rounded-lg hover:bg-purple-300 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-purple-500 text-black rounded-lg hover:bg-purple-400 transition-colors"
             >
               <Save className="w-4 h-4" />
               {initialData ? 'Update Asset' : 'Add Asset'}
