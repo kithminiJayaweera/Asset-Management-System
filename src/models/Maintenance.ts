@@ -8,36 +8,68 @@ const MaintenanceSchema = new Schema<IMaintenance>(
       ref: 'Asset',
       required: [true, 'Asset ID is required'],
     },
-    maintenanceType: {
+    issueTitle: {
       type: String,
-      enum: ['preventive', 'corrective', 'inspection'],
-      required: [true, 'Maintenance type is required'],
-    },
-    description: {
-      type: String,
-      required: [true, 'Description is required'],
+      required: [true, 'Issue title is required'],
       trim: true,
     },
-    cost: {
+    issueDescription: {
+      type: String,
+      required: [true, 'Issue description is required'],
+      trim: true,
+    },
+    maintenanceType: {
+      type: String,
+      enum: ['preventive', 'corrective', 'warranty'],
+      required: [true, 'Maintenance type is required'],
+    },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high', 'critical'],
+      required: [true, 'Priority is required'],
+      default: 'medium',
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'in-progress', 'completed', 'cancelled'],
+      default: 'pending',
+    },
+    expectedReturnDate: {
+      type: Date,
+    },
+    assignedVendor: {
+      type: String,
+      trim: true,
+    },
+    estimatedCost: {
       type: Number,
-      required: [true, 'Cost is required'],
       min: [0, 'Cost must be positive'],
     },
+    actualCost: {
+      type: Number,
+      min: [0, 'Cost must be positive'],
+    },
+    attachments: [{
+      type: String,
+    }],
     performedBy: {
       type: String,
-      required: [true, 'Performer information is required'],
       trim: true,
     },
     performedDate: {
       type: Date,
-      required: [true, 'Performed date is required'],
     },
-    nextMaintenanceDate: {
+    completionDate: {
       type: Date,
     },
     notes: {
       type: String,
       trim: true,
+    },
+    organizationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+      required: [true, 'Organization ID is required'],
     },
   },
   {
@@ -47,6 +79,8 @@ const MaintenanceSchema = new Schema<IMaintenance>(
 
 // Indexes
 MaintenanceSchema.index({ assetId: 1 });
+MaintenanceSchema.index({ status: 1 });
+MaintenanceSchema.index({ organizationId: 1 });
 MaintenanceSchema.index({ performedDate: -1 });
 
 const Maintenance: Model<IMaintenance> =

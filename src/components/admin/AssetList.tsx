@@ -8,7 +8,8 @@ import {
   Package,
   Eye,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Wrench
 } from 'lucide-react';
 import {
   Table,
@@ -38,6 +39,7 @@ interface AssetListProps {
   onDelete: (id: string) => void;
   onAddNew: () => void;
   onViewDetails: (asset: Asset) => void;
+  onSendToMaintenance?: (asset: Asset) => void;
 }
 
 export function AssetList({
@@ -46,7 +48,8 @@ export function AssetList({
   onEdit,
   onDelete,
   onAddNew,
-  onViewDetails
+  onViewDetails,
+  onSendToMaintenance
 }: AssetListProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -84,15 +87,8 @@ export function AssetList({
     }
 
     // Status filter (independent dimension)
-    if (filters.status !== 'all') {
-      // Normalize legacy status values
-      const normalizedStatus = asset.status === 'assigned' || asset.status === 'available' 
-        ? 'active' 
-        : asset.status;
-      
-      if (normalizedStatus !== filters.status) {
-        return false;
-      }
+    if (filters.status !== 'all' && asset.status !== filters.status) {
+      return false;
     }
 
     return true;
@@ -121,10 +117,6 @@ export function AssetList({
         return 'bg-gray-200 text-gray-800';
       case 'lost':
         return 'bg-red-100 text-red-800';
-      case 'assigned': // Legacy - treat as active
-        return 'bg-green-100 text-green-800';
-      case 'available': // Legacy - treat as active
-        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-200 text-gray-800';
     }
@@ -265,22 +257,24 @@ export function AssetList({
                       asset.status
                     )}`}
                   >
-                    {asset.status === 'assigned' || asset.status === 'available' ? 'active' : asset.status}
+                    {asset.status}
                   </span>
                 </TableCell>
                 {/* Assignment status badge */}
                 <TableCell>
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getAssignmentBadge(
-                      asset.assignedTo
-                    )}`}
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      asset.status === 'maintenance' 
+                        ? 'bg-gray-100 text-gray-700'
+                        : getAssignmentBadge(asset.assignedTo)
+                    }`}
                   >
-                    {asset.assignedTo && asset.assignedTo.trim() ? 'Assigned' : 'Unassigned'}
+                    {asset.status === 'maintenance' ? 'Unassigned' : (asset.assignedTo && asset.assignedTo.trim() ? 'Assigned' : 'Unassigned')}
                   </span>
                 </TableCell>
                 {/* Assigned person */}
                 <TableCell className="text-black">
-                  {asset.assignedTo || '-'}
+                  {asset.status === 'maintenance' ? '-' : (asset.assignedTo || '-')}
                 </TableCell>
                 <TableCell className="text-black">
                   {new Date(asset.purchaseDate).toLocaleDateString()}
@@ -296,12 +290,23 @@ export function AssetList({
                     <button
                       onClick={() => onViewDetails(asset)}
                       className="p-2 text-gray-700 hover:text-green-600 hover:bg-green-100 rounded-lg"
+                      title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
+                    {onSendToMaintenance && asset.status !== 'maintenance' && (
+                      <button
+                        onClick={() => onSendToMaintenance(asset)}
+                        className="p-2 text-gray-700 hover:text-orange-600 hover:bg-orange-100 rounded-lg"
+                        title="Send to Maintenance"
+                      >
+                        <Wrench className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => onEdit(asset)}
                       className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-100 rounded-lg"
+                      title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -312,6 +317,7 @@ export function AssetList({
                         }
                       }}
                       className="p-2 text-gray-700 hover:text-red-600 hover:bg-red-100 rounded-lg"
+                      title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

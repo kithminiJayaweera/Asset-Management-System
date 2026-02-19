@@ -22,7 +22,7 @@ export function Dashboard({ assets }: DashboardProps) {
     const previousAssets = assets.filter(a => new Date(a.purchaseDate) >= sixtyDaysAgo && new Date(a.purchaseDate) < thirtyDaysAgo);
 
     const total = assets.length;
-    const active = assets.filter(a => a.status !== 'retired' && a.status !== 'lost' && a.status !== 'disposed').length;
+    const active = assets.filter(a => a.status !== 'retired' && a.status !== 'lost').length;
     const maintenance = assets.filter(a => a.status === 'maintenance').length;
     const lost = assets.filter(a => a.status === 'lost').length;
     const retired = assets.filter(a => a.status === 'retired').length;
@@ -55,8 +55,8 @@ export function Dashboard({ assets }: DashboardProps) {
     const currentTotalValue = currentAssets.reduce((sum, a) => sum + a.value, 0);
     const valueTrend = previousTotalValue > 0 ? (((currentTotalValue - previousTotalValue) / previousTotalValue) * 100).toFixed(1) : '0';
 
-    const previousActive = previousAssets.filter(a => a.status !== 'retired' && a.status !== 'lost' && a.status !== 'disposed').length;
-    const currentActive = currentAssets.filter(a => a.status !== 'retired' && a.status !== 'lost' && a.status !== 'disposed').length;
+    const previousActive = previousAssets.filter(a => a.status !== 'retired' && a.status !== 'lost').length;
+    const currentActive = currentAssets.filter(a => a.status !== 'retired' && a.status !== 'lost').length;
     const healthTrend = previousActive > 0 ? (((currentActive - previousActive) / previousActive) * 100).toFixed(1) : '0';
 
     const previousUtilized = previousAssets.filter(a => a.assignedTo).length;

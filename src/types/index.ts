@@ -110,16 +110,28 @@ export interface IAssetRequest {
 }
 
 // Maintenance Types
+export type MaintenanceType = 'preventive' | 'corrective' | 'warranty';
+export type MaintenancePriority = 'low' | 'medium' | 'high' | 'critical';
+export type MaintenanceStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled';
+
 export interface IMaintenance {
   _id: Types.ObjectId | string;
   assetId: Types.ObjectId | string;
-  maintenanceType: 'preventive' | 'corrective' | 'inspection';
-  description: string;
-  cost: number;
-  performedBy: string;
-  performedDate: Date;
-  nextMaintenanceDate?: Date;
+  issueTitle: string;
+  issueDescription: string;
+  maintenanceType: MaintenanceType;
+  priority: MaintenancePriority;
+  status: MaintenanceStatus;
+  expectedReturnDate?: Date;
+  assignedVendor?: string;
+  estimatedCost?: number;
+  actualCost?: number;
+  attachments?: string[];
+  performedBy?: string;
+  performedDate?: Date;
+  completionDate?: Date;
   notes?: string;
+  organizationId: Types.ObjectId | string;
   createdAt: Date;
   updatedAt: Date;
 }
