@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
+import { MaintenanceDialog, MaintenanceFormData } from '@/components/admin/MaintenanceDialog';
 import { AssetForm } from '@/components/AssetForm';
 import { AssetDetail } from '@/components/AssetDetail';
 import { OrganizationList } from '@/components/OrganizationList';
@@ -131,6 +132,8 @@ export default function App() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showOrganizationModal, setShowOrganizationModal] = useState(false);
+  const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
+  const [maintenanceAsset, setMaintenanceAsset] = useState<Asset | null>(null);
   
   const [assets, setAssets] = useState<Asset[]>([]);
 
@@ -574,6 +577,36 @@ export default function App() {
     }
   };
 
+  const handleSendToMaintenance = (asset: Asset) => {
+    setMaintenanceAsset(asset);
+    setShowMaintenanceDialog(true);
+  };
+
+  const handleMaintenanceSubmit = async (data: MaintenanceFormData) => {
+    try {
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Asset sent to maintenance successfully!');
+        setShowMaintenanceDialog(false);
+        setMaintenanceAsset(null);
+        // Refresh assets
+        window.location.reload();
+      } else {
+        alert(`Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to submit maintenance request:', error);
+      alert('Failed to submit maintenance request');
+    }
+  };
+
   return (
       <MainLayout>
         <Sidebar 
@@ -698,6 +731,7 @@ export default function App() {
               setEditingAsset(asset);
               setCurrentView('asset-detail');
             }}
+            onSendToMaintenance={handleSendToMaintenance}
           />
         )}
         {currentView === 'add-asset' && (
@@ -885,6 +919,18 @@ export default function App() {
             />
           </div>
         </div>
+      )}
+
+      {/* Maintenance Dialog */}
+      {showMaintenanceDialog && maintenanceAsset && (
+        <MaintenanceDialog
+          asset={maintenanceAsset}
+          onClose={() => {
+            setShowMaintenanceDialog(false);
+            setMaintenanceAsset(null);
+          }}
+          onSubmit={handleMaintenanceSubmit}
+        />
       )}
 
 

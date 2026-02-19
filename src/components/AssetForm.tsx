@@ -260,6 +260,13 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
         depreciationRate: defaultRates[value as keyof typeof defaultRates] || '10',
         details: {} // Clear details, not specifications
       }));
+    } else if (name === 'status' && value === 'maintenance') {
+      // Auto-unassign when status changes to maintenance
+      setFormData({
+        ...formData,
+        status: value as 'active' | 'maintenance' | 'retired' | 'lost',
+        assignedTo: ''
+      });
     } else {
       setFormData({
         ...formData,
@@ -394,6 +401,11 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               <option value="retired">Retired</option>
               <option value="lost">Lost</option>
             </select>
+            {formData.status === 'maintenance' && (
+              <p className="mt-1 text-xs text-orange-600">
+                ⚠️ Asset will be automatically unassigned when in maintenance
+              </p>
+            )}
           </div>
 
           {/* Location */}
@@ -504,9 +516,15 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               name="assignedTo"
               value={formData.assignedTo}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+              disabled={formData.status === 'maintenance'}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="e.g., John Doe"
             />
+            {formData.status === 'maintenance' && (
+              <p className="mt-1 text-xs text-gray-500">
+                Assets in maintenance cannot be assigned
+              </p>
+            )}
           </div>
 
           {/* Description */}

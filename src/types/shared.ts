@@ -46,6 +46,11 @@ export interface Asset {
   condition?: string;
   lastMaintenanceDate?: string;
   customFields?: Record<string, any>; // NEW
+  details?: Record<string, any>;
+  maintenance?: {
+    condition?: string;
+    lastMaintenanceDate?: string;
+  };
 }
 
 export interface Organization {
