@@ -180,7 +180,9 @@ export async function PUT(request: NextRequest, context: Params) {
         // Notify new assignee
         try {
           const assignedUser = await Asset.findById(id).populate('assignedTo', 'name').lean();
-          const assignedUserName = assignedUser?.assignedTo?.name || 'User';
+          const assignedUserName = (assignedUser?.assignedTo && typeof assignedUser.assignedTo === 'object') 
+            ? ((assignedUser.assignedTo as unknown) as { name: string }).name 
+            : 'User';
           
           console.log('Creating audit log for assignment:', { assetId: id, userName: assignedUserName });
           

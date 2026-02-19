@@ -6,9 +6,10 @@ import { apiRateLimit } from '@/lib/rate-limit';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const rateLimitResponse = apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -17,7 +18,7 @@ export async function POST(
     const { assetId } = await request.json();
     const performedBy = 'admin';
 
-    const result = await AssetService.approveRequestAndAssign(params.id, assetId, performedBy);
+    const result = await AssetService.approveRequestAndAssign(id, assetId, performedBy);
 
     return NextResponse.json({
       success: true,

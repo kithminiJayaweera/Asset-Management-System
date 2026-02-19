@@ -17,6 +17,10 @@ async function migrate() {
     console.log('✓ Connected to MongoDB');
 
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('Database connection not established');
+    }
+    
     const assetsCollection = db.collection('assets');
 
     // Find assets with old status values

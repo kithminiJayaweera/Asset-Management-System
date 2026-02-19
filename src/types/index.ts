@@ -50,6 +50,9 @@ export interface IAsset {
   status: AssetStatus;
   condition: AssetCondition;
   location?: string;
+  locationId?: Types.ObjectId | string; // NEW: Reference to Location
+  deskId?: Types.ObjectId | string; // NEW: Reference to Desk if asset is at a desk
+  floorPlanPosition?: ICoordinate; // NEW: Position on floor plan for visualization
   assignedTo?: Types.ObjectId | string; // User ID
   organizationId: Types.ObjectId | string;
   warrantyExpiry?: Date;
@@ -142,6 +145,93 @@ export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+}
+
+// Location Types
+export type LocationType = 'building' | 'floor' | 'room' | 'rack' | 'desk' | 'zone' | 'shelf' | 'other';
+
+export interface ILocation {
+  _id: Types.ObjectId | string;
+  name: string;
+  type: LocationType;
+  parentId?: Types.ObjectId | string; // For hierarchical structure
+  organizationId: Types.ObjectId | string;
+  description?: string;
+  floorPlanId?: Types.ObjectId | string; // Link to floor plan if applicable
+  coordinates?: {
+    x: number;
+    y: number;
+  };
+  capacity?: number; // For rooms/desks
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Floor Plan Types
+export interface ICoordinate {
+  x: number;
+  y: number;
+}
+
+export interface IFloorPlan {
+  _id: Types.ObjectId | string;
+  name: string;
+  locationId: Types.ObjectId | string; // Reference to Location (building/floor)
+  organizationId: Types.ObjectId | string;
+  imageUrl: string; // URL to uploaded floor plan image
+  imageWidth: number; // Original image dimensions
+  imageHeight: number;
+  scale?: number; // Pixels per meter (for real-world measurements)
+  metadata?: {
+    uploadedBy: Types.ObjectId | string;
+    fileType: string;
+    fileSize: number;
+    originalFileName: string;
+  };
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Desk Types
+export type DeskStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'unavailable';
+
+export interface IDesk {
+  _id: Types.ObjectId | string;
+  deskNumber: string;
+  name?: string;
+  locationId: Types.ObjectId | string; // Reference to Location (room/floor)
+  floorPlanId: Types.ObjectId | string; // Reference to FloorPlan
+  organizationId: Types.ObjectId | string;
+  coordinates: ICoordinate; // Position on floor plan
+  width?: number; // Visual dimensions on floor plan
+  height?: number;
+  rotation?: number; // Rotation angle in degrees
+  status: DeskStatus;
+  assignedTo?: Types.ObjectId | string; // User ID
+  assignedAssets?: Array<Types.ObjectId | string>; // Asset IDs
+  capacity?: number; // Max number of assets
+  deskType?: 'standard' | 'standing' | 'collaborative' | 'hot-desk' | 'meeting-room';
+  amenities?: string[]; // e.g., ['monitor', 'phone', 'charger']
+  notes?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Floor Plan Item (for interactive visualization)
+export interface IFloorPlanItem {
+  id: string;
+  type: 'desk' | 'asset' | 'zone' | 'room';
+  coordinates: ICoordinate;
+  width: number;
+  height: number;
+  rotation?: number;
+  label?: string;
+  status?: string;
+  metadata?: Record<string, any>;
+  onClick?: () => void;
 }
 
 // Pagination Types

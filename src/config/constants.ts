@@ -69,3 +69,35 @@ export const DEPRECIATION_METHODS = {
   DECLINING_BALANCE: 'declining-balance',
   NONE: 'none',
 } as const;
+
+export const LOCATION_TYPES = {
+  BUILDING: 'building',
+  FLOOR: 'floor',
+  ROOM: 'room',
+  RACK: 'rack',
+  DESK: 'desk',
+  ZONE: 'zone',  
+  SHELF: 'shelf',
+  OTHER: 'other',
+} as const;
+
+export const DESK_STATUS = {
+  AVAILABLE: 'available',
+  OCCUPIED: 'occupied',
+  RESERVED: 'reserved',
+  MAINTENANCE: 'maintenance',
+  UNAVAILABLE: 'unavailable',
+} as const;
+
+export const DESK_TYPES = {
+  STANDARD: 'standard',
+  STANDING: 'standing',
+  COLLABORATIVE: 'collaborative',
+  HOT_DESK: 'hot-desk',
+  MEETING_ROOM: 'meeting-room',
+} as const;
+
+export const FILE_UPLOAD_LIMITS = {
+  FLOOR_PLAN_MAX_SIZE: 10 * 1024 * 1024, // 10MB
+  ALLOWED_IMAGE_TYPES: ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'],
+} as const;

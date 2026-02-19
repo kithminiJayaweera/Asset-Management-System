@@ -12,6 +12,13 @@ A comprehensive asset tracking and management solution built with Next.js 15+, M
 - **Audit Logs**: Complete history of all asset-related activities
 - **Maintenance Records**: Track preventive and corrective maintenance
 - **Real-time Updates**: Server-side rendering with Next.js App Router
+- **🗺️ Interactive Floor Plans**: Visual asset and desk tracking with interactive floor plan visualization
+  - Upload floor plan images (PNG, JPEG, PDF)
+  - Drag-and-drop desk placement
+  - Real-time desk availability tracking
+  - Color-coded status indicators
+  - Multi-location support (buildings, floors, rooms)
+  - Asset location visualization
 
 ## 🏗️ Project Structure
 
@@ -130,7 +137,15 @@ asset-management-next/
    pnpm dev
    ```
 
-6. **Open your browser**
+6. **(Optional) Setup Floor Plans**
+   ```bash
+   # Create sample floor plans and desks
+   npm run db:setup-floorplans
+   ```
+   
+   For detailed floor plan setup and usage, see [FLOOR_PLAN_GUIDE.md](./FLOOR_PLAN_GUIDE.md)
+
+7. **Open your browser**
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
@@ -164,6 +179,21 @@ asset-management-next/
 - `PUT /api/requests/:id` - Update a request (approve/reject)
 - `DELETE /api/requests/:id` - Delete a request
 
+### Floor Plans (New! 🗺️)
+- `GET /api/floorplans` - Get all floor plans
+- `POST /api/floorplans` - Create a new floor plan
+- `GET /api/floorplans/:id` - Get a specific floor plan with desks
+- `PATCH /api/floorplans/:id` - Update a floor plan
+- `DELETE /api/floorplans/:id` - Delete a floor plan
+- `POST /api/upload/floorplan` - Upload floor plan image
+
+### Desks
+- `GET /api/desks` - Get all desks (with filters)
+- `POST /api/desks` - Create a new desk
+- `GET /api/desks/:id` - Get a specific desk
+- `PATCH /api/desks/:id` - Update a desk
+- `DELETE /api/desks/:id` - Delete a desk
+
 ## 🗄️ Database Schema
 
 ### Collections
@@ -174,6 +204,10 @@ asset-management-next/
 4. **AssetRequests** - Employee requests for assets
 5. **Maintenance** - Maintenance records for assets
 6. **AuditLogs** - System activity logs
+7. **Locations** - Hierarchical location structure (buildings, floors, rooms)
+8. **FloorPlans** - Floor plan images and metadata
+9. **Desks** - Desk positions and assignments on floor plans
+10. **Categories** - Custom asset categories with dynamic fields
 
 ## 🔐 Security Features
 

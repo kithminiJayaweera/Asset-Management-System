@@ -80,6 +80,18 @@ const AssetSchema = new Schema<IAsset>(
       type: String,
       trim: true,
     },
+    locationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Location',
+    },
+    deskId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Desk',
+    },
+    floorPlanPosition: {
+      x: { type: Number },
+      y: { type: Number },
+    },
     assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',

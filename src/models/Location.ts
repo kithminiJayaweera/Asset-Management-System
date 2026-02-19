@@ -27,6 +27,22 @@ const LocationSchema = new Schema<ILocation>(
       type: String,
       trim: true,
     },
+    floorPlanId: {
+      type: Schema.Types.ObjectId,
+      ref: 'FloorPlan',
+    },
+    coordinates: {
+      x: { type: Number },
+      y: { type: Number },
+    },
+    capacity: {
+      type: Number,
+      min: [0, 'Capacity must be non-negative'],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
@@ -35,6 +51,7 @@ const LocationSchema = new Schema<ILocation>(
 
 LocationSchema.index({ organizationId: 1, parentId: 1 });
 LocationSchema.index({ organizationId: 1, type: 1 });
+LocationSchema.index({ floorPlanId: 1 });
 
 const Location: Model<ILocation> =
   mongoose.models.Location || mongoose.model<ILocation>('Location', LocationSchema);

@@ -4,11 +4,12 @@ import Location from '@/models/Location';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
-    const location = await Location.findById(params.id);
+    const location = await Location.findById(id);
     
     if (!location) {
       return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 });
@@ -22,14 +23,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
     const body = await request.json();
     
     const location = await Location.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true, runValidators: true }
     );
@@ -46,11 +48,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
-    const location = await Location.findByIdAndDelete(params.id);
+    const location = await Location.findByIdAndDelete(id);
     
     if (!location) {
       return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 });

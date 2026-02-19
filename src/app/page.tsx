@@ -18,11 +18,12 @@ import { AssetRequestsList } from '@/components/AssetRequestsList';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
+import { LocationList } from '@/components/LocationList';
 import { Sidebar } from '@/components/employee/shared/Sidebar';
 import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
-import type { IAsset, IOrganization, IUser } from '@/types';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText, MapPin, Map } from 'lucide-react';
+import type { IAsset, IOrganization, IUser, IAssetRequest } from '@/types';
 
 export interface AssetLog {
   id: string;
@@ -119,7 +120,7 @@ export interface Employee {
   emergencyContactPhone?: string;
 }
 
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins' | 'locations';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -138,7 +139,7 @@ export default function App() {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
 
-  const [assetRequests, setAssetRequests] = useState<AssetRequest[]>([]);
+  const [assetRequests, setAssetRequests] = useState<IAssetRequest[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
@@ -419,7 +420,7 @@ export default function App() {
           const updatedAsset = {
             ...asset,
             assignedTo: newEmployeeName,
-            status: newEmployeeName ? 'assigned' : 'available',
+            status: (newEmployeeName ? 'active' : 'active') as IAsset['status'],
             logs: [
               ...(asset.logs || []),
               {
@@ -518,16 +519,16 @@ export default function App() {
     setSubAdmins(subAdmins.filter(a => a.id !== id));
   };
 
-  const handleAddAssetRequest = (request: Omit<AssetRequest, 'id'>) => {
-    const newRequest = {
+  const handleAddAssetRequest = (request: Omit<IAssetRequest, '_id'>) => {
+    const newRequest: any = {
       ...request,
       id: Date.now().toString()
     };
-    setAssetRequests([...assetRequests, newRequest]);
+    setAssetRequests([...assetRequests, newRequest as IAssetRequest]);
   };
 
-  const handleUpdateAssetRequest = (request: AssetRequest) => {
-    setAssetRequests(assetRequests.map(r => r.id === request.id ? request : r));
+  const handleUpdateAssetRequest = (request: IAssetRequest) => {
+    setAssetRequests(assetRequests.map(r => (r as any).id === (request as any).id ? request : r));
   };
 
   const handleNotificationNavigate = (type: string, id: string) => {
@@ -613,6 +614,27 @@ export default function App() {
           icon={<Building2 className="w-5 h-5" />}
         >
           Organization Admins
+        </NavButton>
+        
+        <NavButton
+          onClick={() => {
+            setCurrentView('locations');
+            setEditingAsset(null);
+          }}
+          isActive={currentView === 'locations'}
+          icon={<MapPin className="w-5 h-5" />}
+        >
+          Locations
+        </NavButton>
+        
+        <NavButton
+          onClick={() => {
+            window.location.href = '/floorplans';
+          }}
+          isActive={false}
+          icon={<Map className="w-5 h-5" />}
+        >
+          Floor Plans
         </NavButton>
         
         <NavButton
@@ -818,6 +840,9 @@ export default function App() {
             onUpdate={handleUpdateSubAdmin}
             onDelete={handleDeleteSubAdmin}
           />
+        )}
+        {currentView === 'locations' && (
+          <LocationList organizations={organizations} />
         )}
         {currentView === 'reports' && <Reports assets={assets} organizations={organizations} />}
         {currentView === 'settings' && <Settings />}
