@@ -57,6 +57,24 @@ export async function POST(request: NextRequest) {
       .populate('approvedBy', 'name email')
       .lean();
 
+    // Create notification for admin
+    try {
+      await Notification.create({
+        userId: 'admin',
+        type: 'asset_request',
+        title: 'New Asset Request',
+        message: `${body.requestedBy?.name || 'Employee'} requested ${body.assetCategory}`,
+        data: {
+          requestId: assetRequest._id,
+          requestedBy: body.requestedBy?.name || 'Employee',
+          assetCategory: body.assetCategory
+        },
+        read: false
+      });
+    } catch (notifError) {
+      console.error('Failed to create notification:', notifError);
+    }
+
     // Emit socket event for real-time update (only this, not notification)
     if (global.io) {
       console.log('🚀 Emitting asset_request_created event to all clients');

@@ -88,8 +88,14 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
     
     window.addEventListener('assetRequestCreated', handleNewRequest);
     
+    // Poll for new requests every 5 seconds for cross-device sync
+    const pollInterval = setInterval(() => {
+      fetchRequests();
+    }, 5000);
+    
     return () => {
       window.removeEventListener('assetRequestCreated', handleNewRequest);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -108,7 +114,6 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
 
   const fetchRequests = async () => {
     try {
-      setLoading(true);
       const response = await fetch('/api/requests');
       const result = await response.json();
       

@@ -5,6 +5,7 @@ import Asset from '@/models/Asset';
 import AssetRequest from '@/models/AssetRequest';
 import Notification from '@/models/Notification';
 import AuditLog from '@/models/AuditLog';
+import AssetLocationHistory from '@/models/AssetLocationHistory';
 import { ApiResponse, IAsset } from '@/types';
 import { emitNotification, broadcastNotification, emitAssetUpdate } from '@/lib/socket';
 import mongoose from 'mongoose';
@@ -72,7 +73,7 @@ export async function PUT(request: NextRequest, context: Params) {
     console.log('Updating asset:', id, 'with data:', body);
 
     // Get old asset data BEFORE update
-    const oldAsset = await Asset.findById(id).select('assignedTo name status').lean();
+    const oldAsset = await Asset.findById(id).select('assignedTo locationId name status').lean();
     if (!oldAsset) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Asset not found' },
@@ -107,6 +108,22 @@ export async function PUT(request: NextRequest, context: Params) {
     }
 
     console.log('Asset updated:', { _id: asset._id, status: asset.status, assignedTo: asset.assignedTo });
+
+    // Track location changes
+    if (body.locationId !== undefined && oldAsset.locationId?.toString() !== body.locationId?.toString()) {
+      try {
+        await AssetLocationHistory.create({
+          assetId: id,
+          fromLocationId: oldAsset.locationId || null,
+          toLocationId: body.locationId,
+          movedBy: body.assignedTo || 'admin',
+          movedAt: new Date(),
+          notes: body.locationNotes || 'Location updated'
+        });
+      } catch (historyError) {
+        console.error('Error creating location history:', historyError);
+      }
+    }
 
     // Broadcast update notification
     try {

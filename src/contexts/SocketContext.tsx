@@ -27,9 +27,11 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load notifications from API on mount
+  // Load notifications from API on mount and poll every 5 seconds
   useEffect(() => {
-    if (userId && !isInitialized) {
+    if (!userId) return;
+
+    const fetchNotifications = () => {
       fetch(`/api/notifications?userId=${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -42,8 +44,13 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
           console.error('Failed to load notifications:', err);
           setIsInitialized(true);
         });
-    }
-  }, [userId, isInitialized]);
+    };
+
+    fetchNotifications();
+    const pollInterval = setInterval(fetchNotifications, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [userId]);
 
   useEffect(() => {
     const socketInstance = io(window.location.origin, {

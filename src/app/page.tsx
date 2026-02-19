@@ -16,13 +16,14 @@ import { OrganizationDetail } from '@/components/OrganizationDetail';
 // import { EmployeeForm } from '@/components/EmployeeForm';
 // import { EmployeeDetail } from '@/components/EmployeeDetail';
 import { AssetRequestsList } from '@/components/AssetRequestsList';
+import { LocationManager } from '@/components/LocationManager';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
 import { Sidebar } from '@/components/employee/shared/Sidebar';
 import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText, MapPin } from 'lucide-react';
 import type { IAsset, IOrganization, IUser } from '@/types';
 
 export interface AssetLog {
@@ -120,7 +121,7 @@ export interface Employee {
   emergencyContactPhone?: string;
 }
 
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins' | 'locations';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -646,6 +647,17 @@ export default function App() {
         
         <NavButton
           onClick={() => {
+            setCurrentView('locations');
+            setEditingAsset(null);
+          }}
+          isActive={currentView === 'locations'}
+          icon={<MapPin className="w-5 h-5" />}
+        >
+          Locations
+        </NavButton>
+        
+        <NavButton
+          onClick={() => {
             setCurrentView('reports');
             setEditingAsset(null);
           }}
@@ -828,6 +840,7 @@ export default function App() {
         {currentView === 'asset-requests' && (
           <AssetRequestsList highlightRequestId={selectedRequestId} />
         )}
+        {currentView === 'locations' && <LocationManager />}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
             subAdmins={subAdmins}
