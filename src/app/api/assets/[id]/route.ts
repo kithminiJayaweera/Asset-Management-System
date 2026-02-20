@@ -80,8 +80,8 @@ export async function PUT(request: NextRequest, context: Params) {
       );
     }
 
-    // Validation: Cannot assign retired/lost assets
-    if (body.assignedTo && (body.status === 'retired' || body.status === 'lost' || oldAsset.status === 'retired' || oldAsset.status === 'lost')) {
+    // Validation: Cannot assign retired/lost/maintenance assets
+    if (body.assignedTo && (body.status === 'retired' || body.status === 'lost' || body.status === 'maintenance' || oldAsset.status === 'retired' || oldAsset.status === 'lost' || oldAsset.status === 'maintenance')) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: `Cannot assign ${body.status || oldAsset.status} assets` },
         { status: 400 }

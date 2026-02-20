@@ -146,9 +146,9 @@ AssetSchema.virtual('assignmentState').get(function() {
   return this.assignedTo ? 'assigned' : 'unassigned';
 });
 
-// Validation: Cannot assign retired/lost assets
+// Validation: Cannot assign retired/lost/maintenance assets
 AssetSchema.pre('save', function(next) {
-  if (this.assignedTo && (this.status === 'retired' || this.status === 'lost')) {
+  if (this.assignedTo && (this.status === 'retired' || this.status === 'lost' || this.status === 'maintenance')) {
     return next(new Error(`Cannot assign ${this.status} assets`));
   }
   next();
