@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Package, MapPin, Calendar, DollarSign, Edit2, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 interface Employee {
   id: string;
@@ -25,6 +27,7 @@ interface MyAssetsProps {
 export function MyAssets({ employee }: MyAssetsProps) {
   const [myAssets, setMyAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [returnConfirm, setReturnConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMyAssets();
@@ -45,13 +48,10 @@ export function MyAssets({ employee }: MyAssetsProps) {
   };
 
   const handleEdit = (asset: Asset) => {
-    // For employee view, this could open a request form or show asset details
-    alert(`Edit functionality for ${asset.name} - Contact admin for changes`);
+    toast.info(`Edit functionality for ${asset.name} - Contact admin for changes`);
   };
 
   const handleDelete = async (assetId: string) => {
-    if (!confirm('Are you sure you want to request removal of this asset?')) return;
-    
     try {
       // Create a return request instead of direct deletion
       const response = await fetch('/api/requests', {
@@ -67,11 +67,11 @@ export function MyAssets({ employee }: MyAssetsProps) {
       });
       
       if (response.ok) {
-        alert('Return request submitted successfully');
+        toast.success('Return request submitted successfully');
       }
     } catch (error) {
       console.error('Error creating return request:', error);
-      alert('Failed to submit return request');
+      toast.error('Failed to submit return request');
     }
   };
 
@@ -160,7 +160,7 @@ export function MyAssets({ employee }: MyAssetsProps) {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(asset._id)}
+                  onClick={() => setReturnConfirm(asset._id)}
                   className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Request Return"
                 >
@@ -221,6 +221,21 @@ export function MyAssets({ employee }: MyAssetsProps) {
           <p className="text-gray-800">No assets assigned to you</p>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!returnConfirm}
+        title="Request Asset Return"
+        message="Are you sure you want to request removal of this asset?"
+        onConfirm={() => {
+          if (returnConfirm) {
+            handleDelete(returnConfirm);
+            setReturnConfirm(null);
+          }
+        }}
+        onCancel={() => setReturnConfirm(null)}
+        confirmText="Request Return"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

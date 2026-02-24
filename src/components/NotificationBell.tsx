@@ -65,33 +65,29 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                   }`}
                   onClick={() => {
                     markAsRead(notification._id);
-                    const data = notification.data || {};
                     
                     console.log('Notification clicked:', {
                       title: notification.title,
                       type: notification.type,
-                      data: data,
+                      relatedId: notification.relatedId,
                       onNavigate: !!onNavigate
                     });
                     
-                    if (onNavigate) {
-                      if (notification.type === 'asset_request' && data.requestId) {
+                    if (onNavigate && notification.relatedId) {
+                      if (notification.type === 'asset-requests') {
                         console.log('Navigating to asset-requests');
-                        onNavigate('asset-requests', data.requestId);
-                      } else if ((notification.type === 'request_approved' || notification.type === 'request_rejected') && data.requestId) {
+                        onNavigate('asset-requests', notification.relatedId);
+                      } else if (notification.type === 'request_approved' || notification.type === 'request_rejected') {
                         console.log('Navigating to asset-requests');
-                        onNavigate('asset-requests', data.requestId);
-                      } else if ((notification.type === 'asset_assigned' || notification.type === 'asset_updated') && data.assetId) {
+                        onNavigate('asset-requests', notification.relatedId);
+                      } else if (notification.type === 'asset_assigned' || notification.type === 'asset_updated') {
                         console.log('Navigating to asset-detail');
-                        onNavigate('asset-detail', data.assetId);
-                      } else if (notification.title === 'New Asset Added') {
-                        console.log('Navigating to assets list');
-                        onNavigate('assets', '');
+                        onNavigate('asset-detail', notification.relatedId);
                       } else {
                         console.log('No navigation match found');
                       }
-                    } else {
-                      console.log('onNavigate callback not provided');
+                    } else if (!notification.relatedId) {
+                      console.log('No relatedId found in notification');
                     }
                     
                     setIsOpen(false);

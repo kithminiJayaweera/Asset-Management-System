@@ -19,6 +19,7 @@ import {
   TableRow
 } from '../ui/table';
 import { Asset, Organization } from '@/types/shared';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 type AssignmentFilter = 'all' | 'assigned' | 'unassigned';
 type StatusFilter = 'all' | 'active' | 'maintenance' | 'retired' | 'lost';
@@ -56,6 +57,7 @@ export function AssetList({
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [deleteAsset, setDeleteAsset] = useState<Asset | null>(null);
 
   const categories = ['all', ...Array.from(new Set(assets.map(a => a.category)))];
 
@@ -306,11 +308,7 @@ export function AssetList({
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete ${asset.name}?`)) {
-                          onDelete(asset.id);
-                        }
-                      }}
+                      onClick={() => setDeleteAsset(asset)}
                       className="p-2 text-gray-700 hover:text-red-600 hover:bg-red-100 rounded-lg"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -414,6 +412,21 @@ export function AssetList({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteAsset}
+        title="Delete Asset"
+        message={`Are you sure you want to delete ${deleteAsset?.name}? This action cannot be undone.`}
+        onConfirm={() => {
+          if (deleteAsset) {
+            onDelete(deleteAsset.id);
+            setDeleteAsset(null);
+          }
+        }}
+        onCancel={() => setDeleteAsset(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }
