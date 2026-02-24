@@ -1,5 +1,7 @@
 import { Building2, Edit2, Trash2, Mail, Phone, MapPin, Calendar, Plus } from 'lucide-react';
 import { Organization } from '@/types/shared';
+import { useState } from 'react';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface OrganizationListProps {
   organizations: Organization[];
@@ -10,6 +12,8 @@ interface OrganizationListProps {
 }
 
 export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, onViewDetails }: OrganizationListProps) {
+  const [deleteOrg, setDeleteOrg] = useState<Organization | null>(null);
+  
   return (
     <div className='bg-[#F3E6EC]'>
       <div className="mb-8 flex items-center justify-between ml-5">
@@ -115,9 +119,7 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm(`Are you sure you want to delete ${org.name}?`)) {
-                              onDelete(org.id);
-                            }
+                            setDeleteOrg(org);
                           }}
                           className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete Organization"
@@ -133,6 +135,21 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteOrg}
+        title="Delete Organization"
+        message={`Are you sure you want to delete ${deleteOrg?.name}? This action cannot be undone.`}
+        onConfirm={() => {
+          if (deleteOrg) {
+            onDelete(deleteOrg.id);
+            setDeleteOrg(null);
+          }
+        }}
+        onCancel={() => setDeleteOrg(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

@@ -151,10 +151,7 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Request notification permission
-        if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission();
-        }
+        // Don't request notification permission
 
         // Fetch assets with no pagination limit to get all assets
         const assetsResponse = await fetch('/api/assets?limit=10000');
@@ -459,7 +456,11 @@ export default function App() {
         }
         return asset;
       }));
-      toast.success(newEmployeeName ? 'Asset assigned successfully!' : 'Asset unassigned successfully!');
+      toast.success(newEmployeeName && oldEmployeeName && newEmployeeName !== oldEmployeeName 
+        ? `Asset reassigned from ${oldEmployeeName} to ${newEmployeeName}!` 
+        : newEmployeeName 
+        ? `Asset assigned to ${newEmployeeName}!` 
+        : 'Asset unassigned successfully!');
     } catch (error) {
       console.error('Error reassigning asset:', error);
       toast.error('Failed to update asset assignment');

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Calendar, Edit2, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 interface Employee {
   id: string;
@@ -27,6 +29,7 @@ interface MyRequestsProps {
 export function MyRequests({ employee }: MyRequestsProps) {
   const [myRequests, setMyRequests] = useState<AssetRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<{id: string; status: string} | null>(null);
 
   useEffect(() => {
     fetchMyRequests();
@@ -48,7 +51,7 @@ export function MyRequests({ employee }: MyRequestsProps) {
 
   const handleEdit = async (request: AssetRequest) => {
     if (request.status !== 'pending') {
-      alert('Only pending requests can be edited');
+      toast.warning('Only pending requests can be edited');
       return;
     }
     
@@ -64,21 +67,19 @@ export function MyRequests({ employee }: MyRequestsProps) {
       
       if (response.ok) {
         fetchMyRequests();
-        alert('Request updated successfully');
+        toast.success('Request updated successfully');
       }
     } catch (error) {
       console.error('Error updating request:', error);
-      alert('Failed to update request');
+      toast.error('Failed to update request');
     }
   };
 
   const handleDelete = async (requestId: string, status: string) => {
     if (status !== 'pending') {
-      alert('Only pending requests can be deleted');
+      toast.warning('Only pending requests can be deleted');
       return;
     }
-    
-    if (!confirm('Are you sure you want to delete this request?')) return;
     
     try {
       const response = await fetch(`/api/requests/${requestId}`, {
@@ -87,11 +88,11 @@ export function MyRequests({ employee }: MyRequestsProps) {
       
       if (response.ok) {
         setMyRequests(prev => prev.filter(r => r._id !== requestId));
-        alert('Request deleted successfully');
+        toast.success('Request deleted successfully');
       }
     } catch (error) {
       console.error('Error deleting request:', error);
-      alert('Failed to delete request');
+      toast.error('Failed to delete request');
     }
   };
 
@@ -209,7 +210,7 @@ export function MyRequests({ employee }: MyRequestsProps) {
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(request._id, request.status)}
+                      onClick={() => setDeleteConfirm({id: request._id, status: request.status})}
                       className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete Request"
                     >
@@ -254,6 +255,21 @@ export function MyRequests({ employee }: MyRequestsProps) {
           <p className="text-gray-800">No requests found</p>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Request"
+        message="Are you sure you want to delete this request?"
+        onConfirm={() => {
+          if (deleteConfirm) {
+            handleDelete(deleteConfirm.id, deleteConfirm.status);
+            setDeleteConfirm(null);
+          }
+        }}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

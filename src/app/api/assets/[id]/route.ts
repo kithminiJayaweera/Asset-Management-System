@@ -132,18 +132,9 @@ export async function PUT(request: NextRequest, context: Params) {
         type: 'asset_updated',
         title: 'Asset Updated',
         message: `${asset.name} has been updated`,
-        data: { assetId: asset._id },
+        relatedId: asset._id.toString(),
       });
-      const updateNotif = {
-        _id: Date.now().toString(),
-        type: 'asset_updated',
-        title: 'Asset Updated',
-        message: `${asset.name} has been updated`,
-        read: false,
-        createdAt: new Date(),
-      };
-      broadcastNotification(updateNotif);
-      emitAssetUpdate();
+      emitAssetUpdate({ assetId: asset._id.toString(), message: `${asset.name} has been updated` });
     } catch (notifError) {
       console.error('Error broadcasting notification:', notifError);
     }
@@ -170,7 +161,7 @@ export async function PUT(request: NextRequest, context: Params) {
         if (previousAssignee && previousAssignee !== body.assignedTo.toString()) {
           try {
             await Notification.updateMany(
-              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { userId: previousAssignee, relatedId: id, type: 'asset_assigned' },
               { $set: { read: true } }
             );
             await Notification.create({
@@ -178,17 +169,8 @@ export async function PUT(request: NextRequest, context: Params) {
               type: 'asset_updated',
               title: 'Asset Unassigned',
               message: `${asset.name} has been reassigned to another user`,
-              data: { assetId: id },
+              relatedId: id,
             });
-            const unassignNotif = {
-              _id: Date.now().toString(),
-              type: 'asset_updated',
-              title: 'Asset Unassigned',
-              message: `${asset.name} has been reassigned`,
-              read: false,
-              createdAt: new Date(),
-            };
-            emitNotification(previousAssignee, unassignNotif);
           } catch (notifError) {
             console.error('Error notifying previous assignee:', notifError);
           }
@@ -216,17 +198,8 @@ export async function PUT(request: NextRequest, context: Params) {
             type: 'asset_assigned',
             title: 'Asset Assigned',
             message: `${asset.name} has been assigned to you`,
-            data: { assetId: id },
+            relatedId: id,
           });
-          const assignNotif = {
-            _id: Date.now().toString(),
-            type: 'asset_assigned',
-            title: 'Asset Assigned',
-            message: `${asset.name} has been assigned`,
-            read: false,
-            createdAt: new Date(),
-          };
-          emitNotification(body.assignedTo.toString(), assignNotif);
         } catch (notifError) {
           console.error('Error creating assignment notification:', notifError);
         }
@@ -247,7 +220,7 @@ export async function PUT(request: NextRequest, context: Params) {
             console.log('Unassignment audit log created:', auditLog);
             
             await Notification.updateMany(
-              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { userId: previousAssignee, relatedId: id, type: 'asset_assigned' },
               { $set: { read: true } }
             );
             await Notification.create({
@@ -255,17 +228,8 @@ export async function PUT(request: NextRequest, context: Params) {
               type: 'asset_updated',
               title: 'Asset Unassigned',
               message: `${asset.name} has been unassigned from you`,
-              data: { assetId: id },
+              relatedId: id,
             });
-            const unassignNotif = {
-              _id: Date.now().toString(),
-              type: 'asset_updated',
-              title: 'Asset Unassigned',
-              message: `${asset.name} has been unassigned`,
-              read: false,
-              createdAt: new Date(),
-            };
-            emitNotification(previousAssignee, unassignNotif);
           } catch (notifError) {
             console.error('Error notifying unassignment:', notifError);
           }
@@ -317,16 +281,7 @@ export async function DELETE(request: NextRequest, context: Params) {
 
     // Broadcast delete notification
     try {
-      const deleteNotif = {
-        _id: Date.now().toString(),
-        type: 'asset_updated',
-        title: 'Asset Deleted',
-        message: `${asset.name} has been deleted from inventory`,
-        read: false,
-        createdAt: new Date(),
-      };
-      broadcastNotification(deleteNotif);
-      emitAssetUpdate();
+      emitAssetUpdate({ assetId: id, message: `${asset.name} has been deleted from inventory` });
     } catch (notifError) {
       console.error('Error broadcasting delete notification:', notifError);
     }

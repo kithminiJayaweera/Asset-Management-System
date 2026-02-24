@@ -3,10 +3,11 @@ import mongoose, { Schema, Model } from 'mongoose';
 export interface INotification {
   _id: string;
   userId: string;
-  type: 'asset_request' | 'request_approved' | 'request_rejected' | 'asset_assigned' | 'asset_updated';
+  type: string;
   title: string;
   message: string;
   read: boolean;
+  relatedId?: string;
   data?: Record<string, any>;
   createdAt: Date;
 }
@@ -21,7 +22,6 @@ const NotificationSchema = new Schema<INotification>(
     type: {
       type: String,
       required: true,
-      enum: ['asset_request', 'request_approved', 'request_rejected', 'asset_assigned', 'asset_updated'],
     },
     title: {
       type: String,
@@ -35,6 +35,9 @@ const NotificationSchema = new Schema<INotification>(
       type: Boolean,
       default: false,
     },
+    relatedId: {
+      type: String,
+    },
     data: {
       type: Schema.Types.Mixed,
     },
@@ -44,7 +47,11 @@ const NotificationSchema = new Schema<INotification>(
   }
 );
 
-const Notification: Model<INotification> =
-  mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+// Delete existing model to avoid caching issues
+if (mongoose.models.Notification) {
+  delete mongoose.models.Notification;
+}
+
+const Notification: Model<INotification> = mongoose.model<INotification>('Notification', NotificationSchema);
 
 export default Notification;
