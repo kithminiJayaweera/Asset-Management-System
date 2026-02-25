@@ -26,7 +26,7 @@ export function Navbar({ userName = 'Admin User', userRole = 'Administrator', no
   }, []);
 
   return (
-    <div className="fixed top-0 right-0 left-64 h-16 border-b border-gray-200 z-40" style={{ backgroundColor: '#E9D5E6' }}>
+    <div className="fixed top-0 right-0 left-64 h-16 border-b border-gray-200 z-40" style={{ backgroundColor: '#EFEFEF' }}>
       <div className="h-full px-8 flex items-center justify-between">
         {/* Left side - can add breadcrumbs or page title here */}
         <div className="flex items-center">
@@ -41,7 +41,7 @@ export function Navbar({ userName = 'Admin User', userRole = 'Administrator', no
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#AE040F' }}>
                 <User className="w-5 h-5 text-white" />
               </div>
               <div className="text-left hidden md:block">

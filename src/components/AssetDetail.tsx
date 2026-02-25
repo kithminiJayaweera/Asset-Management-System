@@ -61,7 +61,7 @@ interface TimelineEventData {
 
 const TimelineEvent = ({ event, style }: { event: TimelineEventData; style: React.CSSProperties }) => (
   <div style={style} className="flex gap-3 pb-3 border-b border-gray-100">
-    <div className={`w-2 h-2 rounded-full mt-2 ${event.type === 'status' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
+    <div className={`w-2 h-2 rounded-full mt-2 ${event.type === 'status' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
     <div className="flex-1">
       <p className="text-sm text-black">{event.action}</p>
       <p className="text-xs text-gray-700 mt-1">
@@ -343,7 +343,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             </span>
             <button
               onClick={onEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-400 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
               Edit Asset
@@ -370,8 +370,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-purple-600" />
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <FileText className="w-5 h-5 text-red-700" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-700 mb-1">Category</p>
@@ -568,8 +568,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg text-black mb-4">Organization</h3>
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Building2 className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-red-100 rounded-full">
+                  <Building2 className="w-6 h-6 text-red-700" />
                 </div>
                 <div>
                   <p className="text-sm text-black mb-1">{organization.name}</p>

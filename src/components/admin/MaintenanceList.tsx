@@ -44,7 +44,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     'pending': 'bg-gray-100 text-gray-800',
     'in-progress': 'bg-blue-100 text-blue-800',
     'completed': 'bg-green-100 text-green-800',
-    'closed': 'bg-purple-100 text-purple-800',
+    'closed': 'bg-red-100 text-red-900',
     'cancelled': 'bg-red-100 text-red-800',
   };
   return (
@@ -219,7 +219,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
               placeholder="Search asset or issue..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -227,7 +227,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black bg-white"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -241,7 +241,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black bg-white"
           >
             <option value="all">All Types</option>
             <option value="preventive">Preventive</option>
@@ -253,7 +253,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black bg-white"
           >
             <option value="all">All Priority</option>
             <option value="low">Low</option>
@@ -281,9 +281,9 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
             <div className="text-2xl font-bold text-green-600">{filteredRecords.filter(r => r.status === 'completed').length}</div>
             <div className="text-xs text-green-700">Completed</div>
           </div>
-          <div className="p-3 bg-purple-50 rounded-lg text-center">
-            <div className="text-2xl font-bold text-purple-600">{filteredRecords.filter(r => r.status === 'closed').length}</div>
-            <div className="text-xs text-purple-700">Closed</div>
+          <div className="p-3 bg-red-50 rounded-lg text-center">
+            <div className="text-2xl font-bold text-red-700">{filteredRecords.filter(r => r.status === 'closed').length}</div>
+            <div className="text-xs text-red-800">Closed</div>
           </div>
         </div>
       </div>
@@ -336,7 +336,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
                   <td className="px-4 py-3 text-center text-sm space-x-2">
                     <button
                       onClick={() => setSelectedRecord(record)}
-                      className="text-purple-600 hover:text-purple-800 font-medium text-xs px-3 py-1 bg-purple-50 hover:bg-purple-100 rounded-md"
+                      className="text-red-700 hover:text-red-900 font-medium text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-md"
                     >
                       Details
                     </button>
@@ -361,7 +361,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
               </DialogHeader>
 
               <div className="space-y-4">
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                   <label className="text-xs text-gray-600 font-semibold">Asset Information</label>
                   <div className="flex items-start justify-between mt-2">
                     <div>
@@ -441,7 +441,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
                     <button
                       onClick={() => handleUpdateStatus(selectedRecord._id, 'closed')}
                       disabled={updatingId === selectedRecord._id}
-                      className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 text-sm font-medium"
+                      className="flex-1 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 text-sm font-medium"
                     >
                       {updatingId === selectedRecord._id ? 'Updating...' : 'Close Maintenance'}
                     </button>

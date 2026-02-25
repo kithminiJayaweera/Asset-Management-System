@@ -64,7 +64,7 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
             value={filters.dateRange.start}
             onChange={(e) => handleChange('dateRange', { ...filters.dateRange, start: e.target.value })}
             placeholder="mm/dd/yyyy"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
         </div>
         <div>
@@ -74,7 +74,7 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
             value={filters.dateRange.end}
             onChange={(e) => handleChange('dateRange', { ...filters.dateRange, end: e.target.value })}
             placeholder="mm/dd/yyyy"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
         </div>
         <div>
@@ -82,7 +82,7 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
           <select
             value={filters.organizationId}
             onChange={(e) => handleChange('organizationId', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="">All Organizations</option>
             {organizations.map(org => (
@@ -95,7 +95,7 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
           <select
             value={filters.category}
             onChange={(e) => handleChange('category', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="">All Categories</option>
             {categories.map(cat => (
@@ -108,7 +108,7 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
           <select
             value={filters.status}
             onChange={(e) => handleChange('status', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
