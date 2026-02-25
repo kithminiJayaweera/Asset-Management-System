@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Building2, Plus, X, Layers, Trash2, Save, Upload } from 'lucide-react';
+import { Building2, Plus, X, Layers, Trash2, Save, Upload, Layout } from 'lucide-react';
+import FloorPlanner from './FloorPlanner';
 
 interface Building {
   _id: string;
@@ -23,6 +24,7 @@ interface Floor {
   grid: GridCell[][];
   gridData?: any;
   metadata?: any;
+  floorPlanLayout?: any[];
 }
 
 interface GridCell {
@@ -40,12 +42,11 @@ export function LocationManager() {
   const [loading, setLoading] = useState(true);
   const [showBuildingForm, setShowBuildingForm] = useState(false);
   const [showFloorForm, setShowFloorForm] = useState(false);
-  const [showImageUpload, setShowImageUpload] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#3B82F6');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [buildingForm, setBuildingForm] = useState({ name: '', code: '', organizationId: '' });
   const [floorForm, setFloorForm] = useState({ name: '', code: '' });
+  const [showFloorPlanner, setShowFloorPlanner] = useState(false);
+  const [plannerFloorId, setPlannerFloorId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -152,57 +153,20 @@ export function LocationManager() {
     }
   };
 
-  const initializeGrid = (floor: Floor) => {
-    let grid: GridCell[][] = [];
-    if (floor.gridData) {
-      grid = floor.gridData;
-    } else {
-      for (let y = 0; y < 50; y++) {
-        const row: GridCell[] = [];
-        for (let x = 0; x < 50; x++) {
-          row.push({ x, y });
-        }
-        grid.push(row);
-      }
-    }
-    const floorPlanImage = floor.metadata?.floorPlanImage || '';
-    setSelectedFloor({ ...floor, grid, floorPlanImage });
-  };
-
-  const uploadFloorPlan = async () => {
-    if (!selectedFloor || !imageUrl) return;
+  const initializeGrid = async (floor: Floor) => {
     try {
-      const response = await fetch(`/api/locations/${selectedFloor._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ metadata: { floorPlanImage: imageUrl } })
-      });
-      if (response.ok) {
-        toast.success('Floor plan uploaded!');
-        setShowImageUpload(false);
-        setImageUrl('');
-        setSelectedFloor({ ...selectedFloor, floorPlanImage: imageUrl });
-      }
+      const res = await fetch(`/api/locations/${floor._id}/layout`);
+      const data = await res.json();
+      console.log('Floor layout loaded:', data);
+      console.log('Layout items count:', data.layout?.length || 0);
+      setSelectedFloor({ ...floor, floorPlanLayout: data.layout || [] });
     } catch (error) {
-      toast.error('Failed to upload');
+      console.error('Failed to load floor layout:', error);
+      setSelectedFloor(floor);
     }
   };
 
-  const saveGrid = async () => {
-    if (!selectedFloor) return;
-    try {
-      const response = await fetch(`/api/locations/${selectedFloor._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gridData: selectedFloor.grid })
-      });
-      if (response.ok) {
-        toast.success('Layout saved!');
-      }
-    } catch (error) {
-      toast.error('Failed to save');
-    }
-  };
+
 
   if (loading) return <div className="p-8">Loading...</div>;
 
@@ -280,13 +244,9 @@ export function LocationManager() {
             <h3 className="text-lg text-black font-semibold">Floor Plan</h3>
             {selectedFloor && (
               <div className="flex gap-2">
-                <button onClick={() => setShowImageUpload(true)} className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg">
-                  <Upload className="w-4 h-4" />
-                  Upload
-                </button>
-                <button onClick={saveGrid} className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-lg">
-                  <Save className="w-4 h-4" />
-                  Save
+                <button onClick={() => { setPlannerFloorId(selectedFloor._id); setShowFloorPlanner(true); }} className="flex items-center gap-2 px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                  <Layout className="w-4 h-4" />
+                  Floor Planner
                 </button>
               </div>
             )}
@@ -296,37 +256,32 @@ export function LocationManager() {
               <p>Select a floor</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-700">Color:</span>
-                {['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'].map(color => (
-                  <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded border-2 ${selectedColor === color ? 'border-black' : 'border-gray-300'}`} style={{ backgroundColor: color }} />
-                ))}
-              </div>
-              <div className="relative inline-block border-2 border-gray-300 bg-gray-100">
-                {selectedFloor.floorPlanImage && (
-                  <img src={selectedFloor.floorPlanImage} alt="Floor plan" className="absolute inset-0 w-full h-full object-cover opacity-60" style={{ pointerEvents: 'none' }} />
-                )}
-                <div className="relative">
-                  {selectedFloor.grid?.map((row, y) => (
-                    <div key={y} className="flex">
-                      {row.map((cell, x) => (
-                        <div
-                          key={`${x}-${y}`}
-                          className="w-3 h-3 border border-gray-200 cursor-pointer hover:opacity-70"
-                          style={{ backgroundColor: cell.color || 'transparent' }}
-                          onClick={() => {
-                            const newGrid = [...selectedFloor.grid];
-                            newGrid[y][x] = cell.color ? { x, y } : { x, y, color: selectedColor };
-                            setSelectedFloor({ ...selectedFloor, grid: newGrid });
-                          }}
-                        />
-                      ))}
-                    </div>
-                  ))}
+            <div className="relative inline-block border-2 border-gray-300 bg-[#12151f]" style={{ width: 800, height: 600 }}>
+              {console.log('Rendering floor plan, layout:', selectedFloor.floorPlanLayout)}
+              {selectedFloor.floorPlanLayout && selectedFloor.floorPlanLayout.length > 0 ? (
+                selectedFloor.floorPlanLayout.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="absolute rounded flex flex-col items-center justify-center"
+                    style={{
+                      left: item.x,
+                      top: item.y,
+                      width: item.w,
+                      height: item.h,
+                      background: item.color,
+                      transform: `rotate(${item.rotation || 0}deg)`,
+                      opacity: item.opacity || 1
+                    }}
+                  >
+                    <span className="text-lg" style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif' }}>{item.icon}</span>
+                    <span className="text-[9px] text-white/70">{item.label}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm">
+                  No floor plan layout. Click "Floor Planner" to design.
                 </div>
-              </div>
-              <p className="text-sm text-gray-600">50x50 grid • Click to mark locations • Upload floor plan image</p>
+              )}
             </div>
           )}
         </div>
@@ -389,25 +344,16 @@ export function LocationManager() {
         </div>
       )}
 
-      {showImageUpload && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl text-black font-semibold">Upload Floor Plan</h3>
-              <button onClick={() => setShowImageUpload(false)}><X className="w-5 h-5" /></button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 mb-1">Image URL</label>
-                <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-black" placeholder="https://example.com/floorplan.png" />
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setShowImageUpload(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button onClick={uploadFloorPlan} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Upload</button>
-              </div>
-            </div>
-          </div>
-        </div>
+{showFloorPlanner && plannerFloorId && (
+        <FloorPlanner 
+          locationId={plannerFloorId} 
+          onClose={() => {
+            setShowFloorPlanner(false);
+            if (selectedFloor) {
+              initializeGrid(selectedFloor);
+            }
+          }} 
+        />
       )}
     </div>
   );
