@@ -122,6 +122,8 @@ const AssetSchema = new Schema<IAsset>(
         default: 'good',
       },
       lastMaintenanceDate: Date,
+      maintenanceStartDate: Date,
+      expectedReturnDate: Date,
     },
   },
   {

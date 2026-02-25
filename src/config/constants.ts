@@ -33,10 +33,10 @@ export const ASSET_CATEGORIES = [
 ] as const;
 
 export const ASSET_STATUS = {
-  AVAILABLE: 'available',
-  ASSIGNED: 'assigned',
+  ACTIVE: 'active',
   MAINTENANCE: 'maintenance',
   RETIRED: 'retired',
+  LOST: 'lost',
 } as const;
 
 export const ASSET_CONDITIONS = {

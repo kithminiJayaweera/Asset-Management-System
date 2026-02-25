@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest, context: Params) {
           console.log('📋 Assigning specific asset:', assetRequest.assetId);
           // Specific asset requested
           assignedAsset = await Asset.findByIdAndUpdate(assetRequest.assetId, {
-            status: 'assigned',
+            status: 'active',
             assignedTo: assetRequest.requestedBy,
           }, { new: true });
           console.log('✅ Specific asset assigned:', assignedAsset);
@@ -89,8 +89,9 @@ export async function PUT(request: NextRequest, context: Params) {
           // Find available asset from category
           const availableAssets = await Asset.find({
             category: assetRequest.assetCategory,
-            status: 'available',
-            organizationId: assetRequest.organizationId
+            status: 'active',
+            organizationId: assetRequest.organizationId,
+            assignedTo: { $exists: false }
           });
           console.log('📦 Available assets found:', availableAssets.length);
           
@@ -98,11 +99,12 @@ export async function PUT(request: NextRequest, context: Params) {
             assignedAsset = await Asset.findOneAndUpdate(
               { 
                 category: assetRequest.assetCategory,
-                status: 'available',
-                organizationId: assetRequest.organizationId
+                status: 'active',
+                organizationId: assetRequest.organizationId,
+                assignedTo: { $exists: false }
               },
               {
-                status: 'assigned',
+                status: 'active',
                 assignedTo: assetRequest.requestedBy,
               },
               { new: true }
@@ -116,7 +118,7 @@ export async function PUT(request: NextRequest, context: Params) {
               assignedAsset = await Asset.findByIdAndUpdate(
                 allCategoryAssets[0]._id,
                 {
-                  status: 'assigned',
+                  status: 'active',
                   assignedTo: assetRequest.requestedBy,
                 },
                 { new: true }

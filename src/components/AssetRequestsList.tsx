@@ -488,9 +488,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
     
     // Show available assets or already assigned assets (to allow reassignment)
     const isAvailableOrAssigned = 
-      asset.status?.toLowerCase() === 'available' || 
       asset.status?.toLowerCase() === 'active' ||
-      asset.status?.toLowerCase() === 'assigned' ||
       (selectedRequest && asset._id === (typeof selectedRequest.assetId === 'object' ? selectedRequest.assetId?._id : selectedRequest.assetId));
     
     const passes = matchesSearch && matchesCategory && matchesAssetName && isAvailableOrAssigned;
@@ -1167,7 +1165,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                             {asset.category}
                           </span>
                           <span className={`px-2 py-0.5 text-xs rounded ${
-                            asset.status === 'available' 
+                            asset.status === 'active' 
                               ? 'bg-green-100 text-green-700' 
                               : 'bg-yellow-100 text-yellow-700'
                           }`}>

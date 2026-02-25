@@ -8,6 +8,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
 import { MaintenanceDialog, MaintenanceFormData } from '@/components/admin/MaintenanceDialog';
+import { MaintenanceList } from '@/components/admin/MaintenanceList';
 import { AssetForm } from '@/components/AssetForm';
 import { AssetDetail } from '@/components/AssetDetail';
 import { OrganizationList } from '@/components/OrganizationList';
@@ -24,7 +25,7 @@ import { OrganizationAdminList } from '@/components/OrganizationAdminList';
 import { Sidebar } from '@/components/employee/shared/Sidebar';
 import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText, MapPin } from 'lucide-react';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText, MapPin, Wrench } from 'lucide-react';
 import type { IAsset, IOrganization, IUser } from '@/types';
 
 export interface AssetLog {
@@ -122,7 +123,7 @@ export interface Employee {
   emergencyContactPhone?: string;
 }
 
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins' | 'locations';
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins' | 'locations' | 'maintenance-logs';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -185,7 +186,7 @@ export default function App() {
             id: asset._id,
             name: asset.name,
             category: asset.category,
-            status: (asset.status === 'available' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
+            status: (asset.status === 'available' || asset.status === 'assigned' ? 'active' : asset.status) as 'active' | 'maintenance' | 'retired' | 'lost',
             location: asset.location || '',
             purchaseDate: asset.purchaseDate,
             value: (asset.currentValue || asset.purchasePrice || asset.value || 0) as number,
@@ -692,6 +693,17 @@ export default function App() {
         
         <NavButton
           onClick={() => {
+            setCurrentView('maintenance-logs');
+            setEditingAsset(null);
+          }}
+          isActive={currentView === 'maintenance-logs'}
+          icon={<Wrench className="w-5 h-5" />}
+        >
+          Maintenance Logs
+        </NavButton>
+        
+        <NavButton
+          onClick={() => {
             setCurrentView('reports');
             setEditingAsset(null);
           }}
@@ -876,6 +888,7 @@ export default function App() {
           <AssetRequestsList highlightRequestId={selectedRequestId} />
         )}
         {currentView === 'locations' && <LocationManager />}
+        {currentView === 'maintenance-logs' && <MaintenanceList />}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
             subAdmins={subAdmins}

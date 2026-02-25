@@ -63,7 +63,7 @@ export async function approveRequest(id: string, approvedBy: string) {
     // If it's an assignment request, update the asset
     if (request.requestType === 'assignment' && request.assetId) {
       await Asset.findByIdAndUpdate(request.assetId, {
-        status: 'assigned',
+        status: 'active',
         assignedTo: request.requestedBy,
       });
     }

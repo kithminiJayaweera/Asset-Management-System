@@ -17,11 +17,19 @@ async function migrate() {
     console.log('✓ Connected to MongoDB');
 
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
     const assetsCollection = db.collection('assets');
 
-    // Find assets with old status values
+    // Find assets with old status values (case-insensitive)
     const assetsToMigrate = await assetsCollection.find({
-      status: { $in: ['assigned', 'available'] }
+      $expr: {
+        $in: [
+          { $toLower: '$status' },
+          ['assigned', 'available']
+        ]
+      }
     }).toArray();
 
     console.log(`Found ${assetsToMigrate.length} assets to migrate`);
@@ -32,9 +40,16 @@ async function migrate() {
       return;
     }
 
-    // Update all 'assigned' and 'available' to 'active'
+    // Update all 'assigned' and 'available' to 'active' (case-insensitive)
     const result = await assetsCollection.updateMany(
-      { status: { $in: ['assigned', 'available'] } },
+      {
+        $expr: {
+          $in: [
+            { $toLower: '$status' },
+            ['assigned', 'available']
+          ]
+        }
+      },
       { $set: { status: 'active' } }
     );
 

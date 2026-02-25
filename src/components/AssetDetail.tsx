@@ -676,7 +676,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-700 mb-1">Current Status</p>
                 <p className="text-xl text-black capitalize">
-                  {asset.status === 'assigned' || asset.status === 'available' ? 'active' : asset.status}
+                  {asset.status}
                 </p>
               </div>
 

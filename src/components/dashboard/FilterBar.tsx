@@ -111,8 +111,6 @@ export function FilterBar({ onFilterChange, organizations, categories }: FilterB
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="">All Status</option>
-            <option value="assigned">Assigned</option>
-            <option value="unassigned">Unassigned</option>
             <option value="active">Active</option>
             <option value="maintenance">Maintenance</option>
             <option value="retired">Retired</option>

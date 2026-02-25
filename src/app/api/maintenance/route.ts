@@ -36,6 +36,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ✅ Rule 1: Only active assets can go to maintenance
+    if (asset.status !== 'active') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Cannot send ${asset.status} asset to maintenance. Only active assets can be sent to maintenance.` 
+        },
+        { status: 400 }
+      );
+    }
+
     const maintenance = await Maintenance.create({
       assetId,
       issueTitle,
@@ -50,13 +61,34 @@ export async function POST(req: NextRequest) {
       organizationId: organizationId || asset.organizationId,
     });
 
+    // ✅ Step 2: Update Asset - Set to maintenance + track start date
     asset.status = 'maintenance';
-    asset.assignedTo = undefined;
+    asset.maintenance = {
+      ...asset.maintenance,
+      maintenanceStartDate: new Date(),
+      expectedReturnDate: expectedReturnDate ? new Date(expectedReturnDate) : undefined,
+    };
     await asset.save();
+
+    // ✅ Emit real-time event
+    const populatedMaintenance = await Maintenance.findById(maintenance._id)
+      .populate('assetId', 'name assetTag _id')
+      .lean();
+    const serializedMaintenance = JSON.parse(JSON.stringify(populatedMaintenance));
+    
+    if (global.io) {
+      global.io.emit('maintenance_created', {
+        maintenanceId: maintenance._id,
+        assetId: assetId,
+        issueTitle: issueTitle,
+        status: 'pending',
+        data: serializedMaintenance,
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      data: maintenance,
+      data: serializedMaintenance,
       message: 'Asset sent to maintenance successfully',
     });
   } catch (error: any) {
@@ -82,12 +114,16 @@ export async function GET(req: NextRequest) {
     if (status) query.status = status;
 
     const maintenanceRecords = await Maintenance.find(query)
-      .populate('assetId', 'name assetTag')
-      .sort({ createdAt: -1 });
+      .populate('assetId', 'name assetTag _id')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Serialize to ensure proper data transmission
+    const serialized = JSON.parse(JSON.stringify(maintenanceRecords));
 
     return NextResponse.json({
       success: true,
-      data: maintenanceRecords,
+      data: serialized,
     });
   } catch (error: any) {
     console.error('Error fetching maintenance records:', error);
