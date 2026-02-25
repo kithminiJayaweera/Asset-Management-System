@@ -725,7 +725,7 @@ export default function App() {
         </NavButton>
       </Sidebar>
 
-      <div className="ml-64 pt-16 p-2" style={{ backgroundColor: '#F3E6EC', minHeight: '100vh' }}>
+      <div className="ml-64 pt-16 p-2" style={{ backgroundColor: '#EFEFEF', minHeight: '100vh' }}>
         <div className="fixed top-4 right-8 z-50">
           <NotificationBell onNavigate={handleNotificationNavigate} />
         </div>
@@ -878,7 +878,7 @@ export default function App() {
                 setCurrentView('employees');
                 setSelectedEmployee(null);
               }}
-              className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg"
+              className="mt-4 px-4 py-2 bg-red-700 text-white rounded-lg"
             >
               Back to Employees
             </button>

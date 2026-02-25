@@ -126,13 +126,13 @@ export function AssetList({
 
   const getAssignmentBadge = (assignedTo?: string) => {
     if (assignedTo && assignedTo.trim()) {
-      return 'bg-purple-100 text-blue-800';
+      return 'bg-red-100 text-red-800';
     }
     return 'bg-gray-100 text-gray-700';
   };
 
   return (
-    <div className="text-black opacity-100" style={{ backgroundColor: '#F3E6EC', minHeight: '100vh', padding: '1.5rem' }}>
+    <div className="text-black opacity-100" style={{ backgroundColor: '#EFEFEF', minHeight: '100vh', padding: '1.5rem' }}>
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -141,7 +141,7 @@ export function AssetList({
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2  text-white rounded-lg hover:bg-purple-600 transition bg-purple-500"
+          className="flex items-center gap-2 px-4 py-2  text-white rounded-lg hover:opacity-90 transition" style={{ backgroundColor: '#AE040F' }}
         >
           <Plus className="w-5 h-5 " />
           Add Asset
@@ -149,7 +149,7 @@ export function AssetList({
       </div>
 
       {/* Filters */}
-      <div className="bg-transparent rounded-lg p-6 border border-[#775872] mb-6">
+      <div className="bg-transparent rounded-lg p-6 border border-gray-400 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -159,7 +159,7 @@ export function AssetList({
               placeholder="Search assets..."
               value={filters.search}
               onChange={e => handleFilterChange('search', e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-100"
             />
           </div>
 
@@ -169,7 +169,7 @@ export function AssetList({
             <select
               value={filters.category}
               onChange={e => handleFilterChange('category', e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-100"
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -183,7 +183,7 @@ export function AssetList({
           <select
             value={filters.assignment}
             onChange={e => handleFilterChange('assignment', e.target.value as AssignmentFilter)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-100"
           >
             <option value="all">All Assignments</option>
             <option value="assigned">Assigned</option>
@@ -194,7 +194,7 @@ export function AssetList({
           <select
             value={filters.status}
             onChange={e => handleFilterChange('status', e.target.value as StatusFilter)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-100"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -206,7 +206,7 @@ export function AssetList({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-[[#775872]">
+      <div className="bg-white rounded-lg border border-gray-300">
         <div className="w-full">
           <Table>
             <TableHeader>
@@ -307,7 +307,7 @@ export function AssetList({
                     )}
                     <button
                       onClick={() => onEdit(asset)}
-                      className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-100 rounded-lg"
+                      className="p-2 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -349,7 +349,7 @@ export function AssetList({
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-1 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -396,9 +396,10 @@ export function AssetList({
                         onClick={() => setCurrentPage(pageNum)}
                         className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
                           currentPage === pageNum
-                            ? 'bg-purple-500 text-white'
+                            ? 'text-white'
                             : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                         }`}
+                        style={currentPage === pageNum ? { backgroundColor: '#AE040F' } : {}}
                       >
                         {pageNum}
                       </button>

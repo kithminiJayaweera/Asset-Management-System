@@ -15,7 +15,7 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
   const [deleteOrg, setDeleteOrg] = useState<Organization | null>(null);
   
   return (
-    <div className='bg-[#F3E6EC]'>
+    <div className='bg-[#EFEFEF]'>
       <div className="mb-8 flex items-center justify-between ml-5">
         <div>
           <h2 className="text-2xl text-black mb-2 mt-5 ">Organizations</h2>
@@ -23,7 +23,7 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
         </div>
         <button
           onClick={onAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
         >
           <Plus className="w-5 h-5" />
           Add Organization
@@ -71,8 +71,8 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-50 rounded-lg">
-                          <Building2 className="w-4 h-4 text-purple-600" />
+                        <div className="p-2 bg-red-50 rounded-lg">
+                          <Building2 className="w-4 h-4 text-red-700" />
                         </div>
                         <div>
                           <div className="text-sm font-medium text-black">{org.name}</div>
@@ -111,7 +111,7 @@ export function OrganizationList({ organizations, onEdit, onDelete, onAddNew, on
                             e.stopPropagation();
                             onEdit(org);
                           }}
-                          className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                           title="Edit Organization"
                         >
                           <Edit2 className="w-4 h-4" />

@@ -8,7 +8,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#F3E6EC',
+        background: '#EFEFEF',
+        brand: {
+          50: '#fef2f2',
+          100: '#fde3e3',
+          200: '#fccbcb',
+          300: '#f9a3a3',
+          400: '#f06b6b',
+          500: '#AE040F',
+          600: '#8B030C',
+          700: '#640F07',
+          800: '#4F060C',
+          900: '#301D17',
+        },
       },
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-in-out',

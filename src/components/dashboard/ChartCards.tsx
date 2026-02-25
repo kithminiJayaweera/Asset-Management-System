@@ -28,9 +28,9 @@ interface PieChartCardProps {
   colors?: string[];
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = ['#AE040F', '#10b981', '#f59e0b', '#640F07', '#BEBEBE', '#301D17'];
 
-export function LineChartCard({ title, data, dataKey, color = '#3b82f6' }: LineChartCardProps) {
+export function LineChartCard({ title, data, dataKey, color = '#AE040F' }: LineChartCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <h3 className="text-lg font-bold text-gray-900 mb-4">{title}</h3>
@@ -47,7 +47,7 @@ export function LineChartCard({ title, data, dataKey, color = '#3b82f6' }: LineC
   );
 }
 
-export function BarChartCard({ title, data, dataKey, color = '#3b82f6' }: BarChartCardProps) {
+export function BarChartCard({ title, data, dataKey, color = '#AE040F' }: BarChartCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <h3 className="text-lg font-bold text-gray-900 mb-4">{title}</h3>
