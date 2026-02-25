@@ -183,105 +183,101 @@ export function LocationManager() {
         </button>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-3 bg-white rounded-lg border p-4">
-          <h3 className="text-lg text-black font-semibold mb-4">Buildings</h3>
-          {buildings.length === 0 ? (
-            <p className="text-gray-500 text-sm">No buildings</p>
-          ) : (
-            <div className="space-y-2">
-              {buildings.map((building) => (
-                <div key={building._id} className={`p-3 rounded ${selectedBuilding?._id === building._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
-                  <div className="flex items-center justify-between">
-                    <div onClick={() => setSelectedBuilding(building)} className="flex-1 cursor-pointer">
-                      <div className="text-black font-medium">{building.name}</div>
-                      <div className="text-xs text-gray-500">{building.code}</div>
-                    </div>
-                    <button onClick={() => deleteBuilding(building._id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+      <div className="space-y-6">
+        {/* Filters Row */}
+        <div className="bg-white rounded-lg border p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="block text-sm text-gray-700 mb-2">Building</label>
+              <select 
+                value={selectedBuilding?._id || ''} 
+                onChange={(e) => {
+                  const building = buildings.find(b => b._id === e.target.value);
+                  setSelectedBuilding(building || null);
+                  setSelectedFloor(null);
+                }}
+                className="w-full px-3 py-2 border rounded-lg text-black"
+              >
+                <option value="">Select Building</option>
+                {buildings.map((building) => (
+                  <option key={building._id} value={building._id}>{building.name} ({building.code})</option>
+                ))}
+              </select>
             </div>
-          )}
-        </div>
-
-        <div className="col-span-3 bg-white rounded-lg border p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg text-black font-semibold">Floors</h3>
-            {selectedBuilding && (
-              <button onClick={() => setShowFloorForm(true)} className="p-1 bg-red-100 text-red-700 rounded">
+            <div className="flex-1">
+              <label className="block text-sm text-gray-700 mb-2">Floor</label>
+              <select 
+                value={selectedFloor?._id || ''} 
+                onChange={(e) => {
+                  const floor = selectedBuilding?.floors?.find(f => f._id === e.target.value);
+                  if (floor) initializeGrid(floor);
+                }}
+                className="w-full px-3 py-2 border rounded-lg text-black"
+                disabled={!selectedBuilding}
+              >
+                <option value="">Select Floor</option>
+                {selectedBuilding?.floors?.map((floor) => (
+                  <option key={floor._id} value={floor._id}>{floor.name} ({floor.code})</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2 items-end">
+              <button onClick={() => setShowBuildingForm(true)} className="px-4 py-2 text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#AE040F' }}>
                 <Plus className="w-4 h-4" />
               </button>
-            )}
-          </div>
-          {!selectedBuilding ? (
-            <p className="text-gray-500 text-sm">Select a building</p>
-          ) : selectedBuilding.floors?.length === 0 ? (
-            <p className="text-gray-500 text-sm">No floors</p>
-          ) : (
-            <div className="space-y-2">
-              {selectedBuilding.floors?.map((floor) => (
-                <div key={floor._id} className={`p-3 rounded ${selectedFloor?._id === floor._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
-                  <div className="flex items-center justify-between">
-                    <div onClick={() => initializeGrid(floor)} className="flex-1 cursor-pointer">
-                      <div className="text-black font-medium">{floor.name}</div>
-                      <div className="text-xs text-gray-500">{floor.code}</div>
-                    </div>
-                    <button onClick={() => deleteFloor(floor._id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+              {selectedBuilding && (
+                <button onClick={() => setShowFloorForm(true)} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                  <Layers className="w-4 h-4" />
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="col-span-6 bg-white rounded-lg border p-4">
+        {/* Floor Plan Display */}
+        <div className="bg-white rounded-lg border p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg text-black font-semibold">Floor Plan</h3>
             {selectedFloor && (
-              <div className="flex gap-2">
-                <button onClick={() => { setPlannerFloorId(selectedFloor._id); setShowFloorPlanner(true); }} className="flex items-center gap-2 px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                  <Layout className="w-4 h-4" />
-                  Floor Planner
-                </button>
-              </div>
+              <button onClick={() => { setPlannerFloorId(selectedFloor._id); setShowFloorPlanner(true); }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <Layout className="w-4 h-4" />
+                Floor Planner
+              </button>
             )}
           </div>
           {!selectedFloor ? (
-            <div className="flex items-center justify-center h-96 text-gray-500">
-              <p>Select a floor</p>
+            <div className="flex items-center justify-center h-[600px] text-gray-500">
+              <p>Select a building and floor to view plan</p>
             </div>
           ) : (
-            <div className="relative inline-block border-2 border-gray-300 bg-[#12151f]" style={{ width: 800, height: 600 }}>
-              {console.log('Rendering floor plan, layout:', selectedFloor.floorPlanLayout)}
-              {selectedFloor.floorPlanLayout && selectedFloor.floorPlanLayout.length > 0 ? (
-                selectedFloor.floorPlanLayout.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="absolute rounded flex flex-col items-center justify-center"
-                    style={{
-                      left: item.x,
-                      top: item.y,
-                      width: item.w,
-                      height: item.h,
-                      background: item.color,
-                      transform: `rotate(${item.rotation || 0}deg)`,
-                      opacity: item.opacity || 1
-                    }}
-                  >
-                    <span className="text-lg" style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif' }}>{item.icon}</span>
-                    <span className="text-[9px] text-white/70">{item.label}</span>
+            <div className="flex items-center justify-center">
+              <div className="relative inline-block border-2 border-gray-300 bg-[#12151f]" style={{ width: 800, height: 600 }}>
+                {console.log('Rendering floor plan, layout:', selectedFloor.floorPlanLayout)}
+                {selectedFloor.floorPlanLayout && selectedFloor.floorPlanLayout.length > 0 ? (
+                  selectedFloor.floorPlanLayout.map((item: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="absolute rounded flex flex-col items-center justify-center"
+                      style={{
+                        left: item.x,
+                        top: item.y,
+                        width: item.w,
+                        height: item.h,
+                        background: item.color,
+                        transform: `rotate(${item.rotation || 0}deg)`,
+                        opacity: item.opacity || 1
+                      }}
+                    >
+                      <span className="text-lg" style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif' }}>{item.icon}</span>
+                      <span className="text-[9px] text-white/70">{item.label}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm">
+                    No floor plan layout. Click "Floor Planner" to design.
                   </div>
-                ))
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm">
-                  No floor plan layout. Click "Floor Planner" to design.
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>

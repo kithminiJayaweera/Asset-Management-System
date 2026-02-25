@@ -40,17 +40,19 @@ export async function PUT(
     console.log('Location ID:', id);
     console.log('Layout to save:', JSON.stringify(layout, null, 2));
     
-    const location = await Location.findById(id);
+    const location = await Location.findByIdAndUpdate(
+      id,
+      { $set: { floorPlanLayout: layout } },
+      { new: true, runValidators: false }
+    );
+    
     if (!location) {
       console.log('Location not found');
       return NextResponse.json({ error: 'Location not found' }, { status: 404 });
     }
     
-    location.floorPlanLayout = layout;
-    location.markModified('floorPlanLayout');
-    await location.save();
-    
     console.log('Saved layout:', JSON.stringify(location.floorPlanLayout, null, 2));
+    console.log('Layout saved successfully with', location.floorPlanLayout?.length || 0, 'items');
     console.log('=== API PUT COMPLETE ===');
     return NextResponse.json({ success: true, layout: location.floorPlanLayout });
   } catch (error) {
