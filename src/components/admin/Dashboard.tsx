@@ -190,7 +190,7 @@ export function Dashboard({ assets }: DashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <PieChartCard title="Status Distribution" data={analytics.statusData} colors={['#10b981', '#f59e0b', '#6b7280', '#AE040F']} />
+        <PieChartCard title="Status Distribution" data={analytics.statusData} colors={['#ce999e', '#951623', '#dddddb', '#360705']} />
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
