@@ -313,7 +313,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className,
       )}
-      style={{ backgroundColor: '#CF9DB8' }}
+      style={{ backgroundColor: '#EFEFEF' }}
       {...props}
     />
   );
@@ -328,7 +328,7 @@ function SidebarInput({
       data-slot="sidebar-input"
       data-sidebar="input"
       className={cn("h-8 w-full shadow-none", className)}
-      style={{ backgroundColor: '#9570C6' }}
+      style={{ backgroundColor: '#292929' }}
       {...props}
     />
   );

@@ -117,7 +117,7 @@ export function MyRequests({ employee }: MyRequestsProps) {
     switch (priority) {
       case 'high': return 'bg-red-50 text-red-700 border-red-200';
       case 'medium': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'low': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'low': return 'bg-red-50 text-red-800 border-red-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
@@ -185,7 +185,7 @@ export function MyRequests({ employee }: MyRequestsProps) {
           <div key={request._id} className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple-100 rounded-full">
+                <div className="p-3 bg-red-100 rounded-full">
                   {getStatusIcon(request.status)}
                 </div>
                 <div>
@@ -204,7 +204,7 @@ export function MyRequests({ employee }: MyRequestsProps) {
                   <>
                     <button
                       onClick={() => handleEdit(request)}
-                      className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                       title="Edit Request"
                     >
                       <Edit2 className="w-4 h-4" />

@@ -42,6 +42,9 @@ export function LocationManager() {
   const [loading, setLoading] = useState(true);
   const [showBuildingForm, setShowBuildingForm] = useState(false);
   const [showFloorForm, setShowFloorForm] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [selectedColor, setSelectedColor] = useState('#AE040F');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [buildingForm, setBuildingForm] = useState({ name: '', code: '', organizationId: '' });
   const [floorForm, setFloorForm] = useState({ name: '', code: '' });
@@ -177,7 +180,7 @@ export function LocationManager() {
           <h2 className="text-2xl text-black mb-2">Building & Floor Plans</h2>
           <p className="text-gray-700">Upload floor plans and mark asset locations</p>
         </div>
-        <button onClick={() => setShowBuildingForm(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+        <button onClick={() => setShowBuildingForm(true)} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#AE040F' }}>
           <Plus className="w-4 h-4" />
           Add Building
         </button>
@@ -191,7 +194,7 @@ export function LocationManager() {
           ) : (
             <div className="space-y-2">
               {buildings.map((building) => (
-                <div key={building._id} className={`p-3 rounded ${selectedBuilding?._id === building._id ? 'bg-purple-100 border-purple-500 border-2' : 'bg-gray-50 border'}`}>
+                <div key={building._id} className={`p-3 rounded ${selectedBuilding?._id === building._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
                   <div className="flex items-center justify-between">
                     <div onClick={() => setSelectedBuilding(building)} className="flex-1 cursor-pointer">
                       <div className="text-black font-medium">{building.name}</div>
@@ -211,7 +214,7 @@ export function LocationManager() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg text-black font-semibold">Floors</h3>
             {selectedBuilding && (
-              <button onClick={() => setShowFloorForm(true)} className="p-1 bg-purple-100 text-purple-600 rounded">
+              <button onClick={() => setShowFloorForm(true)} className="p-1 bg-red-100 text-red-700 rounded">
                 <Plus className="w-4 h-4" />
               </button>
             )}
@@ -223,7 +226,7 @@ export function LocationManager() {
           ) : (
             <div className="space-y-2">
               {selectedBuilding.floors?.map((floor) => (
-                <div key={floor._id} className={`p-3 rounded ${selectedFloor?._id === floor._id ? 'bg-purple-100 border-purple-500 border-2' : 'bg-gray-50 border'}`}>
+                <div key={floor._id} className={`p-3 rounded ${selectedFloor?._id === floor._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
                   <div className="flex items-center justify-between">
                     <div onClick={() => initializeGrid(floor)} className="flex-1 cursor-pointer">
                       <div className="text-black font-medium">{floor.name}</div>
@@ -256,30 +259,34 @@ export function LocationManager() {
               <p>Select a floor</p>
             </div>
           ) : (
-            <div className="relative inline-block border-2 border-gray-300 bg-[#12151f]" style={{ width: 800, height: 600 }}>
-              {console.log('Rendering floor plan, layout:', selectedFloor.floorPlanLayout)}
-              {selectedFloor.floorPlanLayout && selectedFloor.floorPlanLayout.length > 0 ? (
-                selectedFloor.floorPlanLayout.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="absolute rounded flex flex-col items-center justify-center"
-                    style={{
-                      left: item.x,
-                      top: item.y,
-                      width: item.w,
-                      height: item.h,
-                      background: item.color,
-                      transform: `rotate(${item.rotation || 0}deg)`,
-                      opacity: item.opacity || 1
-                    }}
-                  >
-                    <span className="text-lg" style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif' }}>{item.icon}</span>
-                    <span className="text-[9px] text-white/70">{item.label}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm">
-                  No floor plan layout. Click "Floor Planner" to design.
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700">Color:</span>
+                {['#AE040F', '#10B981', '#F59E0B', '#EF4444', '#640F07', '#BEBEBE'].map(color => (
+                  <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded border-2 ${selectedColor === color ? 'border-black' : 'border-gray-300'}`} style={{ backgroundColor: color }} />
+                ))}
+              </div>
+              <div className="relative inline-block border-2 border-gray-300 bg-gray-100">
+                {selectedFloor.floorPlanImage && (
+                  <img src={selectedFloor.floorPlanImage} alt="Floor plan" className="absolute inset-0 w-full h-full object-cover opacity-60" style={{ pointerEvents: 'none' }} />
+                )}
+                <div className="relative">
+                  {selectedFloor.grid?.map((row, y) => (
+                    <div key={y} className="flex">
+                      {row.map((cell, x) => (
+                        <div
+                          key={`${x}-${y}`}
+                          className="w-3 h-3 border border-gray-200 cursor-pointer hover:opacity-70"
+                          style={{ backgroundColor: cell.color || 'transparent' }}
+                          onClick={() => {
+                            const newGrid = [...selectedFloor.grid];
+                            newGrid[y][x] = cell.color ? { x, y } : { x, y, color: selectedColor };
+                            setSelectedFloor({ ...selectedFloor, grid: newGrid });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -312,7 +319,7 @@ export function LocationManager() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowBuildingForm(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg">Create</button>
+                <button type="submit" className="flex-1 px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#AE040F' }}>Create</button>
               </div>
             </form>
           </div>
@@ -337,7 +344,7 @@ export function LocationManager() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowFloorForm(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg">Create</button>
+                <button type="submit" className="flex-1 px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#AE040F' }}>Create</button>
               </div>
             </form>
           </div>

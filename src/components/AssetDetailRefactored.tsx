@@ -100,7 +100,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               {asset.status}
             </span>
             <span className={`px-4 py-2 rounded-full text-sm ${
-              isAssigned ? 'bg-purple-100 text-blue-800' : 'bg-gray-100 text-gray-700'
+              isAssigned ? 'bg-red-100 text-blue-800' : 'bg-gray-100 text-gray-700'
             }`}>
               {isAssigned ? 'Assigned' : 'Unassigned'}
             </span>
@@ -135,7 +135,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             <button
               onClick={() => setShowAssignModal(true)}
               disabled={!canAssign || loading}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-50 text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-100 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50"
             >
               <UserPlus className="w-4 h-4" />
               {isAssigned ? 'Reassign' : 'Assign'}
@@ -145,8 +145,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
         
         {assignedEmployee ? (
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-purple-100 rounded-full">
-              <User className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-red-100 rounded-full">
+              <User className="w-6 h-6 text-red-700" />
             </div>
             <div>
               <p className="text-sm text-black">{assignedEmployee.name}</p>
@@ -189,7 +189,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                   key={String(emp._id)}
                   onClick={() => setSelectedEmployee(emp)}
                   className={`border rounded-lg p-3 cursor-pointer ${
-                    selectedEmployee?._id === emp._id ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
+                    selectedEmployee?._id === emp._id ? 'border-red-500 bg-red-50' : 'border-gray-200'
                   }`}
                 >
                   <p className="text-sm font-medium">{emp.name}</p>
@@ -208,7 +208,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
               <button
                 onClick={handleAssign}
                 disabled={!selectedEmployee || loading}
-                className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-red-700 text-white rounded-lg disabled:opacity-50"
               >
                 Assign
               </button>
@@ -239,7 +239,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                     <button
                       onClick={() => handleApproveRequest(request._id)}
                       disabled={loading}
-                      className="px-4 py-2 bg-purple-500 text-white rounded-lg text-sm disabled:opacity-50"
+                      className="px-4 py-2 bg-red-700 text-white rounded-lg text-sm disabled:opacity-50"
                     >
                       Assign
                     </button>
