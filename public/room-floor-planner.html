@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room-Based Floor Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --panel: #1e2130; --border: #2a2f45;
+  --accent: #4f8fff; --accent2: #ff6b6b; --accent3: #43d9a2; --text: #e2e8f8; --muted: #6b7499;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 16px; }
+header h1 { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--accent); }
+.header-btns { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.hbtn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+.hbtn:hover { border-color: var(--accent); color: var(--accent); }
+select { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.app { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sec-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 12px 12px 6px; }
+.items-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 10px 10px; }
+.sidebar-item { background: var(--panel); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: all .15s; }
+.sidebar-item:hover { border-color: var(--accent); background: #1e2845; transform: translateY(-1px); }
+.si-icon { font-size: 20px; line-height: 1; pointer-events: none; }
+.si-label { font-size: 10px; color: var(--muted); text-align: center; pointer-events: none; line-height: 1.3; }
+.canvas-wrap { flex: 1; position: relative; overflow: auto; background: radial-gradient(ellipse at 20% 20%, rgba(79,143,255,0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(67,217,162,0.03) 0%, transparent 60%), #0c0f1a; }
+#floor { position: absolute; width: 1200px; height: 800px; background: #12151f; border: 2px solid #2e3555; border-radius: 3px; }
+.room { position: absolute; border: 2px solid var(--accent3); background: rgba(67,217,162,0.05); border-radius: 4px; cursor: pointer; transition: all .2s; }
+.room:hover { background: rgba(67,217,162,0.1); border-color: var(--accent3); }
+.room.selected { border-color: var(--accent); background: rgba(79,143,255,0.1); box-shadow: 0 0 0 3px rgba(79,143,255,0.2); }
+.room-label { position: absolute; top: 5px; left: 8px; font-size: 11px; font-weight: 600; color: var(--accent3); pointer-events: none; }
+.room.selected .room-label { color: var(--accent); }
+.asset { position: absolute; border-radius: 6px; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: grab; transition: border-color .15s; }
+.asset:hover { border-color: rgba(79,143,255,0.5); z-index: 5; }
+.asset.dragging { opacity: .85; z-index: 100; cursor: grabbing; }
+.asset-icon { font-size: 16px; line-height: 1; pointer-events: none; }
+.asset-label { font-size: 9px; color: rgba(255,255,255,0.7); pointer-events: none; text-align: center; padding: 0 2px; line-height: 1.2; }
+.asset-del { position: absolute; top: -8px; right: -8px; width: 16px; height: 16px; background: var(--accent2); border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,.4); z-index: 20; line-height: 1; }
+.asset:hover .asset-del { display: flex; }
+.statusbar { background: var(--surface); border-top: 1px solid var(--border); height: 26px; display: flex; align-items: center; padding: 0 16px; gap: 18px; font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; }
+.statusbar b { color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⬛ ROOM-BASED FLOOR PLANNER</h1>
+  <span style="color: var(--muted); font-size: 12px;">Select room → Click asset to add</span>
+  <div class="header-btns">
+    <select id="roomSelect" onchange="selectRoom(this.value)">
+      <option value="">Select Room</option>
+    </select>
+    <button class="hbtn" onclick="clearRoomAssets()">Clear Room</button>
+    <button class="hbtn" onclick="clearAll()">Clear All</button>
+    <button class="hbtn" onclick="saveData()">Save</button>
+  </div>
+</header>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sec-title">Workstations</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🖥️" data-label="Desk" data-w="90" data-h="60" data-color="#1a2f50"><span class="si-icon">🖥️</span><span class="si-label">Desk</span></div>
+      <div class="sidebar-item" data-icon="🪑" data-label="Chair" data-w="38" data-h="38" data-color="#1a301a"><span class="si-icon">🪑</span><span class="si-label">Chair</span></div>
+      <div class="sidebar-item" data-icon="💺" data-label="Exec Chair" data-w="42" data-h="42" data-color="#1a301a"><span class="si-icon">💺</span><span class="si-label">Exec Chair</span></div>
+    </div>
+    <div class="sec-title">Meeting Area</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="📋" data-label="Conf Table" data-w="140" data-h="70" data-color="#1a2f50"><span class="si-icon">📋</span><span class="si-label">Conf Table</span></div>
+      <div class="sidebar-item" data-icon="📺" data-label="TV Display" data-w="100" data-h="34" data-color="#0f1a2a"><span class="si-icon">📺</span><span class="si-label">TV Display</span></div>
+      <div class="sidebar-item" data-icon="📝" data-label="Whiteboard" data-w="110" data-h="40" data-color="#0d1f0d"><span class="si-icon">📝</span><span class="si-label">Whiteboard</span></div>
+    </div>
+    <div class="sec-title">Equipment</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🖨️" data-label="Printer" data-w="55" data-h="45" data-color="#1a1a2a"><span class="si-icon">🖨️</span><span class="si-label">Printer</span></div>
+      <div class="sidebar-item" data-icon="🔌" data-label="Server Rack" data-w="60" data-h="90" data-color="#2a2a2a"><span class="si-icon">🔌</span><span class="si-label">Server Rack</span></div>
+      <div class="sidebar-item" data-icon="📞" data-label="Phone" data-w="40" data-h="35" data-color="#1a1a2a"><span class="si-icon">📞</span><span class="si-label">Phone</span></div>
+    </div>
+    <div class="sec-title">Storage</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🗄️" data-label="Cabinet" data-w="55" data-h="28" data-color="#2a1e0f"><span class="si-icon">🗄️</span><span class="si-label">Cabinet</span></div>
+      <div class="sidebar-item" data-icon="📚" data-label="Bookshelf" data-w="30" data-h="100" data-color="#2a1e0f"><span class="si-icon">📚</span><span class="si-label">Bookshelf</span></div>
+      <div class="sidebar-item" data-icon="🚪" data-label="Door" data-w="42" data-h="10" data-color="#2a2a1a"><span class="si-icon">🚪</span><span class="si-label">Door</span></div>
+      <div class="sidebar-item" data-icon="🪟" data-label="Window" data-w="70" data-h="10" data-color="#0f1f2a"><span class="si-icon">🪟</span><span class="si-label">Window</span></div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="cw">
+    <div id="floor"></div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <span>Rooms: <b id="roomCount">0</b></span>
+  <span>Assets: <b id="assetCount">0</b></span>
+  <span>Selected: <b id="selectedRoom">None</b></span>
+</div>
+
+<script>
+const floor = document.getElementById('floor');
+const roomSelect = document.getElementById('roomSelect');
+
+// Data
+const rooms = [
+  { id: 1, name: 'Dev Lab A', x: 50, y: 50, width: 350, height: 250 },
+  { id: 2, name: 'Conference Room', x: 450, y: 50, width: 300, height: 200 },
+  { id: 3, name: 'Server Room', x: 800, y: 50, width: 250, height: 200 },
+  { id: 4, name: 'Open Space', x: 50, y: 350, width: 500, height: 300 },
+  { id: 5, name: 'Storage', x: 600, y: 350, width: 200, height: 150 }
+];
+
+let assets = [];
+let assetIdCounter = 0;
+let selectedRoomId = null;
+let draggedAsset = null;
+let dragOffset = { x: 0, y: 0 };
+
+// Initialize
+function init() {
+  rooms.forEach(room => {
+    const roomEl = document.createElement('div');
+    roomEl.className = 'room';
+    roomEl.id = `room-${room.id}`;
+    roomEl.style.left = room.x + 'px';
+    roomEl.style.top = room.y + 'px';
+    roomEl.style.width = room.width + 'px';
+    roomEl.style.height = room.height + 'px';
+    roomEl.innerHTML = `<div class="room-label">${room.name}</div>`;
+    roomEl.onclick = () => selectRoom(room.id);
+    floor.appendChild(roomEl);
+
+    const opt = document.createElement('option');
+    opt.value = room.id;
+    opt.textContent = room.name;
+    roomSelect.appendChild(opt);
+  });
+  updateStatus();
+}
+
+// Select room
+function selectRoom(roomId) {
+  selectedRoomId = roomId ? parseInt(roomId) : null;
+  document.querySelectorAll('.room').forEach(r => r.classList.remove('selected'));
+  if (selectedRoomId) {
+    document.getElementById(`room-${selectedRoomId}`).classList.add('selected');
+    roomSelect.value = selectedRoomId;
+  } else {
+    roomSelect.value = '';
+  }
+  updateStatus();
+}
+
+// Add asset to selected room
+document.querySelectorAll('.sidebar-item').forEach(el => {
+  el.onclick = () => {
+    if (!selectedRoomId) {
+      alert('Please select a room first');
+      return;
+    }
+    const room = rooms.find(r => r.id === selectedRoomId);
+    const asset = {
+      id: ++assetIdCounter,
+      icon: el.dataset.icon,
+      label: el.dataset.label,
+      w: parseInt(el.dataset.w),
+      h: parseInt(el.dataset.h),
+      color: el.dataset.color,
+      x: 20,
+      y: 20,
+      roomId: selectedRoomId
+    };
+    assets.push(asset);
+    renderAsset(asset, room);
+    updateStatus();
+  };
+});
+
+// Render asset
+function renderAsset(asset, room) {
+  const el = document.createElement('div');
+  el.className = 'asset';
+  el.id = `asset-${asset.id}`;
+  el.style.width = asset.w + 'px';
+  el.style.height = asset.h + 'px';
+  el.style.left = (room.x + asset.x) + 'px';
+  el.style.top = (room.y + asset.y) + 'px';
+  el.style.background = asset.color;
+  el.innerHTML = `<span class="asset-icon">${asset.icon}</span><span class="asset-label">${asset.label}</span><div class="asset-del" onclick="deleteAsset(${asset.id})">✕</div>`;
+  
+  el.onmousedown = (e) => {
+    if (e.target.classList.contains('asset-del')) return;
+    draggedAsset = asset;
+    el.classList.add('dragging');
+    dragOffset.x = e.clientX - el.offsetLeft;
+    dragOffset.y = e.clientY - el.offsetTop;
+    e.preventDefault();
+  };
+  
+  floor.appendChild(el);
+}
+
+// Drag handlers
+document.addEventListener('mousemove', (e) => {
+  if (!draggedAsset) return;
+  const room = rooms.find(r => r.id === draggedAsset.roomId);
+  const el = document.getElementById(`asset-${draggedAsset.id}`);
+  
+  let newX = e.clientX - dragOffset.x;
+  let newY = e.clientY - dragOffset.y;
+  
+  // Constrain to room boundaries
+  newX = Math.max(room.x, Math.min(newX, room.x + room.width - draggedAsset.w));
+  newY = Math.max(room.y, Math.min(newY, room.y + room.height - draggedAsset.h));
+  
+  el.style.left = newX + 'px';
+  el.style.top = newY + 'px';
+  
+  // Update asset position relative to room
+  draggedAsset.x = newX - room.x;
+  draggedAsset.y = newY - room.y;
+});
+
+document.addEventListener('mouseup', () => {
+  if (draggedAsset) {
+    document.getElementById(`asset-${draggedAsset.id}`).classList.remove('dragging');
+    draggedAsset = null;
+  }
+});
+
+// Delete asset
+function deleteAsset(id) {
+  assets = assets.filter(a => a.id !== id);
+  document.getElementById(`asset-${id}`).remove();
+  updateStatus();
+}
+
+// Clear room assets
+function clearRoomAssets() {
+  if (!selectedRoomId) {
+    alert('Please select a room first');
+    return;
+  }
+  if (!confirm('Clear all assets in this room?')) return;
+  assets.filter(a => a.roomId === selectedRoomId).forEach(a => {
+    document.getElementById(`asset-${a.id}`).remove();
+  });
+  assets = assets.filter(a => a.roomId !== selectedRoomId);
+  updateStatus();
+}
+
+// Clear all
+function clearAll() {
+  if (!confirm('Clear all assets from all rooms?')) return;
+  assets.forEach(a => document.getElementById(`asset-${a.id}`).remove());
+  assets = [];
+  updateStatus();
+}
+
+// Save data
+function saveData() {
+  const data = { rooms, assets };
+  console.log('Saved data:', data);
+  alert('Data saved to console. Check browser console (F12).');
+  // To save to backend: fetch('/api/save', { method: 'POST', body: JSON.stringify(data) })
+}
+
+// Update status
+function updateStatus() {
+  document.getElementById('roomCount').textContent = rooms.length;
+  document.getElementById('assetCount').textContent = assets.length;
+  document.getElementById('selectedRoom').textContent = selectedRoomId ? rooms.find(r => r.id === selectedRoomId).name : 'None';
+}
+
+init();
+</script>
+
+</body>
+</html>

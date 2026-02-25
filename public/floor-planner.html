@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Office Floor Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --panel: #1e2130; --border: #2a2f45;
+  --accent: #4f8fff; --accent2: #ff6b6b; --accent3: #43d9a2; --text: #e2e8f8; --muted: #6b7499;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; z-index: 100; }
+header h1 { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--accent); white-space: nowrap; }
+header .subtitle { color: var(--muted); font-size: 12px; }
+.header-btns { margin-left: auto; display: flex; gap: 8px; }
+.hbtn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+.hbtn:hover { border-color: var(--accent); color: var(--accent); }
+.app { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 200px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; overflow-x: hidden; flex-shrink: 0; z-index: 50; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sec-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 12px 12px 6px; }
+.items-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 10px 10px; }
+.sidebar-item { background: var(--panel); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: grab; transition: border-color .15s, transform .15s, background .15s; }
+.sidebar-item:hover { border-color: var(--accent); background: #1e2845; transform: translateY(-1px); }
+.sidebar-item:active { cursor: grabbing; }
+.si-icon { font-size: 20px; line-height: 1; pointer-events: none; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
+.si-label { font-size: 10px; color: var(--muted); text-align: center; pointer-events: none; line-height: 1.3; }
+.props { padding: 10px 10px 14px; border-top: 1px solid var(--border); }
+.prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+.prop-row label { color: var(--muted); font-size: 11px; }
+.prop-row input[type="color"] { width: 34px; height: 22px; border: 1px solid var(--border); border-radius: 4px; background: none; cursor: pointer; padding: 0; }
+.prop-row input[type="range"] { width: 80px; accent-color: var(--accent); }
+.prop-row input[type="text"] { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 11px; padding: 3px 6px; width: 90px; font-family: 'DM Sans', sans-serif; outline: none; }
+.prop-row input[type="text"]:focus { border-color: var(--accent); }
+.del-btn { width: 100%; padding: 5px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); border-radius: 5px; color: var(--accent2); cursor: pointer; font-size: 11px; transition: all .15s; margin-top: 4px; font-family: 'DM Sans', sans-serif; }
+.del-btn:hover { background: rgba(255,107,107,0.2); }
+#noSel { color: var(--muted); font-size: 11px; text-align: center; padding: 8px 0; }
+.canvas-wrap { flex: 1; position: relative; overflow: hidden; background: radial-gradient(ellipse at 20% 20%, rgba(79,143,255,0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(67,217,162,0.03) 0%, transparent 60%), #0c0f1a; }
+#room { position: absolute; background: repeating-linear-gradient(0deg, transparent, transparent 29px, #1a1f35 29px, #1a1f35 30px), repeating-linear-gradient(90deg, transparent, transparent 29px, #1a1f35 29px, #1a1f35 30px), #12151f; border: 2px solid #2e3555; border-radius: 3px; box-shadow: 0 0 60px rgba(0,0,0,0.6); }
+.fi { position: absolute; border-radius: 6px; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: grab; overflow: visible; }
+.fi:hover { border-color: rgba(79,143,255,0.5) !important; z-index: 5; }
+.fi.sel { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(79,143,255,0.25); z-index: 10; }
+.fi.moving { opacity: .85; z-index: 100; cursor: grabbing; }
+.fi-icon { font-size: 16px; line-height: 1; pointer-events: none; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
+.fi-lbl { font-size: 9px; color: rgba(255,255,255,0.7); pointer-events: none; text-align: center; padding: 0 2px; line-height: 1.2; }
+.h-rot { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; background: var(--accent); border-radius: 50%; cursor: crosshair; display: none; align-items: center; justify-content: center; font-size: 9px; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+.fi.sel .h-rot { display: flex; }
+.h-rsz { position: absolute; bottom: -5px; right: -5px; width: 12px; height: 12px; cursor: nwse-resize; display: none; }
+.h-rsz::after { content:''; position: absolute; right:1px; bottom:1px; width:8px; height:8px; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); border-radius: 0 0 2px 0; }
+.fi.sel .h-rsz { display: block; }
+.h-del { position: absolute; top: -8px; right: -8px; width: 16px; height: 16px; background: var(--accent2); border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,.4); z-index: 20; line-height: 1; }
+.fi.sel .h-del { display: flex; }
+#ghost { position: fixed; pointer-events: none; z-index: 9999; border: 2px dashed var(--accent); border-radius: 8px; background: rgba(79,143,255,0.15); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 18px; transition: none; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
+#ghost.show { display: flex; }
+#ghost-lbl { font-size: 9px; color: var(--accent); pointer-events: none; }
+.statusbar { background: var(--surface); border-top: 1px solid var(--border); height: 26px; display: flex; align-items: center; padding: 0 16px; gap: 18px; font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; flex-shrink: 0; }
+.statusbar b { color: var(--accent3); }
+</style>
+</head>
+<body>
+<header>
+  <h1>⬛ OFFICE PLANNER</h1>
+  <span class="subtitle">Drag items → Drop on room · Click to select · Scroll to zoom</span>
+  <div class="header-btns">
+    <button class="hbtn" id="btnGrid">Grid Off</button>
+    <button class="hbtn" onclick="saveLayout()">Save Layout</button>
+    <button class="hbtn" onclick="clearAll()">Clear All</button>
+  </div>
+</header>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sec-title">Tables</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🖥️" data-label="Desk" data-w="90" data-h="60" data-color="#1a2f50"><span class="si-icon">🖥️</span><span class="si-label">Desk</span></div>
+      <div class="sidebar-item" data-icon="📋" data-label="Conf Table" data-w="140" data-h="70" data-color="#1a2f50"><span class="si-icon">📋</span><span class="si-label">Conf Table</span></div>
+      <div class="sidebar-item" data-icon="⭕" data-label="Round Table" data-w="70" data-h="70" data-color="#1a2f50"><span class="si-icon">⭕</span><span class="si-label">Round Table</span></div>
+      <div class="sidebar-item" data-icon="🍽️" data-label="Side Table" data-w="55" data-h="55" data-color="#1a2f50"><span class="si-icon">🍽️</span><span class="si-label">Side Table</span></div>
+    </div>
+    <div class="sec-title">Seating</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🪑" data-label="Chair" data-w="38" data-h="38" data-color="#1a301a"><span class="si-icon">🪑</span><span class="si-label">Chair</span></div>
+      <div class="sidebar-item" data-icon="🛋️" data-label="Sofa" data-w="110" data-h="44" data-color="#2a1e3f"><span class="si-icon">🛋️</span><span class="si-label">Sofa</span></div>
+      <div class="sidebar-item" data-icon="💺" data-label="Exec Chair" data-w="42" data-h="42" data-color="#1a301a"><span class="si-icon">💺</span><span class="si-label">Exec Chair</span></div>
+      <div class="sidebar-item" data-icon="🏮" data-label="Stool" data-w="32" data-h="32" data-color="#2a1a1a"><span class="si-icon">🏮</span><span class="si-label">Stool</span></div>
+    </div>
+    <div class="sec-title">Equipment</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🖨️" data-label="Printer" data-w="55" data-h="45" data-color="#1a1a2a"><span class="si-icon">🖨️</span><span class="si-label">Printer</span></div>
+      <div class="sidebar-item" data-icon="📝" data-label="Whiteboard" data-w="110" data-h="40" data-color="#0d1f0d"><span class="si-icon">📝</span><span class="si-label">Whiteboard</span></div>
+      <div class="sidebar-item" data-icon="📽️" data-label="Projector" data-w="40" data-h="36" data-color="#1a1a0f"><span class="si-icon">📽️</span><span class="si-label">Projector</span></div>
+      <div class="sidebar-item" data-icon="📺" data-label="TV Screen" data-w="100" data-h="34" data-color="#0f1a2a"><span class="si-icon">📺</span><span class="si-label">TV Screen</span></div>
+    </div>
+    <div class="sec-title">Furniture</div>
+    <div class="items-grid">
+      <div class="sidebar-item" data-icon="🗄️" data-label="Cabinet" data-w="55" data-h="28" data-color="#2a1e0f"><span class="si-icon">🗄️</span><span class="si-label">Cabinet</span></div>
+      <div class="sidebar-item" data-icon="📚" data-label="Bookshelf" data-w="30" data-h="100" data-color="#2a1e0f"><span class="si-icon">📚</span><span class="si-label">Bookshelf</span></div>
+      <div class="sidebar-item" data-icon="🪴" data-label="Plant" data-w="36" data-h="36" data-color="#0d2a0d"><span class="si-icon">🪴</span><span class="si-label">Plant</span></div>
+      <div class="sidebar-item" data-icon="☕" data-label="Coffee" data-w="38" data-h="38" data-color="#2a1e0d"><span class="si-icon">☕</span><span class="si-label">Coffee</span></div>
+      <div class="sidebar-item" data-icon="🚪" data-label="Door" data-w="42" data-h="10" data-color="#2a2a1a"><span class="si-icon">🚪</span><span class="si-label">Door</span></div>
+      <div class="sidebar-item" data-icon="🪟" data-label="Window" data-w="70" data-h="10" data-color="#0f1f2a"><span class="si-icon">🪟</span><span class="si-label">Window</span></div>
+    </div>
+    <div class="props">
+      <div class="sec-title" style="padding:0 0 8px">Properties</div>
+      <div id="noSel">Select an item to edit</div>
+      <div id="selProps" style="display:none">
+        <div class="prop-row"><label>Name</label><input type="text" id="pName" oninput="propName(this.value)"></div>
+        <div class="prop-row"><label>Color</label><input type="color" id="pColor" value="#1e3a5f" oninput="propColor(this.value)"></div>
+        <div class="prop-row"><label>Opacity</label><input type="range" id="pOpacity" min="20" max="100" value="100" oninput="propOpacity(this.value)"></div>
+        <button class="del-btn" onclick="deleteSelected()">🗑 Remove Item</button>
+      </div>
+    </div>
+  </div>
+  <div class="canvas-wrap" id="cw">
+    <div id="room"></div>
+  </div>
+</div>
+<div id="ghost"><span id="ghost-icon"></span><span id="ghost-lbl"></span></div>
+<div class="statusbar">
+  <span>Items: <b id="sCnt">0</b></span>
+  <span>Selected: <b id="sSel">none</b></span>
+  <span style="margin-left:auto">Arrow keys = nudge (Shift = ×5) · Del = delete · Scroll = zoom · Space+drag = pan</span>
+</div>
+<script>
+const cw=document.getElementById('cw'),room=document.getElementById('room'),ghost=document.getElementById('ghost'),gIcon=document.getElementById('ghost-icon'),gLbl=document.getElementById('ghost-lbl');
+const ROOM_W=800,ROOM_H=600,GRID=10;
+let zoom=1,panX=0,panY=0,items=[],sel=null,idCtr=0,sbDrag=null,moveDrag=null,rzDrag=null,rtDrag=null,panDrag=null,spaceDown=false;
+function initRoom(){const W=cw.clientWidth,H=cw.clientHeight;panX=Math.round((W-ROOM_W)/2);panY=Math.round((H-ROOM_H)/2);layoutRoom();}
+function layoutRoom(){room.style.left=panX+'px';room.style.top=panY+'px';room.style.width=(ROOM_W*zoom)+'px';room.style.height=(ROOM_H*zoom)+'px';items.forEach(draw);}
+function snap(v){return Math.round(v/GRID)*GRID;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+document.querySelectorAll('.sidebar-item').forEach(el=>{el.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();e.stopPropagation();sbDrag={icon:el.dataset.icon,label:el.dataset.label,w:parseInt(el.dataset.w),h:parseInt(el.dataset.h),color:el.dataset.color};gIcon.textContent=sbDrag.icon;gLbl.textContent=sbDrag.label;ghost.style.width=(sbDrag.w*zoom)+'px';ghost.style.height=(sbDrag.h*zoom)+'px';posGhost(e.clientX,e.clientY);ghost.classList.add('show');});});
+function posGhost(cx,cy){ghost.style.left=(cx-(sbDrag.w*zoom)/2)+'px';ghost.style.top=(cy-(sbDrag.h*zoom)/2)+'px';}
+document.addEventListener('mousemove',e=>{if(sbDrag){posGhost(e.clientX,e.clientY);return;}if(moveDrag){const it=moveDrag.item,dx=(e.clientX-moveDrag.ox)/zoom,dy=(e.clientY-moveDrag.oy)/zoom;it.x=clamp(snap(moveDrag.ix+dx),0,ROOM_W-it.w);it.y=clamp(snap(moveDrag.iy+dy),0,ROOM_H-it.h);draw(it);return;}if(rzDrag){const it=rzDrag.item,dx=(e.clientX-rzDrag.ox)/zoom,dy=(e.clientY-rzDrag.oy)/zoom;it.w=Math.max(24,snap(rzDrag.iw+dx));it.h=Math.max(24,snap(rzDrag.ih+dy));draw(it);return;}if(rtDrag){const it=rtDrag.item,r=it.el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,ang=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;it.rotation=Math.round(ang/15)*15;draw(it);return;}if(panDrag){panX+=e.clientX-panDrag.lx;panY+=e.clientY-panDrag.ly;panDrag.lx=e.clientX;panDrag.ly=e.clientY;layoutRoom();}});
+document.addEventListener('mouseup',e=>{if(sbDrag){ghost.classList.remove('show');const cr=cw.getBoundingClientRect(),inCanvas=e.clientX>=cr.left&&e.clientX<=cr.right&&e.clientY>=cr.top&&e.clientY<=cr.bottom;if(inCanvas){const rx=(e.clientX-cr.left-panX)/zoom,ry=(e.clientY-cr.top-panY)/zoom;addItem({icon:sbDrag.icon,label:sbDrag.label,w:sbDrag.w,h:sbDrag.h,color:sbDrag.color,x:clamp(snap(rx-sbDrag.w/2),0,ROOM_W-sbDrag.w),y:clamp(snap(ry-sbDrag.h/2),0,ROOM_H-sbDrag.h),rotation:0,opacity:1});}sbDrag=null;return;}if(moveDrag){moveDrag.item.el.classList.remove('moving');moveDrag=null;}rzDrag=null;rtDrag=null;panDrag=null;});
+cw.addEventListener('mousedown',e=>{if(e.button===1||spaceDown){e.preventDefault();panDrag={lx:e.clientX,ly:e.clientY};return;}if(e.target===cw||e.target===room)deselect();});
+cw.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.1:0.91,cr=cw.getBoundingClientRect(),mx=e.clientX-cr.left,my=e.clientY-cr.top;panX=mx-(mx-panX)*f;panY=my-(my-panY)*f;zoom=clamp(zoom*f,0.25,3);layoutRoom();},{passive:false});
+document.addEventListener('keydown',e=>{if(e.code==='Space'){spaceDown=true;e.preventDefault();}if(!sel)return;const tag=document.activeElement.tagName;if(tag==='INPUT'||tag==='TEXTAREA')return;if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();deleteSelected();return;}const step=e.shiftKey?10:2,prev={x:sel.x,y:sel.y};if(e.key==='ArrowLeft'){e.preventDefault();sel.x=clamp(sel.x-step,0,ROOM_W-sel.w);}if(e.key==='ArrowRight'){e.preventDefault();sel.x=clamp(sel.x+step,0,ROOM_W-sel.w);}if(e.key==='ArrowUp'){e.preventDefault();sel.y=clamp(sel.y-step,0,ROOM_H-sel.h);}if(e.key==='ArrowDown'){e.preventDefault();sel.y=clamp(sel.y+step,0,ROOM_H-sel.h);}if(sel.x!==prev.x||sel.y!==prev.y)draw(sel);});
+document.addEventListener('keyup',e=>{if(e.code==='Space')spaceDown=false;});
+function addItem(cfg){const el=document.createElement('div');el.className='fi';el.innerHTML='<div class="h-rot">↻</div><span class="fi-icon">'+cfg.icon+'</span><span class="fi-lbl">'+cfg.label+'</span><div class="h-rsz"></div><div class="h-del">✕</div>';const item={id:++idCtr,el,icon:cfg.icon,label:cfg.label,w:cfg.w,h:cfg.h,color:cfg.color,x:cfg.x,y:cfg.y,rotation:cfg.rotation||0,opacity:cfg.opacity!=null?cfg.opacity:1};items.push(item);room.appendChild(el);draw(item);bindItem(item);selectItem(item);updateStatus();}
+function bindItem(item){item.el.addEventListener('mousedown',e=>{if(e.button!==0)return;e.stopPropagation();if(e.target.classList.contains('h-del')){removeItem(item);return;}if(e.target.classList.contains('h-rot')){rtDrag={item};return;}if(e.target.classList.contains('h-rsz')){e.preventDefault();rzDrag={item,ox:e.clientX,oy:e.clientY,iw:item.w,ih:item.h};return;}selectItem(item);item.el.classList.add('moving');moveDrag={item,ox:e.clientX,oy:e.clientY,ix:item.x,iy:item.y};});}
+function draw(item){const el=item.el;el.style.left=(item.x*zoom)+'px';el.style.top=(item.y*zoom)+'px';el.style.width=(item.w*zoom)+'px';el.style.height=(item.h*zoom)+'px';el.style.background=item.color;el.style.opacity=item.opacity;el.style.transform='rotate('+item.rotation+'deg)';el.querySelector('.fi-lbl').textContent=item.label;}
+function selectItem(item){if(sel)sel.el.classList.remove('sel');sel=item;if(!item){showProps(false);return;}item.el.classList.add('sel');showProps(true,item);}
+function deselect(){selectItem(null);}
+function showProps(show,item){document.getElementById('noSel').style.display=show?'none':'block';document.getElementById('selProps').style.display=show?'block':'none';document.getElementById('sSel').textContent=show?item.label:'none';if(show){document.getElementById('pName').value=item.label;document.getElementById('pColor').value=hexColor(item.color);document.getElementById('pOpacity').value=Math.round(item.opacity*100);}}
+function hexColor(c){if(!c||!c.startsWith('#')||c.length<4)return'#1e3a5f';if(c.length===4)return'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3];return c.slice(0,7);}
+function propName(v){if(sel){sel.label=v;draw(sel);document.getElementById('sSel').textContent=v;}}
+function propColor(v){if(sel){sel.color=v;draw(sel);}}
+function propOpacity(v){if(sel){sel.opacity=v/100;draw(sel);}}
+function deleteSelected(){if(sel)removeItem(sel);}
+function removeItem(item){item.el.remove();items=items.filter(i=>i!==item);if(sel===item)deselect();updateStatus();}
+function clearAll(){if(!items.length)return;if(!confirm('Remove all items from the canvas?'))return;items.forEach(it=>it.el.remove());items=[];deselect();updateStatus();}
+function updateStatus(){document.getElementById('sCnt').textContent=items.length;}
+let gridOn=true;
+document.getElementById('btnGrid').addEventListener('click',function(){gridOn=!gridOn;this.textContent=gridOn?'Grid Off':'Grid On';room.style.backgroundImage=gridOn?'repeating-linear-gradient(0deg,transparent,transparent 29px,#1a1f35 29px,#1a1f35 30px),repeating-linear-gradient(90deg,transparent,transparent 29px,#1a1f35 29px,#1a1f35 30px)':'none';});
+function saveLayout(){const data=items.map(it=>({icon:it.icon,label:it.label,w:it.w,h:it.h,x:it.x,y:it.y,color:it.color,rotation:it.rotation,opacity:it.opacity}));window.parent.postMessage({type:'SAVE_LAYOUT',data},'*');}
+function loadLayout(data){items.forEach(it=>it.el.remove());items=[];idCtr=0;data.forEach(cfg=>addItem(cfg));deselect();}
+window.addEventListener('message',e=>{if(e.data.type==='LOAD_LAYOUT'&&e.data.data)loadLayout(e.data.data);});
+window.addEventListener('resize',initRoom);
+initRoom();
+</script>
+</body>
+</html>

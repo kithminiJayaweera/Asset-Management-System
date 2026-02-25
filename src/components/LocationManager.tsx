@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Building2, Plus, X, Layers, Trash2, Save, Upload } from 'lucide-react';
+import { Building2, Plus, X, Layers, Trash2, Save, Upload, Layout } from 'lucide-react';
+import FloorPlanner from './FloorPlanner';
 
 interface Building {
   _id: string;
@@ -23,6 +24,7 @@ interface Floor {
   grid: GridCell[][];
   gridData?: any;
   metadata?: any;
+  floorPlanLayout?: any[];
 }
 
 interface GridCell {
@@ -46,6 +48,8 @@ export function LocationManager() {
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [buildingForm, setBuildingForm] = useState({ name: '', code: '', organizationId: '' });
   const [floorForm, setFloorForm] = useState({ name: '', code: '' });
+  const [showFloorPlanner, setShowFloorPlanner] = useState(false);
+  const [plannerFloorId, setPlannerFloorId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -152,57 +156,20 @@ export function LocationManager() {
     }
   };
 
-  const initializeGrid = (floor: Floor) => {
-    let grid: GridCell[][] = [];
-    if (floor.gridData) {
-      grid = floor.gridData;
-    } else {
-      for (let y = 0; y < 50; y++) {
-        const row: GridCell[] = [];
-        for (let x = 0; x < 50; x++) {
-          row.push({ x, y });
-        }
-        grid.push(row);
-      }
-    }
-    const floorPlanImage = floor.metadata?.floorPlanImage || '';
-    setSelectedFloor({ ...floor, grid, floorPlanImage });
-  };
-
-  const uploadFloorPlan = async () => {
-    if (!selectedFloor || !imageUrl) return;
+  const initializeGrid = async (floor: Floor) => {
     try {
-      const response = await fetch(`/api/locations/${selectedFloor._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ metadata: { floorPlanImage: imageUrl } })
-      });
-      if (response.ok) {
-        toast.success('Floor plan uploaded!');
-        setShowImageUpload(false);
-        setImageUrl('');
-        setSelectedFloor({ ...selectedFloor, floorPlanImage: imageUrl });
-      }
+      const res = await fetch(`/api/locations/${floor._id}/layout`);
+      const data = await res.json();
+      console.log('Floor layout loaded:', data);
+      console.log('Layout items count:', data.layout?.length || 0);
+      setSelectedFloor({ ...floor, floorPlanLayout: data.layout || [] });
     } catch (error) {
-      toast.error('Failed to upload');
+      console.error('Failed to load floor layout:', error);
+      setSelectedFloor(floor);
     }
   };
 
-  const saveGrid = async () => {
-    if (!selectedFloor) return;
-    try {
-      const response = await fetch(`/api/locations/${selectedFloor._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gridData: selectedFloor.grid })
-      });
-      if (response.ok) {
-        toast.success('Layout saved!');
-      }
-    } catch (error) {
-      toast.error('Failed to save');
-    }
-  };
+
 
   if (loading) return <div className="p-8">Loading...</div>;
 
@@ -280,13 +247,9 @@ export function LocationManager() {
             <h3 className="text-lg text-black font-semibold">Floor Plan</h3>
             {selectedFloor && (
               <div className="flex gap-2">
-                <button onClick={() => setShowImageUpload(true)} className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg">
-                  <Upload className="w-4 h-4" />
-                  Upload
-                </button>
-                <button onClick={saveGrid} className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-lg">
-                  <Save className="w-4 h-4" />
-                  Save
+                <button onClick={() => { setPlannerFloorId(selectedFloor._id); setShowFloorPlanner(true); }} className="flex items-center gap-2 px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                  <Layout className="w-4 h-4" />
+                  Floor Planner
                 </button>
               </div>
             )}
@@ -325,8 +288,7 @@ export function LocationManager() {
                     </div>
                   ))}
                 </div>
-              </div>
-              <p className="text-sm text-gray-600">50x50 grid • Click to mark locations • Upload floor plan image</p>
+              )}
             </div>
           )}
         </div>
@@ -389,25 +351,16 @@ export function LocationManager() {
         </div>
       )}
 
-      {showImageUpload && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl text-black font-semibold">Upload Floor Plan</h3>
-              <button onClick={() => setShowImageUpload(false)}><X className="w-5 h-5" /></button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 mb-1">Image URL</label>
-                <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-black" placeholder="https://example.com/floorplan.png" />
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setShowImageUpload(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button onClick={uploadFloorPlan} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Upload</button>
-              </div>
-            </div>
-          </div>
-        </div>
+{showFloorPlanner && plannerFloorId && (
+        <FloorPlanner 
+          locationId={plannerFloorId} 
+          onClose={() => {
+            setShowFloorPlanner(false);
+            if (selectedFloor) {
+              initializeGrid(selectedFloor);
+            }
+          }} 
+        />
       )}
     </div>
   );
