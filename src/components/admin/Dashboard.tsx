@@ -135,11 +135,11 @@ export function Dashboard({ assets }: DashboardProps) {
 
 
   return (
-    <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#F3E6EC' }}>
+    <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#EFEFEF' }}>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#3F303D]">Asset Analytics Dashboard</h1>
-          <p className="text-[#3F303D] mt-1">Real-time insights and performance metrics</p>
+          <h1 className="text-3xl font-bold text-[#292929]">Asset Analytics Dashboard</h1>
+          <p className="text-[#292929] mt-1">Real-time insights and performance metrics</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border">
           <Clock className="w-4 h-4 text-gray-500" />
@@ -185,12 +185,12 @@ export function Dashboard({ assets }: DashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <LineChartCard title="Asset Value Trend (6 Months)" data={analytics.valueData} dataKey="value" color="#3b82f6" />
-        <BarChartCard title="Assets by Category" data={analytics.categoryData} dataKey="value" color="#10b981" />
+        <LineChartCard title="Asset Value Trend (6 Months)" data={analytics.valueData} dataKey="value" color="#AE040F" />
+        <BarChartCard title="Assets by Category" data={analytics.categoryData} dataKey="value" color="#640F07" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <PieChartCard title="Status Distribution" data={analytics.statusData} colors={['#10b981', '#f59e0b', '#6b7280', '#ef4444']} />
+        <PieChartCard title="Status Distribution" data={analytics.statusData} colors={['#10b981', '#f59e0b', '#6b7280', '#AE040F']} />
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
@@ -214,7 +214,7 @@ export function Dashboard({ assets }: DashboardProps) {
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-purple-600" />
+            <Activity className="w-5 h-5 text-red-700" />
             <h3 className="text-lg font-bold text-gray-900">Quick Stats</h3>
           </div>
           <div className="space-y-4">

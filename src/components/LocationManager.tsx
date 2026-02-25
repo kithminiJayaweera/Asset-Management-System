@@ -42,7 +42,7 @@ export function LocationManager() {
   const [showFloorForm, setShowFloorForm] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#3B82F6');
+  const [selectedColor, setSelectedColor] = useState('#AE040F');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [buildingForm, setBuildingForm] = useState({ name: '', code: '', organizationId: '' });
   const [floorForm, setFloorForm] = useState({ name: '', code: '' });
@@ -213,7 +213,7 @@ export function LocationManager() {
           <h2 className="text-2xl text-black mb-2">Building & Floor Plans</h2>
           <p className="text-gray-700">Upload floor plans and mark asset locations</p>
         </div>
-        <button onClick={() => setShowBuildingForm(true)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+        <button onClick={() => setShowBuildingForm(true)} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#AE040F' }}>
           <Plus className="w-4 h-4" />
           Add Building
         </button>
@@ -227,7 +227,7 @@ export function LocationManager() {
           ) : (
             <div className="space-y-2">
               {buildings.map((building) => (
-                <div key={building._id} className={`p-3 rounded ${selectedBuilding?._id === building._id ? 'bg-purple-100 border-purple-500 border-2' : 'bg-gray-50 border'}`}>
+                <div key={building._id} className={`p-3 rounded ${selectedBuilding?._id === building._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
                   <div className="flex items-center justify-between">
                     <div onClick={() => setSelectedBuilding(building)} className="flex-1 cursor-pointer">
                       <div className="text-black font-medium">{building.name}</div>
@@ -247,7 +247,7 @@ export function LocationManager() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg text-black font-semibold">Floors</h3>
             {selectedBuilding && (
-              <button onClick={() => setShowFloorForm(true)} className="p-1 bg-purple-100 text-purple-600 rounded">
+              <button onClick={() => setShowFloorForm(true)} className="p-1 bg-red-100 text-red-700 rounded">
                 <Plus className="w-4 h-4" />
               </button>
             )}
@@ -259,7 +259,7 @@ export function LocationManager() {
           ) : (
             <div className="space-y-2">
               {selectedBuilding.floors?.map((floor) => (
-                <div key={floor._id} className={`p-3 rounded ${selectedFloor?._id === floor._id ? 'bg-purple-100 border-purple-500 border-2' : 'bg-gray-50 border'}`}>
+                <div key={floor._id} className={`p-3 rounded ${selectedFloor?._id === floor._id ? 'bg-red-50 border-red-500 border-2' : 'bg-gray-50 border'}`}>
                   <div className="flex items-center justify-between">
                     <div onClick={() => initializeGrid(floor)} className="flex-1 cursor-pointer">
                       <div className="text-black font-medium">{floor.name}</div>
@@ -299,7 +299,7 @@ export function LocationManager() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-700">Color:</span>
-                {['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'].map(color => (
+                {['#AE040F', '#10B981', '#F59E0B', '#EF4444', '#640F07', '#BEBEBE'].map(color => (
                   <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded border-2 ${selectedColor === color ? 'border-black' : 'border-gray-300'}`} style={{ backgroundColor: color }} />
                 ))}
               </div>
@@ -357,7 +357,7 @@ export function LocationManager() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowBuildingForm(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg">Create</button>
+                <button type="submit" className="flex-1 px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#AE040F' }}>Create</button>
               </div>
             </form>
           </div>
@@ -382,7 +382,7 @@ export function LocationManager() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowFloorForm(false)} className="flex-1 px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg">Create</button>
+                <button type="submit" className="flex-1 px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#AE040F' }}>Create</button>
               </div>
             </form>
           </div>

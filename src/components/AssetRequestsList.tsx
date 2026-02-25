@@ -108,8 +108,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
         const element = document.getElementById(`request-${highlightRequestId}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('ring-4', 'ring-purple-500');
-          setTimeout(() => element.classList.remove('ring-4', 'ring-purple-500'), 3000);
+          element.classList.add('ring-4', 'ring-red-500');
+          setTimeout(() => element.classList.remove('ring-4', 'ring-red-500'), 3000);
         }
       }, 100);
     }
@@ -421,7 +421,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       case 'approved': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-purple-100 text-blue-800';
+      case 'completed': return 'bg-red-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -558,7 +558,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-red-700" />
       </div>
     );
   }
@@ -581,7 +581,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               !showArchived && !showStarredOnly
-                ? 'bg-purple-500 text-white'
+                ? 'bg-red-700 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -609,7 +609,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               showArchived
-                ? 'bg-purple-600 text-white'
+                ? 'bg-red-800 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -664,8 +664,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         {/* Info banner explaining current view */}
         {showArchived && (
-          <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-            <p className="text-sm text-purple-800">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-900">
               <strong>Archived View:</strong> These requests are hidden from the main view but still stored in the database. 
               You can restore them anytime or permanently delete them.
             </p>
@@ -679,7 +679,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           </div>
         )}
         {!showArchived && !showStarredOnly && (
-          <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>Active View:</strong> Showing all non-archived requests. Archive old requests to keep this view clean.
             </p>
@@ -694,7 +694,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -711,7 +711,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>
@@ -735,8 +735,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <User className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-red-100 rounded-full">
+                  <User className="w-6 h-6 text-red-700" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -764,7 +764,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   {getRequestTypeLabel(request.requestType)}
                 </span>
                 {request.archived && (
-                  <span className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                  <span className="px-3 py-1 rounded-full text-xs bg-red-100 text-red-900">
                     Archived
                   </span>
                 )}
@@ -801,8 +801,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             )}
 
             {request.archivedDate && (
-              <div className="mb-4 p-3 bg-purple-50 rounded-lg">
-                <p className="text-xs text-purple-700">
+              <div className="mb-4 p-3 bg-red-50 rounded-lg">
+                <p className="text-xs text-red-800">
                   Archived on {new Date(request.archivedDate).toLocaleDateString()}
                 </p>
               </div>
@@ -810,9 +810,9 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
 
             {/* Assigned Asset Display - Pending Requests */}
             {request.status === 'pending' && (
-              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-purple-700 font-semibold">Asset Assignment</p>
+                  <p className="text-xs text-red-800 font-semibold">Asset Assignment</p>
                 </div>
                 <p className="text-sm text-gray-700 mt-2">Click "Approve & Assign" to select an available {request.assetCategory} asset and approve this request</p>
               </div>
@@ -828,7 +828,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
               const isAssignedToSomeoneElse = assetObj && assetAssignedToId && assetAssignedToId !== requestedById;
 
               return (
-                <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-gray-700 font-semibold">Assigned Asset</p>
                     <div className="flex gap-2">
@@ -844,7 +844,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                       )}
                       <button
                         onClick={() => openAssignModal(request, false)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs bg-purple-50 text-purple-600 border border-purple-200 rounded hover:bg-purple-100 transition-colors"
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 text-red-700 border border-red-200 rounded hover:bg-red-100 transition-colors"
                         title={assetObj ? 'Reassign Asset' : 'Assign Asset'}
                       >
                         <UserPlus className="w-3 h-3" />
@@ -854,8 +854,8 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   </div>
                   {isAssignedToRequester ? (
                     <div className="flex items-start gap-3 mt-2">
-                      <div className="p-2 bg-purple-100 rounded">
-                        <Package className="w-4 h-4 text-purple-600" />
+                      <div className="p-2 bg-red-100 rounded">
+                        <Package className="w-4 h-4 text-red-700" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-black font-medium">{assetObj.name}</p>
@@ -923,7 +923,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                 onClick={() => toggleArchive(request._id, request.archived)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   request.archived
-                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                    ? 'bg-red-100 text-red-800 hover:bg-red-200'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 title={request.archived ? 'Restore from archive' : 'Move to archive'}
@@ -1063,7 +1063,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   </p>
                 )}
                 {selectedRequest.status === 'approved' && (
-                  <p className="text-xs text-purple-700 mt-2 bg-purple-50 px-2 py-1 rounded inline-block">
+                  <p className="text-xs text-red-800 mt-2 bg-red-50 px-2 py-1 rounded inline-block">
                     Showing only {selectedRequest.assetCategory} assets
                   </p>
                 )}
@@ -1095,18 +1095,18 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   placeholder="Search by name, asset tag, or category..."
                   value={assetSearchQuery}
                   onChange={(e) => setAssetSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
                 />
               </div>
             </div>
 
             {/* Current Selection */}
             {selectedAsset && (
-              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-xs text-gray-700 mb-2">Selected Asset</p>
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-100 rounded">
-                    <Package className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-red-100 rounded">
+                    <Package className="w-5 h-5 text-red-700" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-black font-medium">{selectedAsset.name}</p>
@@ -1145,16 +1145,16 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                     onClick={() => setSelectedAsset(asset)}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       selectedAsset?._id === asset._id
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300 bg-white'
+                        ? 'border-red-500 bg-red-50'
+                        : 'border-gray-200 hover:border-red-300 bg-white'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded ${
-                        selectedAsset?._id === asset._id ? 'bg-purple-100' : 'bg-gray-100'
+                        selectedAsset?._id === asset._id ? 'bg-red-100' : 'bg-gray-100'
                       }`}>
                         <Package className={`w-5 h-5 ${
-                          selectedAsset?._id === asset._id ? 'text-purple-600' : 'text-gray-600'
+                          selectedAsset?._id === asset._id ? 'text-red-700' : 'text-gray-600'
                         }`} />
                       </div>
                       <div className="flex-1">
@@ -1210,7 +1210,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                   disabled={!selectedAsset}
                   className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                     selectedAsset
-                      ? (selectedRequest.status === 'pending' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-purple-500 text-white hover:bg-purple-600')
+                      ? (selectedRequest.status === 'pending' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-700 text-white hover:bg-red-800')
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >

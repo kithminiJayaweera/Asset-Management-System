@@ -25,7 +25,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
       >
         <Bell className="w-6 h-6" />
         {mounted && unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute top-0 right-0 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -61,7 +61,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                 <div
                   key={notification._id}
                   className={`p-4 border-b border-gray-100 hover:bg-[#D1B9CC] cursor-pointer ${
-                    !notification.read ? 'bg-purple-50' : ''
+                    !notification.read ? 'bg-red-50' : ''
                   }`}
                   onClick={() => {
                     markAsRead(notification._id);
@@ -102,7 +102,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                       </p>
                     </div>
                     {!notification.read && (
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-1"></div>
+                      <div className="w-2 h-2 bg-red-700 rounded-full mt-1"></div>
                     )}
                   </div>
                 </div>

@@ -45,8 +45,8 @@ export function Settings() {
       <div className="space-y-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <SettingsIcon className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-red-100 rounded-lg">
+              <SettingsIcon className="w-5 h-5 text-red-700" />
             </div>
             <h3 className="text-lg text-black">General Settings</h3>
           </div>
@@ -61,7 +61,7 @@ export function Settings() {
                 name="companyName"
                 value={settings.companyName}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
 
@@ -73,7 +73,7 @@ export function Settings() {
                 name="language"
                 value={settings.language}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <option value="en">English</option>
                 <option value="si">සිංහල (Sinhala)</option>
@@ -89,7 +89,7 @@ export function Settings() {
                 name="timezone"
                 value={settings.timezone}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <option value="UTC+5:30">Sri Lanka (UTC+5:30)</option>
                 <option value="UTC+0">UTC</option>
@@ -106,7 +106,7 @@ export function Settings() {
                 name="currency"
                 value={settings.currency}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <option value="USD">USD ($)</option>
                 <option value="LKR">LKR (Rs.)</option>
@@ -132,7 +132,7 @@ export function Settings() {
                 name="emailNotifications"
                 checked={settings.emailNotifications}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">Email Notifications</p>
@@ -146,7 +146,7 @@ export function Settings() {
                 name="assetAlerts"
                 checked={settings.assetAlerts}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">Asset Alerts</p>
@@ -160,7 +160,7 @@ export function Settings() {
                 name="maintenanceReminders"
                 checked={settings.maintenanceReminders}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">Maintenance Reminders</p>
@@ -174,7 +174,7 @@ export function Settings() {
                 name="systemUpdates"
                 checked={settings.systemUpdates}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">System Updates</p>
@@ -186,8 +186,8 @@ export function Settings() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Shield className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Shield className="w-5 h-5 text-red-700" />
             </div>
             <h3 className="text-lg text-black">Security</h3>
           </div>
@@ -199,7 +199,7 @@ export function Settings() {
                 name="twoFactorAuth"
                 checked={settings.twoFactorAuth}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">Two-Factor Authentication</p>
@@ -219,7 +219,7 @@ export function Settings() {
                   onChange={handleChange}
                   min="5"
                   max="120"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -234,7 +234,7 @@ export function Settings() {
                   onChange={handleChange}
                   min="30"
                   max="365"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
             </div>
@@ -256,7 +256,7 @@ export function Settings() {
                 name="autoBackup"
                 checked={settings.autoBackup}
                 onChange={handleChange}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
               />
               <div>
                 <p className="text-sm text-black">Automatic Backup</p>
@@ -273,7 +273,7 @@ export function Settings() {
                   name="backupFrequency"
                   value={settings.backupFrequency}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="hourly">Hourly</option>
                   <option value="daily">Daily</option>
@@ -293,7 +293,7 @@ export function Settings() {
                   onChange={handleChange}
                   min="30"
                   max="3650"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
             </div>
@@ -303,7 +303,7 @@ export function Settings() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-lg transition-colors" style={{ backgroundColor: '#AE040F' }}
           >
             <Save className="w-4 h-4" />
             Save Settings
