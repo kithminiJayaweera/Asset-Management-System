@@ -77,6 +77,13 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedRecord, setSelectedRecord] = useState<MaintenanceRecord | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [completionRecord, setCompletionRecord] = useState<MaintenanceRecord | null>(null);
+  const [completionForm, setCompletionForm] = useState({
+    actualCost: '',
+    performedBy: '',
+    completionNotes: ''
+  });
+  const [completionFiles, setCompletionFiles] = useState<File[]>([]);
   const { socket } = useSocket();
 
   // Initial fetch
@@ -150,9 +157,13 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
   };
 
   const handleCompleteMaintenanceClick = async (record: MaintenanceRecord) => {
-    if (onSelectMaintenance) {
-      onSelectMaintenance(record);
-    }
+    setCompletionRecord(record);
+    setCompletionForm({
+      actualCost: record.actualCost?.toString() || '',
+      performedBy: record.performedBy || '',
+      completionNotes: ''
+    });
+    setCompletionFiles([]);
   };
 
   const handleUpdateStatus = async (recordId: string, newStatus: string) => {
@@ -179,6 +190,50 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
     } catch (error) {
       console.error('Error updating maintenance:', error);
       toast.error('Error updating maintenance status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleCompleteMaintenanceSubmit = async () => {
+    if (!completionRecord) return;
+
+    try {
+      setUpdatingId(completionRecord._id);
+      
+      // Create FormData to handle both file uploads and form data
+      const formData = new FormData();
+      formData.append('status', 'completed');
+      formData.append('actualCost', completionForm.actualCost ? parseFloat(completionForm.actualCost).toString() : '');
+      formData.append('performedBy', completionForm.performedBy || 'Admin');
+      formData.append('completionDate', new Date().toISOString());
+      formData.append('notes', completionForm.completionNotes || '');
+      
+      // Append files
+      completionFiles.forEach((file, index) => {
+        formData.append(`file_${index}`, file);
+      });
+      formData.append('fileCount', completionFiles.length.toString());
+
+      const response = await fetch(`/api/maintenance/${completionRecord._id}`, {
+        method: 'PUT',
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('✅ Maintenance marked as completed');
+        setCompletionRecord(null);
+        setCompletionFiles([]);
+        setSelectedRecord(null);
+        onUpdateStatus?.(completionRecord._id, 'completed');
+      } else {
+        toast.error(result.error || 'Failed to complete maintenance');
+      }
+    } catch (error) {
+      console.error('Error completing maintenance:', error);
+      toast.error('Error completing maintenance');
     } finally {
       setUpdatingId(null);
     }
@@ -350,7 +405,7 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
 
       {/* Details Modal */}
       <Dialog open={!!selectedRecord} onOpenChange={(open) => !open && setSelectedRecord(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
           {selectedRecord && (
             <>
               <DialogHeader>
@@ -415,27 +470,28 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
                     <p className="text-sm text-gray-900 mt-1">{selectedRecord.notes}</p>
                   </div>
                 )}
+              </div>
 
-                {/* Status Update Actions */}
-                <div className="flex gap-2 pt-4 border-t border-gray-300">
-                  {selectedRecord.status === 'pending' && (
-                    <button
-                      onClick={() => handleUpdateStatus(selectedRecord._id, 'in-progress')}
-                      disabled={updatingId === selectedRecord._id}
-                      className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-sm font-medium"
-                    >
-                      {updatingId === selectedRecord._id ? 'Updating...' : 'Start Work'}
-                    </button>
-                  )}
+              {/* Sticky Buttons Footer */}
+              <div className="flex gap-2 pt-4 border-t border-gray-300 mt-4">
+                {selectedRecord.status === 'pending' && (
+                  <button
+                    onClick={() => handleUpdateStatus(selectedRecord._id, 'in-progress')}
+                    disabled={updatingId === selectedRecord._id}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-sm font-medium"
+                  >
+                    {updatingId === selectedRecord._id ? 'Updating...' : 'Start Work'}
+                  </button>
+                )}
 
-                  {(selectedRecord.status === 'pending' || selectedRecord.status === 'in-progress') && (
-                    <button
-                      onClick={() => handleCompleteMaintenanceClick(selectedRecord)}
-                      className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center justify-center gap-2"
-                    >
-                      <Check className="w-4 h-4" /> Mark Completed
-                    </button>
-                  )}
+                {(selectedRecord.status === 'pending' || selectedRecord.status === 'in-progress') && (
+                  <button
+                    onClick={() => handleCompleteMaintenanceClick(selectedRecord)}
+                    className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4" /> Mark Completed
+                  </button>
+                )}
 
                   {selectedRecord.status === 'completed' && (
                     <button
@@ -447,19 +503,130 @@ export function MaintenanceList({ onSelectMaintenance, onUpdateStatus }: Mainten
                     </button>
                   )}
 
-                  {(selectedRecord.status === 'pending' || selectedRecord.status === 'in-progress') && (
-                    <button
-                      onClick={() => handleUpdateStatus(selectedRecord._id, 'cancelled')}
-                      disabled={updatingId === selectedRecord._id}
-                      className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
-                    >
-                      <X className="w-4 h-4" /> Cancel
-                    </button>
-                  )}
-                </div>
+                {(selectedRecord.status === 'pending' || selectedRecord.status === 'in-progress') && (
+                  <button
+                    onClick={() => handleUpdateStatus(selectedRecord._id, 'cancelled')}
+                    disabled={updatingId === selectedRecord._id}
+                    className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <X className="w-4 h-4" /> Cancel
+                  </button>
+                )}
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Completion Form Dialog */}
+      <Dialog open={!!completionRecord} onOpenChange={(open) => !open && setCompletionRecord(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Complete Maintenance</DialogTitle>
+            <DialogDescription>
+              {completionRecord?.assetId?.name || 'Asset'} - {completionRecord?.issueTitle}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Performed By <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Technician name"
+                value={completionForm.performedBy}
+                onChange={(e) => setCompletionForm({ ...completionForm, performedBy: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Actual Cost (Rs.)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={completionForm.actualCost}
+                onChange={(e) => setCompletionForm({ ...completionForm, actualCost: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Completion Notes
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Work completed, issues resolved, etc..."
+                value={completionForm.completionNotes}
+                onChange={(e) => setCompletionForm({ ...completionForm, completionNotes: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Upload Images / Documents
+              </label>
+              <input
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    setCompletionFiles(Array.from(e.target.files));
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+              />
+              <p className="text-xs text-gray-500 mt-1">Upload photos, invoices, or reports (Max 5 files)</p>
+              {completionFiles.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm font-medium text-gray-900">Selected files ({completionFiles.length}):</p>
+                  <div className="space-y-1 max-h-30 overflow-y-auto">
+                    {completionFiles.map((file, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded text-xs text-gray-700">
+                        <span className="truncate">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setCompletionFiles(completionFiles.filter((_, i) => i !== idx))}
+                          className="text-red-500 hover:text-red-700 ml-2"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setCompletionRecord(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteMaintenanceSubmit}
+                disabled={updatingId === completionRecord?._id || !completionForm.performedBy}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
+              >
+                {updatingId === completionRecord?._id ? 'Completing...' : (
+                  <>
+                    <Check className="w-4 h-4" /> Complete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

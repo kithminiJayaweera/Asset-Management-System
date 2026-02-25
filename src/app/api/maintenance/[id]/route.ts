@@ -53,7 +53,35 @@ export async function PUT(request: NextRequest, context: Params) {
   try {
     await connectDB();
     const { id } = await context.params;
-    const body = await request.json();
+    
+    // Handle both JSON and FormData
+    let body: any = {};
+    const contentType = request.headers.get('content-type') || '';
+    
+    try {
+      if (contentType.includes('multipart/form-data')) {
+        const formData = await request.formData();
+        // Convert FormData to object
+        for (const [key, value] of formData.entries()) {
+          if (key.startsWith('file_')) {
+            // Handle files
+            if (!body.files) body.files = [];
+            body.files.push(value);
+          } else {
+            body[key] = value;
+          }
+        }
+      } else {
+        // Default to JSON parsing
+        body = await request.json();
+      }
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
+      return NextResponse.json(
+        { success: false, error: 'Invalid request format' },
+        { status: 400 }
+      );
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -83,18 +111,22 @@ export async function PUT(request: NextRequest, context: Params) {
       // Step 1: Update Maintenance Record
       maintenance.status = 'completed';
       maintenance.completionDate = new Date();
-      if (body.actualCost !== undefined) maintenance.actualCost = body.actualCost;
-      if (body.notes !== undefined) maintenance.notes = body.notes;
-      if (body.performedBy !== undefined) maintenance.performedBy = body.performedBy;
+      if (body.actualCost && body.actualCost !== '') {
+        const cost = parseFloat(body.actualCost);
+        if (!isNaN(cost)) maintenance.actualCost = cost;
+      }
+      if (body.notes !== undefined && body.notes !== '') maintenance.notes = body.notes;
+      if (body.performedBy !== undefined && body.performedBy !== '') maintenance.performedBy = body.performedBy;
 
       // Step 2: Update Asset Back to Active
       asset.status = 'active';
+      const currentMaintenance = asset.maintenance || {};
       asset.maintenance = {
-        ...asset.maintenance,
+        ...currentMaintenance,
         lastMaintenanceDate: new Date(),
         maintenanceStartDate: undefined,
         expectedReturnDate: undefined,
-        condition: body.assetCondition || asset.maintenance.condition,
+        condition: body.assetCondition || currentMaintenance.condition,
       };
 
       // Create audit log
@@ -128,11 +160,15 @@ export async function PUT(request: NextRequest, context: Params) {
       else if (body.assetFinalStatus === 'retired') {
         asset.status = 'retired';
         maintenance.notes = (maintenance.notes || '') + '\n[RETIRED - BEYOND REPAIR]';
+      } else {
+        // Default to active if no final status specified
+        asset.status = 'active';
       }
 
       // Clear maintenance dates
+      const currentMaintenance = asset.maintenance || {};
       asset.maintenance = {
-        ...asset.maintenance,
+        ...currentMaintenance,
         maintenanceStartDate: undefined,
         expectedReturnDate: undefined,
       };
@@ -161,7 +197,11 @@ export async function PUT(request: NextRequest, context: Params) {
     }
 
     await maintenance.save();
-    await asset.save();
+    
+    // Only save asset if we made changes to it
+    if (body.status === 'completed' || body.status === 'closed') {
+      await asset.save();
+    }
 
     // ✅ Fetch updated record with populated asset
     const updatedMaintenance = await Maintenance.findById(id)
@@ -171,11 +211,12 @@ export async function PUT(request: NextRequest, context: Params) {
 
     // ✅ Emit real-time event
     if (global.io) {
+      const assetIdStr = maintenance.assetId ? (typeof maintenance.assetId === 'string' ? maintenance.assetId : maintenance.assetId.toString()) : '';
       global.io.emit('maintenance_updated', {
         maintenanceId: id,
         status: body.status,
         previousStatus: maintenance.status,
-        assetId: maintenance.assetId.toString(),
+        assetId: assetIdStr,
         action: body.status === 'completed' ? 'completed' : body.status === 'closed' ? 'closed' : 'status_changed',
         data: serializedMaintenance,
       });
