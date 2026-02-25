@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { SocketProvider } from '@/contexts/SocketContext';
+import { toast } from 'sonner';
+
 import { NotificationBell } from '@/components/NotificationBell';
 import { Dashboard } from '@/components/admin/Dashboard';
 import { AssetList } from '@/components/admin/AssetList';
@@ -16,13 +17,14 @@ import { OrganizationDetail } from '@/components/OrganizationDetail';
 // import { EmployeeForm } from '@/components/EmployeeForm';
 // import { EmployeeDetail } from '@/components/EmployeeDetail';
 import { AssetRequestsList } from '@/components/AssetRequestsList';
+import { LocationManager } from '@/components/LocationManager';
 import { Reports } from '@/components/admin/Reports';
 import { Settings } from '@/components/admin/Settings';
 import { OrganizationAdminList } from '@/components/OrganizationAdminList';
 import { Sidebar } from '@/components/employee/shared/Sidebar';
 import { NavButton } from '@/components/employee/shared/NavButton';
 import { MainLayout } from '@/components/employee/shared/MainLayout';
-import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, Building2, BarChart3, Settings as SettingsIcon, UserCircle, FileText, MapPin } from 'lucide-react';
 import type { IAsset, IOrganization, IUser } from '@/types';
 
 export interface AssetLog {
@@ -120,7 +122,7 @@ export interface Employee {
   emergencyContactPhone?: string;
 }
 
-type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins';
+type View = 'dashboard' | 'assets' | 'add-asset' | 'asset-detail' | 'organizations' | 'add-organization' | 'organization-detail' | 'employees' | 'add-employee' | 'employee-detail' | 'reports' | 'settings' | 'asset-requests' | 'organization-admins' | 'locations';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -149,10 +151,7 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Request notification permission
-        if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission();
-        }
+        // Don't request notification permission
 
         // Fetch assets with no pagination limit to get all assets
         const assetsResponse = await fetch('/api/assets?limit=10000');
@@ -272,10 +271,23 @@ export default function App() {
     const handleAssetUpdate = () => {
       fetchData();
     };
+    const handleAssetRequestCreated = () => {
+      fetchData();
+    };
     window.addEventListener('assetUpdated', handleAssetUpdate);
+    window.addEventListener('assetRequestCreated', handleAssetRequestCreated);
+    window.addEventListener('navigateToRequest', ((e: CustomEvent) => {
+      setSelectedRequestId(e.detail);
+      setCurrentView('asset-requests');
+    }) as EventListener);
 
     return () => {
       window.removeEventListener('assetUpdated', handleAssetUpdate);
+      window.removeEventListener('assetRequestCreated', handleAssetRequestCreated);
+      window.removeEventListener('navigateToRequest', ((e: CustomEvent) => {
+        setSelectedRequestId(e.detail);
+        setCurrentView('asset-requests');
+      }) as EventListener);
     };
   }, []);
 
@@ -330,14 +342,14 @@ export default function App() {
         setAssets([...assets, newAsset]);
         setShowAssetModal(false);
         setEditingAsset(null);
-        alert('Asset created successfully and saved to database!');
+        toast.success('Asset created successfully!');
       } else {
         console.error('Failed to create asset:', result.error);
-        alert(`Failed to create asset: ${result.error}`);
+        toast.error(`Failed to create asset: ${result.error}`);
       }
     } catch (error) {
       console.error('Error creating asset:', error);
-      alert('Error creating asset. Check console for details.');
+      toast.error('Error creating asset');
     }
   };
 
@@ -362,15 +374,16 @@ export default function App() {
       
       if (response.ok) {
         setAssets(assets.map(a => a.id === asset.id ? asset : a));
-        setEditingAsset(null);
+        setEditingAsset(asset);
         setShowAssetModal(false);
-        alert('Asset updated successfully!');
+        toast.success('Asset updated successfully!');
+        setCurrentView('asset-detail');
       } else {
-        alert('Failed to update asset');
+        toast.error('Failed to update asset');
       }
     } catch (error) {
       console.error('Error updating asset:', error);
-      alert('Error updating asset');
+      toast.error('Error updating asset');
     }
   };
 
@@ -382,13 +395,13 @@ export default function App() {
       
       if (response.ok) {
         setAssets(assets.filter(a => a.id !== id));
-        alert('Asset deleted successfully!');
+        toast.success('Asset deleted successfully!');
       } else {
-        alert('Failed to delete asset');
+        toast.error('Failed to delete asset');
       }
     } catch (error) {
       console.error('Error deleting asset:', error);
-      alert('Error deleting asset');
+      toast.error('Error deleting asset');
     }
   };
 
@@ -443,9 +456,14 @@ export default function App() {
         }
         return asset;
       }));
+      toast.success(newEmployeeName && oldEmployeeName && newEmployeeName !== oldEmployeeName 
+        ? `Asset reassigned from ${oldEmployeeName} to ${newEmployeeName}!` 
+        : newEmployeeName 
+        ? `Asset assigned to ${newEmployeeName}!` 
+        : 'Asset unassigned successfully!');
     } catch (error) {
       console.error('Error reassigning asset:', error);
-      alert('Failed to update asset assignment. Please try again.');
+      toast.error('Failed to update asset assignment');
     }
   };
 
@@ -469,6 +487,7 @@ export default function App() {
     
     setShowOrganizationModal(false);
     setEditingOrganization(null);
+    toast.success('Organization created successfully!');
   };
 
   const handleUpdateOrganization = (org: Organization) => {
@@ -478,6 +497,7 @@ export default function App() {
       setSelectedOrganization(org);
     }
     setShowOrganizationModal(false);
+    toast.success('Organization updated successfully!');
   };
 
   const handleDeleteOrganization = async (id: string) => {
@@ -488,13 +508,13 @@ export default function App() {
       
       if (response.ok) {
         setOrganizations(organizations.filter(o => o.id !== id));
-        alert('Organization deleted successfully!');
+        toast.success('Organization deleted successfully!');
       } else {
-        alert('Failed to delete organization');
+        toast.error('Failed to delete organization');
       }
     } catch (error) {
       console.error('Error deleting organization:', error);
-      alert('Error deleting organization');
+      toast.error('Error deleting organization');
     }
   };
 
@@ -509,14 +529,17 @@ export default function App() {
       id: Date.now().toString()
     };
     setSubAdmins([...subAdmins, newAdmin]);
+    toast.success('Admin added successfully!');
   };
 
   const handleUpdateSubAdmin = (admin: SubAdmin) => {
     setSubAdmins(subAdmins.map(a => a.id === admin.id ? admin : a));
+    toast.success('Admin updated successfully!');
   };
 
   const handleDeleteSubAdmin = (id: string) => {
     setSubAdmins(subAdmins.filter(a => a.id !== id));
+    toast.success('Admin deleted successfully!');
   };
 
   const handleAddAssetRequest = (request: Omit<AssetRequest, 'id'>) => {
@@ -586,7 +609,6 @@ export default function App() {
   };
 
   return (
-    <SocketProvider userId="admin">
       <MainLayout>
         <Sidebar 
           title=""
@@ -655,6 +677,17 @@ export default function App() {
           icon={<FileText className="w-5 h-5" />}
         >
           Asset Requests
+        </NavButton>
+        
+        <NavButton
+          onClick={() => {
+            setCurrentView('locations');
+            setEditingAsset(null);
+          }}
+          isActive={currentView === 'locations'}
+          icon={<MapPin className="w-5 h-5" />}
+        >
+          Locations
         </NavButton>
         
         <NavButton
@@ -842,6 +875,7 @@ export default function App() {
         {currentView === 'asset-requests' && (
           <AssetRequestsList highlightRequestId={selectedRequestId} />
         )}
+        {currentView === 'locations' && <LocationManager />}
         {currentView === 'organization-admins' && (
           <OrganizationAdminList 
             subAdmins={subAdmins}
@@ -902,6 +936,5 @@ export default function App() {
 
 
     </MainLayout>
-    </SocketProvider>
   );
 }

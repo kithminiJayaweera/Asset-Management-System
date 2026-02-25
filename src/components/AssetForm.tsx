@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
-import { Save, X, Search, AlertCircle } from 'lucide-react';
+import { Save, X, Search, AlertCircle, Upload, Image as ImageIcon } from 'lucide-react';
 import { Asset, Organization } from '@/types/shared';
 import { detectAsset, validateUniqueSerial } from '@/utils/assetDetection';
 import { calculateCurrentValue, getDefaultUsefulLife } from '@/utils/depreciation';
+import { AssetGallery } from './AssetGallery';
 
 interface AssetFormProps {
   onSubmit: (asset: any) => void;
@@ -49,6 +50,9 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
   const [searchMessage, setSearchMessage] = useState('');
   const [calculatedCurrentValue, setCalculatedCurrentValue] = useState<number | null>(null);
   const [serialValidation, setSerialValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: '' });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [showGallery, setShowGallery] = useState(false);
   
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -651,6 +655,88 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
             />
           </div>
 
+          {/* Image Upload */}
+          {initialData && (
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-black flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Asset Images
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowGallery(!showGallery)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                >
+                  {showGallery ? 'Hide Gallery' : 'View Gallery'}
+                </button>
+              </div>
+              
+              {showGallery && (
+                <div className="mb-4 border rounded-lg">
+                  <AssetGallery assetId={initialData.id} />
+                </div>
+              )}
+              
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <label className="block text-sm text-gray-700 mb-2">
+                  Upload Images (JPG, PNG, PDF - Max 5MB)
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,application/pdf"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    if (file.size > 5 * 1024 * 1024) {
+                      setUploadMessage('❌ File size exceeds 5MB');
+                      return;
+                    }
+
+                    setUploadingImage(true);
+                    setUploadMessage('⏳ Uploading...');
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('isPrimary', 'false');
+
+                    try {
+                      const res = await fetch(`/api/assets/${initialData.id}/upload`, {
+                        method: 'POST',
+                        body: formData,
+                      });
+
+                      if (res.ok) {
+                        setUploadMessage('✅ Image uploaded successfully!');
+                        e.target.value = '';
+                        if (showGallery) {
+                          setShowGallery(false);
+                          setTimeout(() => setShowGallery(true), 100);
+                        }
+                      } else {
+                        const error = await res.json();
+                        setUploadMessage(`❌ ${error.error}`);
+                      }
+                    } catch (error) {
+                      setUploadMessage('❌ Upload failed');
+                    } finally {
+                      setUploadingImage(false);
+                    }
+                  }}
+                  disabled={uploadingImage}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500 file:text-white file:cursor-pointer hover:file:bg-purple-600 disabled:opacity-50"
+                />
+                {uploadMessage && (
+                  <p className="mt-2 text-sm text-gray-700">{uploadMessage}</p>
+                )}
+                <p className="mt-2 text-xs text-gray-600">
+                  💡 Upload product photos, invoices, warranty certificates, or maintenance receipts
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Category-Specific Details */}
           {getCurrentCategoryFields().length > 0 && (
             <div className="border-t pt-6 bg-gray-50 p-4 rounded-lg">
@@ -687,7 +773,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex items-center gap-2 px-6 py-2 bg-purple-400 text-black rounded-lg hover:bg-purple-300 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-purple-500 text-black rounded-lg hover:bg-purple-400 transition-colors"
             >
               <Save className="w-4 h-4" />
               {initialData ? 'Update Asset' : 'Add Asset'}

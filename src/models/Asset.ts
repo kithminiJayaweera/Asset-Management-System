@@ -80,6 +80,10 @@ const AssetSchema = new Schema<IAsset>(
       type: String,
       trim: true,
     },
+    locationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Location',
+    },
     assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -130,6 +134,7 @@ const AssetSchema = new Schema<IAsset>(
 AssetSchema.index({ organizationId: 1 });
 AssetSchema.index({ status: 1 });
 AssetSchema.index({ assignedTo: 1 });
+AssetSchema.index({ locationId: 1 });
 AssetSchema.index({ category: 1 }); // Keep for backward compatibility
 AssetSchema.index({ categoryId: 1 }); // NEW index
 AssetSchema.index({ serialNumber: 1 });

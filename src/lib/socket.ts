@@ -61,11 +61,11 @@ export const broadcastNotification = (notification: any) => {
   }
 };
 
-export const emitAssetUpdate = () => {
+export const emitAssetUpdate = (data?: { assetId: string; message: string }) => {
   const io = getIO();
   if (io) {
-    io.emit('asset_updated');
-    console.log('🔄 Asset update broadcast');
+    io.emit('asset_updated', data);
+    console.log('🔄 Asset update broadcast', data);
   } else {
     console.error('❌ Cannot emit asset update - Socket.IO not initialized');
   }

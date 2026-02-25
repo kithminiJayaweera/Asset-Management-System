@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -26,14 +27,24 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load notifications from API on mount
+  // Load notifications from API on mount and poll every 5 seconds
   useEffect(() => {
-    if (userId && !isInitialized) {
+    if (!userId) return;
+
+    const fetchNotifications = () => {
       fetch(`/api/notifications?userId=${userId}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && data.data) {
-            setNotifications(data.data);
+            // Filter out old notifications without relatedId
+            const validNotifications = data.data.filter((n: any) => n.relatedId);
+            setNotifications(validNotifications);
+            
+            // Delete invalid notifications from database
+            const invalidNotifications = data.data.filter((n: any) => !n.relatedId);
+            invalidNotifications.forEach((n: any) => {
+              fetch(`/api/notifications/${n._id}`, { method: 'DELETE' }).catch(() => {});
+            });
           }
           setIsInitialized(true);
         })
@@ -41,10 +52,15 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
           console.error('Failed to load notifications:', err);
           setIsInitialized(true);
         });
-    }
-  }, [userId, isInitialized]);
+    };
 
-  useEffect(() => {
+    fetchNotifications();
+    const pollInterval = setInterval(fetchNotifications, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [userId]);
+
+   useEffect(() => {
     const socketInstance = io(window.location.origin, {
       transports: ['websocket', 'polling'],
     });
@@ -62,16 +78,121 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
     socketInstance.on('notification', (notification) => {
       console.log('🔔 Notification received:', notification);
       setNotifications((prev) => [notification, ...prev]);
-      
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(notification.title, {
-          body: notification.message,
-        });
-      }
+      // No browser notification popup from localhost
     });
 
-    socketInstance.on('asset_updated', () => {
-      console.log('🔄 Asset updated event received');
+    socketInstance.on('asset_request_created', async (data) => {
+      console.log('📝 New asset request received:', data);
+      
+      // Create notification in database
+      try {
+        const notifResponse = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: 'admin',
+            type: 'asset-requests',
+            title: 'New Asset Request',
+            message: `${data.requestedBy} requested ${data.assetCategory}`,
+            relatedId: data.requestId,
+          }),
+        });
+        
+        if (notifResponse.ok) {
+          const notifResult = await notifResponse.json();
+          if (notifResult.success) {
+            setNotifications((prev) => {
+              const exists = prev.some(n => n._id === notifResult.data._id);
+              if (exists) return prev;
+              return [notifResult.data, ...prev];
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error creating notification:', error);
+      }
+      
+      // Fetch current pending count
+      try {
+        const response = await fetch('/api/requests');
+        const result = await response.json();
+        const pendingCount = result.success 
+          ? result.data.filter((r: any) => r.status === 'pending' && !r.archived).length 
+          : 0;
+        
+        // Show toast notification with pending count
+        toast.info('🔔 New Asset Request', {
+          description: `${data.requestedBy} requested ${data.assetCategory}\n📋 Total Pending: ${pendingCount}`,
+          duration: 8000,
+          style: {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: '2px solid #5a67d8',
+            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+          },
+          action: {
+            label: '👁️ View',
+            onClick: () => {
+              window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Error fetching pending count:', error);
+        toast.info('🔔 New Asset Request', {
+          description: `${data.requestedBy} requested ${data.assetCategory}`,
+          duration: 8000,
+          style: {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: '2px solid #5a67d8',
+            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+          },
+          action: {
+            label: '👁️ View',
+            onClick: () => {
+              window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
+            },
+          },
+        });
+      }
+      
+      // Trigger refresh
+      window.dispatchEvent(new Event('assetRequestCreated'));
+    });
+
+    socketInstance.on('asset_updated', async (data) => {
+      console.log('🔄 Asset updated event received:', data);
+      
+      if (data?.assetId && userId) {
+        try {
+          const notifResponse = await fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              type: 'asset_updated',
+              title: 'Asset Updated',
+              message: data.message || 'An asset has been updated',
+              relatedId: data.assetId,
+            }),
+          });
+          
+          if (notifResponse.ok) {
+            const notifResult = await notifResponse.json();
+            if (notifResult.success) {
+              setNotifications((prev) => {
+                const exists = prev.some(n => n._id === notifResult.data._id);
+                if (exists) return prev;
+                return [notifResult.data, ...prev];
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error creating notification:', error);
+        }
+      }
+      
       window.dispatchEvent(new Event('assetUpdated'));
     });
 
@@ -114,9 +235,7 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
   };
 
   const clearAll = async () => {
-    setNotifications([]);
-    
-    // Clear in database
+    // Clear in database first
     if (userId) {
       try {
         await fetch(`/api/notifications?userId=${userId}`, {
@@ -126,6 +245,9 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
         console.error('Failed to clear notifications:', err);
       }
     }
+    
+    // Then clear local state
+    setNotifications([]);
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;

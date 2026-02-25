@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Package, CheckCircle, XCircle, Clock, User, Loader2, Archive, Star, Trash2, ArchiveRestore, UserPlus, UserX, X, Search, Link } from 'lucide-react';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface RequestedByUser {
   _id: string;
@@ -74,10 +76,30 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingRequest, setRejectingRequest] = useState<AssetRequest | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [unassignConfirm, setUnassignConfirm] = useState<{requestId: string; assetId: string} | null>(null);
 
   useEffect(() => {
     fetchRequests();
     fetchAssets();
+    
+    // Listen for real-time request updates
+    const handleNewRequest = () => {
+      console.log('New request event received, refreshing...');
+      fetchRequests();
+    };
+    
+    window.addEventListener('assetRequestCreated', handleNewRequest);
+    
+    // Poll for new requests every 5 seconds for cross-device sync
+    const pollInterval = setInterval(() => {
+      fetchRequests();
+    }, 5000);
+    
+    return () => {
+      window.removeEventListener('assetRequestCreated', handleNewRequest);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -95,7 +117,6 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
 
   const fetchRequests = async () => {
     try {
-      setLoading(true);
       const response = await fetch('/api/requests');
       const result = await response.json();
       
@@ -140,10 +161,17 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (result.success) {
-        fetchRequests();
+        await fetchRequests();
+        const message = status === 'approved' ? 'Request approved successfully!' : 'Request rejected successfully!';
+        console.log('Showing toast:', message);
+        toast.success(message);
+      } else {
+        console.log('Showing error toast');
+        toast.error('Failed to update request');
       }
     } catch (error) {
       console.error('Error updating request:', error);
+      toast.error('Error updating request');
     }
   };
 
@@ -174,13 +202,15 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (!result.success) {
-        // Revert on error
         fetchRequests();
+        toast.error('Failed to archive request');
+      } else {
+        toast.success(currentArchived ? 'Request restored successfully!' : 'Request archived successfully!');
       }
     } catch (error) {
       console.error('Error archiving request:', error);
-      // Revert on error
       fetchRequests();
+      toast.error('Error archiving request');
     }
   };
 
@@ -204,21 +234,17 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       const result = await response.json();
       
       if (!result.success) {
-        // Revert on error
         fetchRequests();
+        toast.error('Failed to star request');
       }
     } catch (error) {
       console.error('Error starring request:', error);
-      // Revert on error
       fetchRequests();
+      toast.error('Error starring request');
     }
   };
 
   const deleteRequest = async (requestId: string) => {
-    if (!confirm('Are you sure you want to permanently delete this request? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/requests/${requestId}`, {
         method: 'DELETE',
@@ -228,9 +254,13 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (result.success) {
         fetchRequests();
+        toast.success('Request deleted successfully!');
+      } else {
+        toast.error('Failed to delete request');
       }
     } catch (error) {
       console.error('Error deleting request:', error);
+      toast.error('Error deleting request');
     }
   };
 
@@ -255,7 +285,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!assetResult.success) {
         console.error('Failed to update asset:', assetResult.error);
-        alert('Failed to assign asset. Please try again.');
+        toast.error('Failed to assign asset');
         return;
       }
       
@@ -280,7 +310,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
             assignedTo: null
           }),
         });
-        alert('Failed to link asset to request. Please try again.');
+        toast.error('Failed to link asset to request');
         return;
       }
         
@@ -293,25 +323,21 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       setSelectedAsset(null);
       setIsReadOnlyMode(false);
       
-      alert('Asset successfully assigned!');
+      toast.success('Asset assigned successfully!');
     } catch (error) {
       console.error('Error assigning asset:', error);
-      alert('An error occurred while assigning the asset.');
+      toast.error('Error assigning asset');
     }
   };
 
   const unassignAssetFromRequest = async (requestId: string, currentAssetId: string) => {
-    if (!confirm('Are you sure you want to unassign this asset from the request?')) {
-      return;
-    }
-
     try {
       // Get asset and request details
       const assetResponse = await fetch(`/api/assets/${currentAssetId}`);
       const assetResult = await assetResponse.json();
       
       if (!assetResult.success) {
-        alert('Failed to fetch asset details.');
+        toast.error('Failed to fetch asset details');
         return;
       }
 
@@ -342,7 +368,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!updateAssetResult.success) {
         console.error('Failed to unassign asset:', updateAssetResult.error);
-        alert('Failed to unassign asset. Please try again.');
+        toast.error('Failed to unassign asset');
         return;
       }
 
@@ -357,17 +383,17 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       
       if (!requestResult.success) {
         console.error('Failed to update request:', requestResult.error);
-        alert('Failed to update request. Please try again.');
+        toast.error('Failed to update request');
         return;
       }
         
       // Refresh both requests and assets
       await Promise.all([fetchRequests(), fetchAssets()]);
       
-      alert('Asset successfully unassigned!');
+      toast.success('Asset unassigned successfully!');
     } catch (error) {
       console.error('Error unassigning asset:', error);
-      alert('An error occurred while unassigning the asset.');
+      toast.error('Error unassigning asset');
     }
   };
 
@@ -410,6 +436,16 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
     }
   };
 
+  // Normalize category names to handle variations like "Laptop/PC" vs "PC/Laptop"
+  const normalizeCategory = (category: string): string => {
+    const normalized = category.toLowerCase().trim();
+    // Normalize laptop/pc variations
+    if (normalized.includes('laptop') && normalized.includes('pc')) {
+      return 'pc/laptop';
+    }
+    return normalized;
+  };
+
   const filteredAssets = assets.filter(asset => {
     // If showAllAssets is enabled, skip category filtering for debugging
     if (showAllAssets) {
@@ -426,12 +462,11 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
       asset.category.toLowerCase().includes(assetSearchQuery.toLowerCase());
     
     // Filter by category matching the request's assetCategory
-    const assetCategory = (asset.category || '').trim();
-    const requestCategory = selectedRequest ? (selectedRequest.assetCategory || '').trim() : '';
+    const assetCategory = normalizeCategory(asset.category || '');
+    const requestCategory = selectedRequest ? normalizeCategory(selectedRequest.assetCategory || '') : '';
     
-    // Simple exact match (case-insensitive)
-    const matchesCategory = !selectedRequest || 
-      assetCategory.toLowerCase() === requestCategory.toLowerCase();
+    // Match normalized categories
+    const matchesCategory = !selectedRequest || assetCategory === requestCategory;
     
     // Debug all assets
     if (selectedRequest) {
@@ -489,7 +524,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           const assetResult = await assetResponse.json();
           
           if (!assetResult.success) {
-            alert('Failed to assign asset. Please try again.');
+            toast.error('Failed to assign asset');
             return;
           }
 
@@ -503,10 +538,10 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           setSelectedAsset(null);
           setIsReadOnlyMode(false);
           
-          alert('Request approved and asset assigned successfully!');
+          toast.success('Request approved and asset assigned successfully!');
         } catch (error) {
           console.error('Error approving with asset:', error);
-          alert('An error occurred.');
+          toast.error('Error approving request');
         }
       } else {
         // Existing reassign logic for approved requests
@@ -538,6 +573,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           <p className="text-gray-800">Manage employee asset requests</p>
         </div>
         
+
         {/* View Toggles */}
         <div className="flex gap-3">
           <button
@@ -800,7 +836,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
                     <div className="flex gap-2">
                       {assetObj && isAssignedToRequester && (
                         <button
-                          onClick={() => unassignAssetFromRequest(request._id, assetObj._id)}
+                          onClick={() => setUnassignConfirm({requestId: request._id, assetId: assetObj._id})}
                           className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 transition-colors"
                           title="Unassign Asset"
                         >
@@ -910,7 +946,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
               {/* Delete button - only for archived requests */}
               {request.archived && (
                 <button
-                  onClick={() => deleteRequest(request._id)}
+                  onClick={() => setDeleteConfirm(request._id)}
                   className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                   title="Permanently delete this request"
                 >
@@ -988,7 +1024,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
               <button
                 onClick={async () => {
                   if (!rejectReason.trim()) {
-                    alert('Please provide a reason for rejection');
+                    toast.error('Please provide a reason for rejection');
                     return;
                   }
                   await updateRequestStatus(rejectingRequest._id, 'rejected', rejectReason);
@@ -1197,6 +1233,36 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Request"
+        message="Are you sure you want to permanently delete this request? This action cannot be undone."
+        onConfirm={() => {
+          if (deleteConfirm) {
+            deleteRequest(deleteConfirm);
+            setDeleteConfirm(null);
+          }
+        }}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmDialog
+        isOpen={!!unassignConfirm}
+        title="Unassign Asset"
+        message="Are you sure you want to unassign this asset from the request?"
+        onConfirm={() => {
+          if (unassignConfirm) {
+            unassignAssetFromRequest(unassignConfirm.requestId, unassignConfirm.assetId);
+            setUnassignConfirm(null);
+          }
+        }}
+        onCancel={() => setUnassignConfirm(null)}
+        confirmText="Unassign"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

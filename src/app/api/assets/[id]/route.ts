@@ -5,6 +5,7 @@ import Asset from '@/models/Asset';
 import AssetRequest from '@/models/AssetRequest';
 import Notification from '@/models/Notification';
 import AuditLog from '@/models/AuditLog';
+import AssetLocationHistory from '@/models/AssetLocationHistory';
 import { ApiResponse, IAsset } from '@/types';
 import { emitNotification, broadcastNotification, emitAssetUpdate } from '@/lib/socket';
 import mongoose from 'mongoose';
@@ -72,7 +73,7 @@ export async function PUT(request: NextRequest, context: Params) {
     console.log('Updating asset:', id, 'with data:', body);
 
     // Get old asset data BEFORE update
-    const oldAsset = await Asset.findById(id).select('assignedTo name status').lean();
+    const oldAsset = await Asset.findById(id).select('assignedTo locationId name status').lean();
     if (!oldAsset) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Asset not found' },
@@ -108,6 +109,22 @@ export async function PUT(request: NextRequest, context: Params) {
 
     console.log('Asset updated:', { _id: asset._id, status: asset.status, assignedTo: asset.assignedTo });
 
+    // Track location changes
+    if (body.locationId !== undefined && oldAsset.locationId?.toString() !== body.locationId?.toString()) {
+      try {
+        await AssetLocationHistory.create({
+          assetId: id,
+          fromLocationId: oldAsset.locationId || null,
+          toLocationId: body.locationId,
+          movedBy: body.assignedTo || 'admin',
+          movedAt: new Date(),
+          notes: body.locationNotes || 'Location updated'
+        });
+      } catch (historyError) {
+        console.error('Error creating location history:', historyError);
+      }
+    }
+
     // Broadcast update notification
     try {
       await Notification.create({
@@ -115,18 +132,9 @@ export async function PUT(request: NextRequest, context: Params) {
         type: 'asset_updated',
         title: 'Asset Updated',
         message: `${asset.name} has been updated`,
-        data: { assetId: asset._id },
+        relatedId: asset._id.toString(),
       });
-      const updateNotif = {
-        _id: Date.now().toString(),
-        type: 'asset_updated',
-        title: 'Asset Updated',
-        message: `${asset.name} has been updated`,
-        read: false,
-        createdAt: new Date(),
-      };
-      broadcastNotification(updateNotif);
-      emitAssetUpdate();
+      emitAssetUpdate({ assetId: asset._id.toString(), message: `${asset.name} has been updated` });
     } catch (notifError) {
       console.error('Error broadcasting notification:', notifError);
     }
@@ -153,7 +161,7 @@ export async function PUT(request: NextRequest, context: Params) {
         if (previousAssignee && previousAssignee !== body.assignedTo.toString()) {
           try {
             await Notification.updateMany(
-              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { userId: previousAssignee, relatedId: id, type: 'asset_assigned' },
               { $set: { read: true } }
             );
             await Notification.create({
@@ -161,17 +169,8 @@ export async function PUT(request: NextRequest, context: Params) {
               type: 'asset_updated',
               title: 'Asset Unassigned',
               message: `${asset.name} has been reassigned to another user`,
-              data: { assetId: id },
+              relatedId: id,
             });
-            const unassignNotif = {
-              _id: Date.now().toString(),
-              type: 'asset_updated',
-              title: 'Asset Unassigned',
-              message: `${asset.name} has been reassigned`,
-              read: false,
-              createdAt: new Date(),
-            };
-            emitNotification(previousAssignee, unassignNotif);
           } catch (notifError) {
             console.error('Error notifying previous assignee:', notifError);
           }
@@ -199,17 +198,8 @@ export async function PUT(request: NextRequest, context: Params) {
             type: 'asset_assigned',
             title: 'Asset Assigned',
             message: `${asset.name} has been assigned to you`,
-            data: { assetId: id },
+            relatedId: id,
           });
-          const assignNotif = {
-            _id: Date.now().toString(),
-            type: 'asset_assigned',
-            title: 'Asset Assigned',
-            message: `${asset.name} has been assigned`,
-            read: false,
-            createdAt: new Date(),
-          };
-          emitNotification(body.assignedTo.toString(), assignNotif);
         } catch (notifError) {
           console.error('Error creating assignment notification:', notifError);
         }
@@ -230,7 +220,7 @@ export async function PUT(request: NextRequest, context: Params) {
             console.log('Unassignment audit log created:', auditLog);
             
             await Notification.updateMany(
-              { userId: previousAssignee, 'data.assetId': id, type: 'asset_assigned' },
+              { userId: previousAssignee, relatedId: id, type: 'asset_assigned' },
               { $set: { read: true } }
             );
             await Notification.create({
@@ -238,17 +228,8 @@ export async function PUT(request: NextRequest, context: Params) {
               type: 'asset_updated',
               title: 'Asset Unassigned',
               message: `${asset.name} has been unassigned from you`,
-              data: { assetId: id },
+              relatedId: id,
             });
-            const unassignNotif = {
-              _id: Date.now().toString(),
-              type: 'asset_updated',
-              title: 'Asset Unassigned',
-              message: `${asset.name} has been unassigned`,
-              read: false,
-              createdAt: new Date(),
-            };
-            emitNotification(previousAssignee, unassignNotif);
           } catch (notifError) {
             console.error('Error notifying unassignment:', notifError);
           }
@@ -300,16 +281,7 @@ export async function DELETE(request: NextRequest, context: Params) {
 
     // Broadcast delete notification
     try {
-      const deleteNotif = {
-        _id: Date.now().toString(),
-        type: 'asset_updated',
-        title: 'Asset Deleted',
-        message: `${asset.name} has been deleted from inventory`,
-        read: false,
-        createdAt: new Date(),
-      };
-      broadcastNotification(deleteNotif);
-      emitAssetUpdate();
+      emitAssetUpdate({ assetId: id, message: `${asset.name} has been deleted from inventory` });
     } catch (notifError) {
       console.error('Error broadcasting delete notification:', notifError);
     }

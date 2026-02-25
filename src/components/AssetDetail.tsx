@@ -4,6 +4,8 @@ import { calculateDepreciation, formatCurrency } from '../utils/depreciation';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
 import { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 interface Employee {
   id: string;
@@ -112,6 +114,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [showUnassignConfirm, setShowUnassignConfirm] = useState(false);
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
 
   useEffect(() => {
@@ -158,9 +161,8 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const assignToRequester = async (request: AssetRequest) => {
     if (!request.requestedBy || asset.assignedTo) return;
 
-    // Prevent assigning retired/lost assets
     if (asset.status === 'retired' || asset.status === 'lost') {
-      alert(`Cannot assign ${asset.status} assets`);
+      toast.error(`Cannot assign ${asset.status} assets`);
       return;
     }
 
@@ -174,7 +176,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       });
 
       if (!assetResponse.ok) {
-        alert('Failed to assign asset');
+        toast.error('Failed to assign asset');
         return;
       }
 
@@ -183,38 +185,40 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assetId: asset._id,
-          status: 'approved'
+          status: 'approved',
+          sendEmail: true
         }),
       });
 
       if (requestResponse.ok) {
-        alert('Asset assigned and request approved successfully!');
+        toast.success('Asset assigned and request approved successfully! Email sent to user.');
         setShowAssignFromRequestModal(false);
-        if (onNavigateToRequests) {
-          onNavigateToRequests();
-        } else {
-          window.location.reload();
-        }
+        setTimeout(() => {
+          if (onNavigateToRequests) {
+            onNavigateToRequests();
+          } else {
+            window.location.reload();
+          }
+        }, 1500);
       }
     } catch (error) {
       console.error('Error assigning asset:', error);
-      alert('Error assigning asset');
+      toast.error('Error assigning asset');
     }
   };
 
   const unassignAsset = async () => {
-    if (!confirm('Are you sure you want to unassign this asset?')) return;
-
+    setShowUnassignConfirm(false);
     try {
       const assetResponse = await fetch(`/api/assets/${asset._id}`);
       if (!assetResponse.ok) {
-        alert('Asset not found. It may have been deleted.');
+        toast.error('Asset not found. It may have been deleted.');
         return;
       }
       const assetResult = await assetResponse.json();
 
       if (!assetResult.success) {
-        alert('Failed to fetch asset details.');
+        toast.error('Failed to fetch asset details.');
         return;
       }
 
@@ -235,22 +239,23 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       });
 
       if (updateResponse.ok) {
-        alert('Asset unassigned successfully!');
+        toast.success('Asset unassigned successfully!');
         await fetchAuditLogs();
-        window.location.reload();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
-        alert('Failed to unassign asset. It may have been deleted.');
+        toast.error('Failed to unassign asset. It may have been deleted.');
       }
     } catch (error) {
       console.error('Error unassigning asset:', error);
-      alert('Error unassigning asset');
+      toast.error('Error unassigning asset');
     }
   };
 
   const assignEmployeeToAsset = async (employeeId: string) => {
-    // Prevent assigning retired/lost assets
     if (asset.status === 'retired' || asset.status === 'lost') {
-      alert(`Cannot assign ${asset.status} assets`);
+      toast.error(`Cannot assign ${asset.status} assets`);
       return;
     }
 
@@ -269,16 +274,18 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       console.log('Response data:', result);
 
       if (result.success) {
-        alert('Employee assigned successfully!');
+        toast.success('Employee assigned successfully!');
         setShowAssignModal(false);
         setSelectedAssignEmployee(null);
-        window.location.reload();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
-        alert(result.error || 'Failed to assign employee. Asset may not exist.');
+        toast.error(result.error || 'Failed to assign employee. Asset may not exist.');
       }
     } catch (error) {
       console.error('Error assigning employee:', error);
-      alert('Error assigning employee');
+      toast.error('Error assigning employee');
     }
   };
 
@@ -336,7 +343,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             </span>
             <button
               onClick={onEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-400 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
               Edit Asset
@@ -482,7 +489,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
                 <div className="flex gap-2">
                   {asset.assignedTo && (
                     <button
-                      onClick={unassignAsset}
+                      onClick={() => setShowUnassignConfirm(true)}
                       className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
                     >
                       <UserX className="w-4 h-4" />
@@ -1023,6 +1030,16 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showUnassignConfirm}
+        title="Unassign Asset"
+        message="Are you sure you want to unassign this asset?"
+        onConfirm={unassignAsset}
+        onCancel={() => setShowUnassignConfirm(false)}
+        confirmText="Unassign"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

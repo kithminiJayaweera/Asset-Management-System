@@ -4,7 +4,6 @@ import { Package, DollarSign, TrendingUp, AlertTriangle, Shield, Wrench, Activit
 import { Asset } from '@/types/shared';
 import { useMemo } from 'react';
 import { KPICard } from '../dashboard/KPICard';
-import { AlertPanel } from '../dashboard/AlertPanel';
 import { LineChartCard, BarChartCard, PieChartCard } from '../dashboard/ChartCards';
 
 interface DashboardProps {
@@ -134,47 +133,6 @@ export function Dashboard({ assets }: DashboardProps) {
     };
   }, [assets]);
 
-  const alerts = useMemo(() => {
-    const alertList = [];
-    
-    if (analytics.lost > 0) {
-      alertList.push({
-        id: 'lost-assets',
-        type: 'critical' as const,
-        title: `${analytics.lost} Assets Lost`,
-        message: `Total value at risk: ₨${analytics.lostValue.toLocaleString()}. Immediate action required.`
-      });
-    }
-
-    if (analytics.maintenanceOverdue.length > 0) {
-      alertList.push({
-        id: 'maintenance-overdue',
-        type: 'warning' as const,
-        title: `${analytics.maintenanceOverdue.length} Assets Overdue for Maintenance`,
-        message: 'Assets have not been serviced in over 90 days. Schedule maintenance to prevent failures.'
-      });
-    }
-
-    if (analytics.warrantyExpiring.length > 0) {
-      alertList.push({
-        id: 'warranty-expiring',
-        type: 'warning' as const,
-        title: `${analytics.warrantyExpiring.length} Warranties Expiring Soon`,
-        message: 'Warranties expiring within 30 days. Review and renew if necessary.'
-      });
-    }
-
-    if (parseFloat(analytics.healthScore) < 70) {
-      alertList.push({
-        id: 'low-health',
-        type: 'warning' as const,
-        title: 'Asset Health Score Below Target',
-        message: `Current score: ${analytics.healthScore}/100. Review maintenance and replacement strategies.`
-      });
-    }
-
-    return alertList;
-  }, [analytics]);
 
   return (
     <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#F3E6EC' }}>
@@ -189,15 +147,7 @@ export function Dashboard({ assets }: DashboardProps) {
         </div>
       </div>
 
-      {alerts.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            Action Required
-          </h2>
-          <AlertPanel alerts={alerts} />
-        </div>
-      )}
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard

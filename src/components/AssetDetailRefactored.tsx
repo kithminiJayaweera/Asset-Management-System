@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useAssetAssignment, useAuditLogs, usePendingRequests } from '@/hooks/useAsset';
 import { generateAssetQRData, downloadQRCode } from '../utils/qrCode';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 interface AssetDetailProps {
   asset: IAsset;
@@ -21,6 +23,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<IUser | null>(null);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
+  const [showUnassignConfirm, setShowUnassignConfirm] = useState(false);
 
   const { assignAsset, unassignAsset, approveRequestAndAssign, loading, error } = useAssetAssignment(
     String(asset._id),
@@ -43,17 +46,16 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       setShowAssignModal(false);
       setSelectedEmployee(null);
     } catch (err) {
-      alert(error || 'Failed to assign asset');
+      toast.error(error || 'Failed to assign asset');
     }
   };
 
   const handleUnassign = async () => {
-    if (!confirm('Are you sure you want to unassign this asset?')) return;
-    
+    setShowUnassignConfirm(false);
     try {
       await unassignAsset();
     } catch (err) {
-      alert(error || 'Failed to unassign asset');
+      toast.error(error || 'Failed to unassign asset');
     }
   };
 
@@ -62,7 +64,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       await approveRequestAndAssign(requestId);
       setShowAssignFromRequestModal(false);
     } catch (err) {
-      alert(error || 'Failed to approve request');
+      toast.error(error || 'Failed to approve request');
     }
   };
 
@@ -113,7 +115,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           <div className="flex gap-2">
             {isAssigned && (
               <button
-                onClick={handleUnassign}
+                onClick={() => setShowUnassignConfirm(true)}
                 disabled={loading}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50"
               >
@@ -248,6 +250,16 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showUnassignConfirm}
+        title="Unassign Asset"
+        message="Are you sure you want to unassign this asset?"
+        onConfirm={handleUnassign}
+        onCancel={() => setShowUnassignConfirm(false)}
+        confirmText="Unassign"
+        cancelText="Cancel"
+      />
     </div>
   );
 }
