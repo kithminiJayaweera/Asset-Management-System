@@ -67,7 +67,7 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
     setSocket(socketInstance);
 
     socketInstance.on('connect', () => {
-      console.log('✅ Socket.IO connected:', socketInstance.id);
+      console.log('Socket.IO connected:', socketInstance.id);
     });
 
     if (userId) {
@@ -76,13 +76,13 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
     }
 
     socketInstance.on('notification', (notification) => {
-      console.log('🔔 Notification received:', notification);
+      console.log('Notification received:', notification);
       setNotifications((prev) => [notification, ...prev]);
       // No browser notification popup from localhost
     });
 
     socketInstance.on('asset_request_created', async (data) => {
-      console.log('📝 New asset request received:', data);
+      console.log('New asset request received:', data);
       
       // Create notification in database
       try {
@@ -121,39 +121,41 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
           : 0;
         
         // Show toast notification with pending count
-        toast.info('🔔 New Asset Request', {
-          description: `${data.requestedBy} requested ${data.assetCategory}\n📋 Total Pending: ${pendingCount}`,
+        toast.info('New Asset Request', {
+          description: `${data.requestedBy} requested ${data.assetCategory}\nTotal Pending: ${pendingCount}`,
           duration: 8000,
           style: {
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #8E1616 0%, #D84040 100%)',
             color: 'white',
-            border: '2px solid #5a67d8',
-            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+            border: '2px solid #8E1616',
+            boxShadow: '0 10px 25px rgba(216, 64, 64,0.4)',
           },
           action: {
-            label: '👁️ View',
+            label: 'View',
             onClick: () => {
               window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
             },
           },
+          actionButtonStyle: { color: 'white' },
         });
       } catch (error) {
         console.error('Error fetching pending count:', error);
-        toast.info('🔔 New Asset Request', {
+        toast.info('New Asset Request', {
           description: `${data.requestedBy} requested ${data.assetCategory}`,
           duration: 8000,
           style: {
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #8E1616 0%, #D84040 100%)',
             color: 'white',
-            border: '2px solid #5a67d8',
-            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+            border: '2px solid #8E1616',
+            boxShadow: '0 10px 25px rgba(216, 64, 64,0.4)',
           },
           action: {
-            label: '👁️ View',
+            label: 'View',
             onClick: () => {
               window.dispatchEvent(new CustomEvent('navigateToRequest', { detail: data.requestId }));
             },
           },
+          actionButtonStyle: { color: 'white' },
         });
       }
       
@@ -162,7 +164,7 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
     });
 
     socketInstance.on('asset_updated', async (data) => {
-      console.log('🔄 Asset updated event received:', data);
+      console.log('Asset updated event received:', data);
       
       if (data?.assetId && userId) {
         try {
@@ -197,7 +199,7 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
     });
 
     socketInstance.on('disconnect', () => {
-      console.log('❌ Socket.IO disconnected');
+      console.log('Socket.IO disconnected');
     });
 
     return () => {
@@ -207,7 +209,7 @@ export function SocketProvider({ children, userId }: { children: React.ReactNode
 
   useEffect(() => {
     const handleAssetUpdate = () => {
-      console.log('🔄 Refreshing asset data...');
+      console.log('Refreshing asset data...');
       window.dispatchEvent(new Event('refreshAssets'));
     };
 
