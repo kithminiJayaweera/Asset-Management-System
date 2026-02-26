@@ -4,6 +4,7 @@ import { Save, X, Search, AlertCircle } from 'lucide-react';
 import { Asset, Organization } from '@/types/shared';
 import { detectAsset, validateUniqueSerial } from '@/utils/assetDetection';
 import { calculateCurrentValue, getDefaultUsefulLife } from '@/utils/depreciation';
+import { ImageUpload } from './ImageUpload';
 
 interface AssetFormProps {
   onSubmit: (asset: any) => void;
@@ -49,6 +50,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
   const [searchMessage, setSearchMessage] = useState('');
   const [calculatedCurrentValue, setCalculatedCurrentValue] = useState<number | null>(null);
   const [serialValidation, setSerialValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: '' });
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -234,6 +236,7 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
         condition: formData.maintenanceCondition,
         lastMaintenanceDate: formData.lastMaintenanceDate || null
       },
+      uploadedFiles,
       ...(initialData ? { id: initialData.id, logs: initialData.logs } : {})
     };
     
@@ -648,6 +651,15 @@ export function AssetForm({ onSubmit, initialData, onCancel, organizations }: As
               value={formData.lastMaintenanceDate}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div className="col-span-2">
+            <ImageUpload
+              onUpload={setUploadedFiles}
+              maxFiles={5}
+              existingImages={initialData?.images?.length || 0}
             />
           </div>
 
