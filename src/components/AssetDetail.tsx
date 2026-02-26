@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { ImageGallery } from './ImageGallery';
 
 interface Employee {
   id: string;
@@ -116,6 +117,45 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   });
   const [showUnassignConfirm, setShowUnassignConfirm] = useState(false);
   const qrCodeData = generateAssetQRData(String(asset._id), asset.name, asset.category, asset.location || '', asset.status);
+
+  const handleDeleteImage = async (publicId: string) => {
+    try {
+      const response = await fetch(`/api/assets/images?assetId=${asset._id}&publicId=${publicId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        toast.success('Image deleted successfully');
+        window.location.reload();
+      } else {
+        toast.error('Failed to delete image');
+      }
+    } catch (error) {
+      toast.error('Error deleting image');
+    }
+  };
+
+  const handleSetPrimaryImage = async (publicId: string) => {
+    try {
+      const response = await fetch(`/api/assets/${asset._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: asset.images?.map(img => ({
+            ...img,
+            isPrimary: img.publicId === publicId
+          }))
+        }),
+      });
+      if (response.ok) {
+        toast.success('Primary image updated');
+        window.location.reload();
+      } else {
+        toast.error('Failed to update primary image');
+      }
+    } catch (error) {
+      toast.error('Error updating primary image');
+    }
+  };
 
   useEffect(() => {
     fetchPendingRequests();
@@ -423,40 +463,60 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             </div>
           </div>
 
-          {/* QR Code Card */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg text-black">Asset QR Code</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowQRModal(true)}
-                  className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                  title="View QR Code"
-                >
-                  <Eye className="w-4 h-4" />
-                  View
-                </button>
-                <button
-                  onClick={() => downloadQRCode('qr-code-container', asset.name)}
-                  className="flex items-center gap-2 px-3 py-1 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-                  title="Download QR Code"
-                >
-                  <Download className="w-4 h-4" />
-                  Download
-                </button>
+          {/* QR Code and Images Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* QR Code Card */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg text-black">Asset QR Code</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowQRModal(true)}
+                    className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="View QR Code"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View
+                  </button>
+                  <button
+                    onClick={() => downloadQRCode('qr-code-container', asset.name)}
+                    className="flex items-center gap-2 px-3 py-1 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                    title="Download QR Code"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
               </div>
+              <div className="flex justify-center p-4 bg-gray-50 rounded-lg" id="qr-code-container">
+                <QRCodeCanvas
+                  value={qrCodeData}
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <p className="text-xs text-gray-700 mt-3 text-center">
+                Scan this QR code to quickly identify and track this asset
+              </p>
             </div>
-            <div className="flex justify-center p-4 bg-gray-50 rounded-lg" id="qr-code-container">
-              <QRCodeCanvas
-                value={qrCodeData}
-                size={200}
-                level="H"
-                includeMargin={true}
-              />
+
+            {/* Image Gallery Card */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h3 className="text-lg text-black mb-4">Images & Documents</h3>
+              {asset.images && asset.images.length > 0 ? (
+                <ImageGallery
+                  images={asset.images}
+                  assetId={String(asset._id)}
+                  onDelete={handleDeleteImage}
+                  onSetPrimary={handleSetPrimaryImage}
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No images uploaded yet</p>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-gray-700 mt-3 text-center">
-              Scan this QR code to quickly identify and track this asset
-            </p>
           </div>
 
           {/* Category Specifications */}

@@ -130,6 +130,15 @@ const AssetSchema = new Schema<IAsset>(
       type: String,
       trim: true,
     },
+    images: [{
+      url: { type: String, required: true },
+      publicId: { type: String, required: true },
+      fileName: { type: String, required: true },
+      fileType: { type: String, required: true },
+      fileSize: { type: Number, required: true },
+      isPrimary: { type: Boolean, default: false },
+      uploadedAt: { type: Date, default: Date.now }
+    }],
     // DEPRECATED: Keep for backward compatibility
     details: {
       type: Map,

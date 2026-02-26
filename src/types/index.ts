@@ -32,6 +32,16 @@ export interface IOrganization {
 export type AssetStatus = 'active' | 'maintenance' | 'retired' | 'lost';
 export type AssetCondition = 'excellent' | 'good' | 'fair' | 'poor';
 
+export interface IAssetImage {
+  url: string;
+  publicId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  isPrimary: boolean;
+  uploadedAt: Date;
+}
+
 export interface IAsset {
   _id: Types.ObjectId | string;
   assetTag: string;
@@ -55,6 +65,7 @@ export interface IAsset {
   warrantyExpiry?: Date;
   notes?: string;
   imageUrl?: string;
+  images?: IAssetImage[];
   details?: Record<string, any>; // DEPRECATED: Category-specific fields
   customFields?: Record<string, any>; // NEW: Dynamic custom fields
   maintenance?: {
