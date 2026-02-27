@@ -47,6 +47,15 @@ export interface Asset {
   lastMaintenanceDate?: string;
   customFields?: Record<string, any>; // NEW
   details?: Record<string, any>;
+  images?: Array<{
+    url: string;
+    publicId: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    isPrimary: boolean;
+    uploadedAt: Date;
+  }>;
   maintenance?: {
     condition?: string;
     lastMaintenanceDate?: string;

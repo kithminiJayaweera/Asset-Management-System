@@ -71,6 +71,8 @@ export interface IAsset {
   maintenance?: {
     condition?: AssetCondition;
     lastMaintenanceDate?: Date;
+    maintenanceStartDate?: Date;
+    expectedReturnDate?: Date;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -123,7 +125,7 @@ export interface IAssetRequest {
 // Maintenance Types
 export type MaintenanceType = 'preventive' | 'corrective' | 'warranty';
 export type MaintenancePriority = 'low' | 'medium' | 'high' | 'critical';
-export type MaintenanceStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled';
+export type MaintenanceStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'closed';
 
 export interface IMaintenance {
   _id: Types.ObjectId | string;

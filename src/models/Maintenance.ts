@@ -31,7 +31,7 @@ const MaintenanceSchema = new Schema<IMaintenance>(
     },
     status: {
       type: String,
-      enum: ['pending', 'in-progress', 'completed', 'cancelled'],
+      enum: ['pending', 'in-progress', 'completed', 'cancelled', 'closed'],
       default: 'pending',
     },
     expectedReturnDate: {

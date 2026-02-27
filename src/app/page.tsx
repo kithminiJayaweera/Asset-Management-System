@@ -400,8 +400,18 @@ export default function App() {
           }
         }
         
-        setAssets(assets.map(a => a.id === asset.id ? asset : a));
-        setEditingAsset(asset);
+        // Fetch updated asset data
+        const assetResponse = await fetch(`/api/assets/${asset.id}`);
+        const assetResult = await assetResponse.json();
+        if (assetResult.success) {
+          const updatedAsset = {
+            ...asset,
+            images: assetResult.data.images
+          };
+          setAssets(assets.map(a => a.id === asset.id ? updatedAsset : a));
+          setEditingAsset(updatedAsset);
+        }
+        
         setShowAssetModal(false);
         toast.success('Asset updated successfully!');
         setCurrentView('asset-detail');

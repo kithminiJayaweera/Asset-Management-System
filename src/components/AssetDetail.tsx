@@ -111,6 +111,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
   const [selectedAssignEmployee, setSelectedAssignEmployee] = useState<IUser | null>(null);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [assetImages, setAssetImages] = useState(asset.images || []);
   const [filterMonth, setFilterMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -125,7 +126,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       });
       if (response.ok) {
         toast.success('Image deleted successfully');
-        window.location.reload();
+        setAssetImages(assetImages.filter(img => img.publicId !== publicId));
       } else {
         toast.error('Failed to delete image');
       }
@@ -140,7 +141,7 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          images: asset.images?.map(img => ({
+          images: assetImages.map(img => ({
             ...img,
             isPrimary: img.publicId === publicId
           }))
@@ -148,7 +149,10 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
       });
       if (response.ok) {
         toast.success('Primary image updated');
-        window.location.reload();
+        setAssetImages(assetImages.map(img => ({
+          ...img,
+          isPrimary: img.publicId === publicId
+        })));
       } else {
         toast.error('Failed to update primary image');
       }
@@ -504,9 +508,9 @@ export function AssetDetail({ asset, organization, assignedEmployee, employees, 
             {/* Image Gallery Card */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg text-black mb-4">Images & Documents</h3>
-              {asset.images && asset.images.length > 0 ? (
+              {assetImages && assetImages.length > 0 ? (
                 <ImageGallery
-                  images={asset.images}
+                  images={assetImages}
                   assetId={String(asset._id)}
                   onDelete={handleDeleteImage}
                   onSetPrimary={handleSetPrimaryImage}
