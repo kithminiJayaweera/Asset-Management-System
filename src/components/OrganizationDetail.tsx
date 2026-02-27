@@ -139,8 +139,8 @@ export function OrganizationDetail({
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-purple-100 rounded-lg">
-              <Building2 className="w-8 h-8 text-purple-600" />
+            <div className="p-4 bg-red-100 rounded-lg">
+              <Building2 className="w-8 h-8 text-red-700" />
             </div>
             <div>
               <h2 className="text-2xl text-black">{organization.name}</h2>
@@ -205,7 +205,7 @@ export function OrganizationDetail({
           {!showAddAdminForm && (
             <button
               onClick={() => setShowAddAdminForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               Assign Admin
@@ -230,7 +230,7 @@ export function OrganizationDetail({
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     placeholder="e.g., John Doe"
                   />
                 </div>
@@ -244,7 +244,7 @@ export function OrganizationDetail({
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     placeholder="e.g., john@company.com"
                   />
                 </div>
@@ -256,7 +256,7 @@ export function OrganizationDetail({
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'sub-admin' })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="sub-admin">Sub Admin</option>
                     <option value="admin">Admin</option>
@@ -272,7 +272,7 @@ export function OrganizationDetail({
                   <button
                     type="button"
                     onClick={toggleAllPermissions}
-                    className="text-sm text-purple-600 hover:text-purple-700"
+                    className="text-sm text-red-700 hover:text-red-800"
                   >
                     {formData.permissions.length === AVAILABLE_PERMISSIONS.length ? 'Deselect All' : 'Select All'}
                   </button>
@@ -284,7 +284,7 @@ export function OrganizationDetail({
                         type="checkbox"
                         checked={formData.permissions.includes(permission.id)}
                         onChange={() => togglePermission(permission.id)}
-                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-500"
                       />
                       <span className="text-sm text-gray-700">{permission.label}</span>
                     </label>
@@ -295,7 +295,7 @@ export function OrganizationDetail({
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                  className="px-6 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
                 >
                   {editingAdmin ? 'Update Admin' : 'Assign Admin'}
                 </button>
@@ -318,8 +318,8 @@ export function OrganizationDetail({
               <div key={admin.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Shield className="w-5 h-5 text-purple-600" />
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Shield className="w-5 h-5 text-red-700" />
                     </div>
                     <div>
                       <h4 className="text-black mb-1">{admin.name}</h4>
@@ -327,8 +327,8 @@ export function OrganizationDetail({
                       <div className="flex items-center gap-2">
                         <span className={`px-3 py-1 rounded-full text-xs ${
                           admin.role === 'admin' 
-                            ? 'bg-purple-100 text-purple-800' 
-                            : 'bg-purple-100 text-blue-800'
+                            ? 'bg-red-100 text-red-900' 
+                            : 'bg-red-100 text-blue-800'
                         }`}>
                           {admin.role === 'admin' ? 'Admin' : 'Sub Admin'}
                         </span>
@@ -360,7 +360,7 @@ export function OrganizationDetail({
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(admin)}
-                      className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>

@@ -16,11 +16,15 @@ export interface ILocation extends Document {
   code: string;
   parentId?: mongoose.Types.ObjectId;
   organizationId: mongoose.Types.ObjectId;
+  buildingId?: mongoose.Types.ObjectId;
+  floorId?: mongoose.Types.ObjectId;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
   gridData?: any;
+  floorPlanLayout?: any[];
+  floorPlanImage?: string;
   metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
@@ -37,11 +41,15 @@ const LocationSchema = new Schema<ILocation>(
     code: { type: String, required: true },
     parentId: { type: Schema.Types.ObjectId, ref: 'Location', default: null },
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+    buildingId: { type: Schema.Types.ObjectId, ref: 'Building', default: null },
+    floorId: { type: Schema.Types.ObjectId, ref: 'Location', default: null },
     x: { type: Number, default: null },
     y: { type: Number, default: null },
     width: { type: Number, default: null },
     height: { type: Number, default: null },
     gridData: { type: Schema.Types.Mixed, default: null },
+    floorPlanLayout: { type: [Schema.Types.Mixed], default: [] },
+    floorPlanImage: { type: String, default: null },
     metadata: { type: Schema.Types.Mixed, default: {} }
   },
   { timestamps: true }
@@ -49,6 +57,8 @@ const LocationSchema = new Schema<ILocation>(
 
 LocationSchema.index({ parentId: 1 });
 LocationSchema.index({ organizationId: 1 });
+LocationSchema.index({ buildingId: 1 });
+LocationSchema.index({ floorId: 1 });
 LocationSchema.index({ code: 1 });
 
 export default mongoose.models.Location || mongoose.model<ILocation>('Location', LocationSchema);

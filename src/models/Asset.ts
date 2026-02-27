@@ -93,6 +93,32 @@ const AssetSchema = new Schema<IAsset>(
       ref: 'Organization',
       required: [true, 'Organization ID is required'],
     },
+    buildingId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Building',
+    },
+    floorId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Location',
+    },
+    roomId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Location',
+    },
+    floorPosition: {
+      x: { type: Number },
+      y: { type: Number },
+      rotation: { type: Number, default: 0 },
+      icon: { type: String },
+      color: { type: String }
+    },
+    lastMaintenanceDate: { type: Date },
+    nextMaintenanceDate: { type: Date },
+    maintenanceSchedule: {
+      type: String,
+      enum: ['monthly', 'quarterly', 'yearly', 'none'],
+      default: 'none'
+    },
     warrantyExpiry: {
       type: Date,
     },
@@ -143,6 +169,9 @@ const AssetSchema = new Schema<IAsset>(
 
 // Indexes for faster queries
 AssetSchema.index({ organizationId: 1 });
+AssetSchema.index({ buildingId: 1 });
+AssetSchema.index({ floorId: 1 });
+AssetSchema.index({ roomId: 1 });
 AssetSchema.index({ status: 1 });
 AssetSchema.index({ assignedTo: 1 });
 AssetSchema.index({ locationId: 1 });
@@ -151,6 +180,7 @@ AssetSchema.index({ categoryId: 1 }); // NEW index
 AssetSchema.index({ serialNumber: 1 });
 AssetSchema.index({ model: 1, manufacturer: 1 });
 AssetSchema.index({ assetTag: 1, organizationId: 1 }, { unique: true });
+AssetSchema.index({ nextMaintenanceDate: 1 });
 
 // Virtual to get category name (backward compatible)
 AssetSchema.virtual('categoryName').get(function() {

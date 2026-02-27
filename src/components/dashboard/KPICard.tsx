@@ -12,12 +12,12 @@ interface KPICardProps {
 }
 
 const colorMap = {
-  blue: { bg: 'bg-purple-50', icon: 'bg-purple-500', text: 'text-purple-700', border: 'border-purple-200' },
+  blue: { bg: 'bg-red-50', icon: 'bg-red-700', text: 'text-red-700', border: 'border-red-200' },
   emerald: { bg: 'bg-emerald-50', icon: 'bg-emerald-500', text: 'text-emerald-700', border: 'border-emerald-200' },
   amber: { bg: 'bg-amber-50', icon: 'bg-amber-500', text: 'text-amber-700', border: 'border-amber-200' },
-  red: { bg: 'bg-red-50', icon: 'bg-red-500', text: 'text-red-700', border: 'border-red-200' },
-  purple: { bg: 'bg-purple-50', icon: 'bg-purple-500', text: 'text-purple-700', border: 'border-purple-200' },
-  indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-500', text: 'text-indigo-700', border: 'border-indigo-200' }
+  red: { bg: 'bg-red-50', icon: 'bg-red-600', text: 'text-red-700', border: 'border-red-200' },
+  purple: { bg: 'bg-red-50', icon: 'bg-red-800', text: 'text-red-800', border: 'border-red-200' },
+  indigo: { bg: 'bg-gray-50', icon: 'bg-gray-600', text: 'text-gray-700', border: 'border-gray-200' }
 };
 
 export function KPICard({ title, value, icon: Icon, trend, subtitle, color }: KPICardProps) {

@@ -83,7 +83,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               placeholder="e.g., Screen not working"
               value={formData.issueTitle}
               onChange={(e) => setFormData({ ...formData, issueTitle: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -97,7 +97,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               placeholder="Describe the problem in detail..."
               value={formData.issueDescription}
               onChange={(e) => setFormData({ ...formData, issueDescription: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -110,7 +110,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
                 required
                 value={formData.maintenanceType}
                 onChange={(e) => setFormData({ ...formData, maintenanceType: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
               >
                 <option value="preventive">Preventive</option>
                 <option value="corrective">Corrective</option>
@@ -126,7 +126,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
                 required
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -144,7 +144,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               type="date"
               value={formData.expectedReturnDate}
               onChange={(e) => setFormData({ ...formData, expectedReturnDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -155,7 +155,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
             <select
               value={formData.assignedVendor}
               onChange={(e) => setFormData({ ...formData, assignedVendor: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             >
               <option value="">Select vendor...</option>
               <option value="Internal IT Staff">Internal IT Staff</option>
@@ -176,7 +176,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               placeholder="0.00"
               value={formData.estimatedCost || ''}
               onChange={(e) => setFormData({ ...formData, estimatedCost: e.target.value ? parseFloat(e.target.value) : undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -189,7 +189,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               multiple
               accept="image/*,.pdf,.doc,.docx"
               onChange={handleFileChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-red-50 file:text-red-800 hover:file:bg-red-100"
             />
             <p className="text-xs text-gray-500 mt-1">Upload photos, invoices, or warranty documents</p>
             {files.length > 0 && (
@@ -208,7 +208,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
               placeholder="Any additional information..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
             />
           </div>
 
@@ -223,7 +223,7 @@ export function MaintenanceDialog({ asset, onClose, onSubmit }: MaintenanceDialo
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50"
             >
               {loading ? 'Submitting...' : 'Send to Maintenance'}
             </button>

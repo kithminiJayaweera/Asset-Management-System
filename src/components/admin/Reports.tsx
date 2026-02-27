@@ -272,7 +272,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
   };
 
   return (
-    <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#F3E6EC' }}>
+    <div className="space-y-6 p-6 min-h-screen" style={{ backgroundColor: '#EFEFEF' }}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
@@ -281,7 +281,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
         <div className="relative">
           <button
             onClick={() => setExportOpen(!exportOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors shadow-sm"
           >
             <Download className="w-4 h-4" />
             Export Report
@@ -312,7 +312,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
                 onClick={() => handleExport('csv')}
                 className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3"
               >
-                <FileDown className="w-4 h-4 text-purple-600" />
+                <FileDown className="w-4 h-4 text-red-700" />
                 <div>
                   <p className="font-medium text-gray-900">CSV Raw Data</p>
                   <p className="text-xs text-gray-500">All asset records</p>
@@ -362,8 +362,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Target className="w-5 h-5 text-purple-600" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <Target className="w-5 h-5 text-red-700" />
             </div>
             <div>
               <p className="text-xs text-gray-600">Utilization Rate</p>
@@ -377,8 +377,8 @@ export function Reports({ assets, organizations }: ReportsProps) {
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-purple-600" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <DollarSign className="w-5 h-5 text-red-700" />
             </div>
             <div>
               <p className="text-xs text-gray-600">Asset Value Trend</p>
@@ -440,7 +440,7 @@ export function Reports({ assets, organizations }: ReportsProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BarChartCard title="Assets by Category" data={analytics.categoryData} dataKey="value" color="#3b82f6" />
+        <BarChartCard title="Assets by Category" data={analytics.categoryData} dataKey="value" color="#AE040F" />
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Asset Status Distribution</h3>

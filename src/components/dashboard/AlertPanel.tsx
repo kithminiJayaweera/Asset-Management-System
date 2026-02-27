@@ -17,7 +17,7 @@ interface AlertPanelProps {
 const alertConfig: Record<Alert['type'], { icon: LucideIcon; bg: string; border: string; text: string }> = {
   critical: { icon: AlertTriangle, bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900' },
   warning: { icon: AlertCircle, bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-900' },
-  info: { icon: Info, bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-blue-900' },
+  info: { icon: Info, bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900' },
   success: { icon: CheckCircle, bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-900' }
 };
 
