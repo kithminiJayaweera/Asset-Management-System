@@ -51,12 +51,11 @@ export interface Asset {
   location: string;
   purchaseDate: string;
   value: number;
-  depreciationRate: number; // Annual depreciation rate as percentage (e.g., 20 for 20%)
+  depreciationRate: number;
   assignedTo?: string;
   description?: string;
   organizationId?: string;
   logs?: AssetLog[];
-  // Additional fields
   brand?: string;
   model?: string;
   serialNumber?: string;
@@ -66,24 +65,29 @@ export interface Asset {
   operatingSystem?: string;
   macAddress?: string;
   warrantyEndDate?: string;
-  // Furniture Specifications
   material?: string;
   color?: string;
   dimensions?: string;
-  // Vehicle Specifications
   vehicleType?: string;
   registrationNumber?: string;
   fuelType?: string;
   mileage?: string;
-  // Common Specs
   condition?: string;
   lastMaintenanceDate?: string;
-  // Category-specific specifications
   details?: Record<string, unknown>;
   maintenance?: {
     condition?: string;
     lastMaintenanceDate?: string;
   };
+  images?: Array<{
+    url: string;
+    publicId: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    isPrimary: boolean;
+    uploadedAt: Date;
+  }>;
 }
 
 export interface Organization {
@@ -201,7 +205,8 @@ export default function App() {
             warrantyEndDate: asset.warrantyExpiry || '',
             logs: [],
             details: (asset.details || {}) as Record<string, unknown>,
-            maintenance: asset.maintenance || { condition: 'good' }
+            maintenance: asset.maintenance || { condition: 'good' },
+            images: asset.images || []
           }));
           
           setAssets(dbAssets);
@@ -292,14 +297,13 @@ export default function App() {
     };
   }, []);
 
-  const handleAddAsset = async (asset: Omit<Asset, 'id'>) => {
+  const handleAddAsset = async (asset: Omit<Asset, 'id'> & { uploadedFiles?: File[] }) => {
     try {
       console.log('Form submitted asset:', asset);
-      console.log('Asset details:', asset.details);
       
       // Map the form data to match the API schema
       const assetData = {
-        assetTag: `AST-${Date.now()}`, // Generate unique asset tag
+        assetTag: `AST-${Date.now()}`,
         name: asset.name,
         category: asset.category,
         description: asset.description || '',
@@ -314,38 +318,45 @@ export default function App() {
         status: asset.status,
         condition: (asset.condition || 'good').toLowerCase(),
         location: asset.location,
-        organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1', // Valid ObjectId format
+        organizationId: asset.organizationId || '678816d3bf3a9d33c8a6f2b1',
         warrantyExpiry: asset.warrantyEndDate || null,
         notes: asset.description || '',
         details: asset.details || {},
         maintenance: asset.maintenance || { condition: 'good' }
       };
 
-      console.log('Sending to API:', JSON.stringify(assetData, null, 2));
-
       const response = await fetch('/api/assets', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assetData),
       });
 
       const result = await response.json();
-      console.log('API Response:', result);
 
       if (result.success) {
-        // Add to local state with the returned data
-        const newAsset = {
-          ...asset,
-          id: result.data._id || Date.now().toString()
-        };
+        const assetId = result.data._id;
+        
+        // Upload images if any
+        if (asset.uploadedFiles && asset.uploadedFiles.length > 0) {
+          for (let i = 0; i < asset.uploadedFiles.length; i++) {
+            const formData = new FormData();
+            formData.append('file', asset.uploadedFiles[i]);
+            formData.append('assetId', assetId);
+            formData.append('isPrimary', i === 0 ? 'true' : 'false');
+            
+            await fetch('/api/assets/images', {
+              method: 'POST',
+              body: formData,
+            });
+          }
+        }
+        
+        const newAsset = { ...asset, id: assetId };
         setAssets([...assets, newAsset]);
         setShowAssetModal(false);
         setEditingAsset(null);
         toast.success('Asset created successfully!');
       } else {
-        console.error('Failed to create asset:', result.error);
         toast.error(`Failed to create asset: ${result.error}`);
       }
     } catch (error) {
@@ -354,7 +365,7 @@ export default function App() {
     }
   };
 
-  const handleUpdateAsset = async (asset: Asset) => {
+  const handleUpdateAsset = async (asset: Asset & { uploadedFiles?: File[] }) => {
     try {
       const response = await fetch(`/api/assets/${asset.id}`, {
         method: 'PUT',
@@ -374,8 +385,33 @@ export default function App() {
       });
       
       if (response.ok) {
-        setAssets(assets.map(a => a.id === asset.id ? asset : a));
-        setEditingAsset(asset);
+        // Upload new images if any
+        if (asset.uploadedFiles && asset.uploadedFiles.length > 0) {
+          for (const file of asset.uploadedFiles) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('assetId', asset.id);
+            formData.append('isPrimary', 'false');
+            
+            await fetch('/api/assets/images', {
+              method: 'POST',
+              body: formData,
+            });
+          }
+        }
+        
+        // Fetch updated asset data
+        const assetResponse = await fetch(`/api/assets/${asset.id}`);
+        const assetResult = await assetResponse.json();
+        if (assetResult.success) {
+          const updatedAsset = {
+            ...asset,
+            images: assetResult.data.images
+          };
+          setAssets(assets.map(a => a.id === asset.id ? updatedAsset : a));
+          setEditingAsset(updatedAsset);
+        }
+        
         setShowAssetModal(false);
         toast.success('Asset updated successfully!');
         setCurrentView('asset-detail');

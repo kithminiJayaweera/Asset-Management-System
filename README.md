@@ -6,6 +6,7 @@ A comprehensive asset tracking and management solution built with Next.js 15+, M
 
 - **Multi-Organization Support**: Track assets across different companies/organizations
 - **Asset Management**: Complete CRUD operations for assets with detailed tracking
+- **Image Upload**: Upload multiple images and documents (JPG, PNG, PDF) for each asset
 - **User Management**: Role-based access control (Admin, Organization Admin, Employee)
 - **Asset Requests**: Employee request system for asset assignment, returns, and maintenance
 - **Depreciation Tracking**: Automated asset value calculations with multiple depreciation methods
@@ -81,6 +82,7 @@ asset-management-next/
 
 - Node.js 18+ and npm/yarn/pnpm
 - MongoDB (local installation or MongoDB Atlas account)
+- Cloudinary account (for image uploads)
 
 ### Installation
 
@@ -106,7 +108,7 @@ asset-management-next/
    cp .env.local.example .env.local
    ```
    
-   Edit `.env.local` and configure your MongoDB connection:
+   Edit `.env.local` and configure your MongoDB connection and Cloudinary:
    ```env
    MONGODB_URI=mongodb://localhost:27017/asset-management
    # For MongoDB Atlas:
@@ -114,6 +116,11 @@ asset-management-next/
    
    NEXT_PUBLIC_APP_URL=http://localhost:3000
    NODE_ENV=development
+   
+   # Cloudinary Configuration (for image uploads)
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 4. **Start MongoDB** (if using local installation)
@@ -198,6 +205,7 @@ asset-management-next/
 - **Server Actions** - Server-side mutations
 - **MongoDB** - Database
 - **Mongoose** - ODM (Object Data Modeling)
+- **Cloudinary** - Image and document storage
 
 ### Development Tools
 - **ESLint** - Code linting
@@ -257,8 +265,8 @@ npm run lint     # Run ESLint
 
 ## 🚧 Future Enhancements
 
+- [x] File upload for asset images
 - [ ] Authentication with NextAuth.js
-- [ ] File upload for asset images
 - [ ] Advanced reporting and analytics
 - [ ] Email notifications
 - [ ] Export data to CSV/PDF

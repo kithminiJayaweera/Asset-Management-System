@@ -32,6 +32,16 @@ export interface IOrganization {
 export type AssetStatus = 'active' | 'maintenance' | 'retired' | 'lost';
 export type AssetCondition = 'excellent' | 'good' | 'fair' | 'poor';
 
+export interface IAssetImage {
+  url: string;
+  publicId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  isPrimary: boolean;
+  uploadedAt: Date;
+}
+
 export interface IAsset {
   _id: Types.ObjectId | string;
   assetTag: string;
@@ -55,11 +65,14 @@ export interface IAsset {
   warrantyExpiry?: Date;
   notes?: string;
   imageUrl?: string;
+  images?: IAssetImage[];
   details?: Record<string, any>; // DEPRECATED: Category-specific fields
   customFields?: Record<string, any>; // NEW: Dynamic custom fields
   maintenance?: {
     condition?: AssetCondition;
     lastMaintenanceDate?: Date;
+    maintenanceStartDate?: Date;
+    expectedReturnDate?: Date;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -112,7 +125,7 @@ export interface IAssetRequest {
 // Maintenance Types
 export type MaintenanceType = 'preventive' | 'corrective' | 'warranty';
 export type MaintenancePriority = 'low' | 'medium' | 'high' | 'critical';
-export type MaintenanceStatus = 'pending' | 'in-progress' | 'completed' | 'closed' | 'cancelled';
+export type MaintenanceStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'closed';
 
 export interface IMaintenance {
   _id: Types.ObjectId | string;
