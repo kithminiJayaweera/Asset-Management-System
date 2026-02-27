@@ -140,7 +140,7 @@ export async function updateMaintenanceStatus(
         lastMaintenanceDate: new Date(),
         maintenanceStartDate: undefined,
         expectedReturnDate: undefined,
-        condition: updates?.assetCondition || asset.maintenance.condition,
+        condition: updates?.assetCondition || asset.maintenance?.condition,
       };
 
       // Create audit log
