@@ -102,18 +102,19 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
     };
   }, []);
 
-  useEffect(() => {
-    if (highlightRequestId && requests.length > 0) {
-      setTimeout(() => {
-        const element = document.getElementById(`request-${highlightRequestId}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('ring-4', 'ring-red-500');
-          setTimeout(() => element.classList.remove('ring-4', 'ring-red-500'), 3000);
-        }
-      }, 100);
-    }
-  }, [highlightRequestId, requests]);
+  // Auto-scroll effect removed to prevent constant scrolling
+  // useEffect(() => {
+  //   if (highlightRequestId && requests.length > 0) {
+  //     setTimeout(() => {
+  //       const element = document.getElementById(`request-${highlightRequestId}`);
+  //       if (element) {
+  //         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  //         element.classList.add('ring-4', 'ring-red-500');
+  //         setTimeout(() => element.classList.remove('ring-4', 'ring-red-500'), 3000);
+  //       }
+  //     }, 100);
+  //   }
+  // }, [highlightRequestId, requests]);
 
   const fetchRequests = async () => {
     try {
@@ -729,9 +730,7 @@ export function AssetRequestsList({ highlightRequestId }: { highlightRequestId?:
           <div 
             key={request._id} 
             id={`request-${request._id}`}
-            className={`bg-white rounded-lg border border-gray-200 p-6 transition-all ${
-              highlightRequestId === request._id ? 'ring-2 ring-blue-400' : ''
-            }`}
+            className="bg-white rounded-lg border border-gray-200 p-6 transition-all"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
